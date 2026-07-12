@@ -272,6 +272,64 @@ select.csel-native { position: absolute; width: 1px; height: 1px; padding: 0; ma
 .cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 13px; }
 @media(max-width: 700px){ .cards-grid { grid-template-columns: 1fr; } }
 
+/* ── Sleek person-card row list (Market Credit / Outflows / Loans) ── */
+.pc-list { display: flex; flex-direction: column; gap: 7px; }
+.pc-row {
+  background: var(--panel); border: 1px solid var(--line); border-left: 3px solid transparent;
+  border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 12px;
+  cursor: pointer; transition: all 0.2s; flex-wrap: wrap;
+}
+.pc-row:hover { border-color: rgba(139,108,255,0.35); transform: translateX(2px); }
+.pc-row.pc-overdue { border-left-color: var(--bad); }
+.pc-row.pc-settled { opacity: 0.55; }
+.pc-row.pc-open {
+  background: linear-gradient(135deg, rgba(139,108,255,0.12), rgba(34,211,238,0.04));
+  border-color: rgba(139,108,255,0.4);
+  box-shadow: 0 4px 18px rgba(139,108,255,0.14), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.pc-avatar { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #fff; font-size: 12px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
+.pc-main { flex: 1 1 140px; min-width: 120px; }
+.pc-name { font-size: 13.5px; font-weight: 700; }
+.pc-badges { margin-top: 3px; display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+.pc-progress { display: flex; flex-direction: column; gap: 3px; width: 74px; flex-shrink: 0; }
+.pc-progress .prog-track { height: 4px; }
+.pc-progress span { font-size: 9.5px; color: var(--muted); text-align: right; }
+.pc-stat { text-align: right; min-width: 62px; flex-shrink: 0; }
+.pc-stat .k { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1px; }
+.pc-stat .v { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 700; }
+.pc-actions { display: flex; gap: 5px; flex-shrink: 0; }
+.pc-chevron { display: none; }
+@media(max-width: 700px){
+  .pc-row { padding: 9px 11px; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .pc-avatar { width: 32px; height: 32px; font-size: 11px; font-weight: 700; }
+  .pc-name { font-size: 13px; }
+  .pc-badges { gap: 4px; }
+  .pc-badges .badge { font-size: 9px; padding: 1px 6px; }
+  .pc-badges .badge.pc-badge-extra { display: none; }
+  .pc-stat { min-width: 52px; }
+  .pc-stat .k { font-size: 8px; }
+  .pc-stat .v { font-size: 12px; }
+  .pc-chevron {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; flex-shrink: 0; color: var(--muted); font-size: 11px;
+    transition: transform 0.2s;
+  }
+  .pc-row.pc-open .pc-chevron { transform: rotate(180deg); color: var(--accent); }
+  .pc-progress, .pc-actions { display: none; }
+  .pc-row.pc-open .pc-progress {
+    display: flex; flex-direction: row; align-items: center; gap: 8px;
+    width: 100%; order: 50; margin-top: 2px;
+  }
+  .pc-row.pc-open .pc-progress .prog-track { flex: 1; }
+  .pc-row.pc-open .pc-progress span { text-align: left; white-space: nowrap; }
+  .pc-row.pc-open .pc-actions {
+    display: flex; flex-basis: 100%; order: 99; margin-top: 8px; padding-top: 8px;
+    border-top: 1px solid var(--line); justify-content: flex-start; gap: 6px;
+  }
+  .pc-actions .btn { padding: 5px 9px; font-size: 11px; }
+  .pc-actions .btn-xs, .pc-actions .btn-sm { padding: 5px 8px; }
+}
+
 /* ── Record card (base styles moved below with compact version) ── */
 .rec-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .rec-name { font-size: 14px; font-weight: 700; }
@@ -779,6 +837,36 @@ hr.divider { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
 .dc-row-card:hover { border-color: rgba(139,108,255,0.35); transform: translateX(2px); }
 .dc-row-card.dc-deleted { opacity: 0.35; }
 
+/* ── Day Close: History/Entries sub-tab toggle ── */
+.dc-subtabs { display: flex; gap: 6px; margin-bottom: 12px; }
+.dc-subtab-btn {
+  background: var(--panel2); border: 1px solid var(--line); color: var(--muted);
+  font-size: 11.5px; font-weight: 700; padding: 6px 14px; border-radius: 7px; cursor: pointer; transition: all 0.15s;
+}
+.dc-subtab-btn.on { background: rgba(139,108,255,0.14); border-color: var(--accent); color: var(--accent); }
+
+/* ── Day Close: Entries toolbar (search, month nav, share) ── */
+.dce-toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.dce-toolbar .inp { flex: 1 1 160px; min-width: 140px; }
+.dce-month-nav { display: flex; align-items: center; gap: 10px; background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; flex-shrink: 0; }
+.dce-month-nav button { background: none; border: none; color: var(--warn); cursor: pointer; font-size: 13px; padding: 2px 4px; }
+.dce-send-btn { flex-shrink: 0; }
+.dc-entries-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+.dc-entries-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 760px; }
+.dc-entries-table th {
+  text-align: right; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
+  padding: 9px 12px; background: var(--panel2); border-bottom: 1px solid var(--line); white-space: nowrap; cursor: pointer; user-select: none;
+}
+.dc-entries-table th:first-child, .dc-entries-table td:first-child { text-align: center; cursor: default; }
+.dc-entries-table th:last-child, .dc-entries-table td:last-child { text-align: center; cursor: default; }
+.dc-entries-table th .sort-arrow { margin-left: 3px; opacity: 0.5; font-size: 8px; }
+.dc-entries-table td { text-align: right; padding: 8px 12px; font-family: 'JetBrains Mono', monospace; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.dc-entries-table tbody tr { cursor: pointer; transition: background 0.15s; }
+.dc-entries-table tbody tr:hover { background: rgba(139,108,255,0.06); }
+.dc-entries-table tbody tr.dc-deleted { opacity: 0.35; }
+.dc-entries-table tbody tr:last-child td { border-bottom: none; }
+.dce-sub { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+
 /* ── Paid stamp ── */
 .paid-stamp { font-size: 9px; font-weight: 800; letter-spacing: 0.12em; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(34,197,94,0.4); background: rgba(34,197,94,0.1); color: var(--good); text-transform: uppercase; }
 
@@ -948,7 +1036,7 @@ html,body{overflow-x:hidden;max-width:100%;}
           </div>
           <div style="margin-top:14px;font-size:10.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;">
             <i class="fa-solid fa-circle-info" style="margin-right:4px;color:var(--accent2);"></i>
-            <strong style="color:var(--jtext);">Formula:</strong> Personal Wallet + GPay/Online + Credit Due + Confirmed Savings − Bills Pending − Loans Pending. Counter Cash is working capital, not net worth.
+            <strong style="color:var(--jtext);">Net Position</strong> = Wallet + GPay + Credit Due + Savings − Bills − Loans
           </div>
         </div>
 
@@ -1128,8 +1216,45 @@ html,body{overflow-x:hidden;max-width:100%;}
         <div id="dc-forms"></div>
 
         <div style="margin-top:24px;">
-          <div class="section-hd"><h2>History</h2></div>
-          <div id="dc-history"></div>
+          <div class="section-hd">
+            <h2>Day Close Records</h2>
+            <div class="dc-subtabs">
+              <button class="dc-subtab-btn on" id="dc-sub-history" onclick="switchDcSubView('history')">History</button>
+              <button class="dc-subtab-btn" id="dc-sub-entries" onclick="switchDcSubView('entries')">Entries</button>
+            </div>
+          </div>
+          <div id="dc-history-view">
+            <div id="dc-history"></div>
+          </div>
+          <div id="dc-entries-view" style="display:none;">
+            <div class="dce-toolbar">
+              <input class="inp" id="dce-search" placeholder="Search..." oninput="renderDcEntriesTable()">
+              <div class="dce-month-nav">
+                <button onclick="shiftDcEntriesMonth(-1)" title="Previous month"><i class="fa-solid fa-caret-left"></i></button>
+                <span id="dce-month-label">—</span>
+                <button onclick="shiftDcEntriesMonth(1)" title="Next month"><i class="fa-solid fa-caret-right"></i></button>
+              </div>
+              <button class="btn btn-good btn-sm dce-send-btn" onclick="shareDcMonthReport()" title="Share this month's report"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+            <div class="dc-entries-wrap">
+              <table class="dc-entries-table">
+                <thead>
+                  <tr>
+                    <th>Report</th>
+                    <th onclick="setDcEntriesSort('date')">Date <span class="sort-arrow" id="dce-arrow-date"></span></th>
+                    <th onclick="setDcEntriesSort('sale')">Sale <span class="sort-arrow" id="dce-arrow-sale"></span></th>
+                    <th onclick="setDcEntriesSort('savings')">Savings (C/B) <span class="sort-arrow" id="dce-arrow-savings"></span></th>
+                    <th onclick="setDcEntriesSort('netcash')">Net Cash <span class="sort-arrow" id="dce-arrow-netcash"></span></th>
+                    <th onclick="setDcEntriesSort('gpay')">GPay Bal <span class="sort-arrow" id="dce-arrow-gpay"></span></th>
+                    <th onclick="setDcEntriesSort('expense')">Exp/Out <span class="sort-arrow" id="dce-arrow-expense"></span></th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="dc-entries-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+          </div>
         </div>
       </div>
 
@@ -1146,11 +1271,18 @@ html,body{overflow-x:hidden;max-width:100%;}
               <option value="SHOP01">JMD Pooja</option><option value="SHOP02">SMS Pooja</option>
               <option value="SHOP03">Stall</option><option value="SHOP04">Graphics</option>
             </select>
+            <select class="inp" style="width:auto;padding:5px 10px;font-size:11.5px;" id="uf-sort" onchange="renderUdhaari()">
+              <option value="pending_desc">Pending: High → Low</option>
+              <option value="pending_asc">Pending: Low → High</option>
+              <option value="overdue">Overdue First</option>
+              <option value="name_asc">Name: A → Z</option>
+              <option value="recent">Recent Activity</option>
+            </select>
             <input class="inp" id="u-search" placeholder="Search customer / phone..." style="width:190px;padding:5px 10px;font-size:11.5px;" oninput="renderUdhaari()">
           </div>
           <button class="btn btn-primary btn-sm" onclick="openAddUdhaariModal()"><i class="fa-solid fa-plus"></i> Add Market Credit</button>
         </div>
-        <div class="cards-grid" id="udhaari-cards"></div>
+        <div class="pc-list" id="udhaari-cards"></div>
       </div>
 
       <!-- ═══ OUTFLOWS ═══ -->
@@ -1165,11 +1297,18 @@ html,body{overflow-x:hidden;max-width:100%;}
               <option value="SHOP01">JMD Pooja</option><option value="SHOP02">SMS Pooja</option>
               <option value="SHOP03">Stall</option><option value="SHOP04">Graphics</option>
             </select>
+            <select class="inp" style="width:auto;padding:5px 10px;font-size:11.5px;" id="of-sort" onchange="renderOutflows()">
+              <option value="pending_desc">Pending: High → Low</option>
+              <option value="pending_asc">Pending: Low → High</option>
+              <option value="overdue">Overdue First</option>
+              <option value="name_asc">Name: A → Z</option>
+              <option value="recent">Recent Activity</option>
+            </select>
             <input class="inp" id="o-search" placeholder="Search payee..." style="width:160px;padding:5px 10px;font-size:11.5px;" oninput="renderOutflows()">
           </div>
           <button class="btn btn-primary btn-sm" onclick="openAddOutflowModal()"><i class="fa-solid fa-plus"></i> Add Outflow</button>
         </div>
-        <div class="cards-grid" id="outflow-cards"></div>
+        <div class="pc-list" id="outflow-cards"></div>
       </div>
 
       <!-- ═══ INTERSHOP ═══ -->
@@ -1192,10 +1331,16 @@ html,body{overflow-x:hidden;max-width:100%;}
             <button class="filter-btn on" id="lf-all" onclick="setLFilter(&#39;all&#39;)">All</button>
             <button class="filter-btn" id="lf-pending" onclick="setLFilter(&#39;pending&#39;)">Pending</button>
             <button class="filter-btn" id="lf-repaid" onclick="setLFilter(&#39;repaid&#39;)">Repaid</button>
+            <select class="inp" style="width:auto;padding:5px 10px;font-size:11.5px;" id="lf-sort" onchange="renderLoans()">
+              <option value="pending_desc">Pending: High → Low</option>
+              <option value="pending_asc">Pending: Low → High</option>
+              <option value="name_asc">Name: A → Z</option>
+              <option value="recent">Recent Activity</option>
+            </select>
           </div>
           <button class="btn btn-primary btn-sm" onclick="openModal(&#39;modal-add-loan&#39;)"><i class="fa-solid fa-plus"></i> Add Loan</button>
         </div>
-        <div class="cards-grid" id="loan-cards"></div>
+        <div class="pc-list" id="loan-cards"></div>
       </div>
 
       <!-- ═══ HOME EXPENSES ═══ -->
@@ -1757,36 +1902,33 @@ html,body{overflow-x:hidden;max-width:100%;}
 
 <!-- WhatsApp Share Modal -->
 <div class="modal-overlay" id="modal-wa-share" onclick="modalBgClose(event,&#39;modal-wa-share&#39;)">
-  <div class="modal-box" style="max-width:520px;">
-    <div class="modal-title"><span><i class="fa-brands fa-whatsapp" style="color:#25D366;margin-right:6px;"></i>Share Daily Summary</span><button class="modal-close" onclick="closeModal(&#39;modal-wa-share&#39;)">×</button></div>
+  <div class="modal-box" style="max-width:380px;">
+    <div class="modal-title"><span><i class="fa-brands fa-whatsapp" style="color:#25D366;margin-right:6px;"></i>Share Summary</span><button class="modal-close" onclick="closeModal(&#39;modal-wa-share&#39;)">×</button></div>
+    
+    <!-- Date Picker -->
     <div class="fg">
-      <div class="lbl">Per-Shop Summary (separate WhatsApp messages)</div>
-      <div id="wa-shop-btns" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+      <div class="lbl">Select Date</div>
+      <input class="inp" id="wa-date" type="date" onchange="refreshWaShopButtons()" style="font-size:13px;">
     </div>
-    <hr class="divider">
+    
+    <!-- Shop Buttons -->
     <div class="fg">
-      <div class="lbl">Combined Summary (all shops)</div>
-      <textarea class="inp" id="wa-msg" rows="14" style="font-family:&#39;JetBrains Mono&#39;,monospace;font-size:12px;line-height:1.5;resize:vertical;min-height:280px;"></textarea>
+      <div class="lbl">Send Shop Summary</div>
+      <div id="wa-shop-btns" style="display:flex;flex-direction:column;gap:8px;"></div>
     </div>
+    
+    <!-- Saved Contacts -->
     <div class="fg" id="wa-contacts-wrap" style="display:none;">
       <div class="lbl">Quick Send to Saved Contact</div>
-      <div id="wa-contacts-chips" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      <div class="fg">
-        <div class="lbl">Phone (10 digits, optional)</div>
-        <input class="inp no-titlecase" id="wa-phone" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" data-phone10="true" placeholder="e.g. 9876543210">
-      </div>
-      <div class="fg" style="align-self:end;">
-        <button class="btn btn-ghost btn-sm" style="width:100%;" onclick="saveWaContact()"><i class="fa-solid fa-bookmark"></i> Save Contact</button>
+      <div id="wa-contacts-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <input class="inp no-titlecase" id="wa-phone" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" data-phone10="true" placeholder="Phone (optional)">
+        <button class="btn btn-ghost btn-sm" onclick="saveWaContact()"><i class="fa-solid fa-bookmark"></i> Save</button>
       </div>
     </div>
-    <div style="display:flex;gap:10px;margin-top:6px;">
-      <button class="btn btn-ghost" style="flex:1;" onclick="copyWaMessage()"><i class="fa-solid fa-copy"></i> Copy</button>
-      <button class="btn btn-good" style="flex:2;background:#25D366;border-color:#1ea952;color:#fff;" onclick="sendWhatsapp()"><i class="fa-brands fa-whatsapp"></i> Open in WhatsApp</button>
-    </div>
-    <div style="margin-top:10px;font-size:10.5px;color:var(--muted);line-height:1.5;">
-      <i class="fa-solid fa-circle-info"></i> Per-Shop buttons se har shop ka alag message jaayega. Combined message neeche textarea se edit karke bhejo.
+    
+    <div style="margin-top:8px;font-size:10px;color:var(--muted);text-align:center;">
+      <i class="fa-solid fa-circle-info"></i> Har shop ka alag message jaayega selected date ka
     </div>
   </div>
 </div>
@@ -2310,7 +2452,7 @@ function renderDashboard() {
   const confirmedSavings = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.desc && e.desc.startsWith('Savings (40%')).reduce((s, e) => s + (e.amount || 0), 0);
   const nw = personalWallet + totalOnlineGross + totalUd - totalLiab - totalLoanPending + confirmedSavings;         // TRUE NET POSITION (loans reduce net worth, confirmed savings add back)
 
-  $('nw-val').textContent = fmt(nw);
+  $('nw-val').textContent = fmtSigned(nw);
   $('nw-galla').textContent  = fmt(personalWallet);
   $('nw-online').textContent = fmt(totalOnlineGross);
   $('nw-udhaar').textContent = fmt(totalUd);
@@ -3527,6 +3669,164 @@ function renderDcHistory() {
       </div>
     </div>`;
   }).join('');
+  renderDcEntriesTable();
+}
+
+// ─── Day Close: History / Entries sub-tab toggle ───
+function switchDcSubView(view) {
+  $('dc-sub-history').classList.toggle('on', view === 'history');
+  $('dc-sub-entries').classList.toggle('on', view === 'entries');
+  $('dc-history-view').style.display = view === 'history' ? '' : 'none';
+  $('dc-entries-view').style.display = view === 'entries' ? '' : 'none';
+  if (view === 'entries') renderDcEntriesTable();
+}
+
+// ─── Day Close: Entries table (one row per shop-day record) ───
+let dcEntriesSort = { key: 'date', dir: 'desc' };
+let dcEntriesMonth = todayStr().slice(0, 7); // YYYY-MM
+const DCE_MONTH_NAMES = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+
+function fmtDateShort(d) {
+  if (!d) return '—';
+  const p = d.split('-');
+  return p[2] + '/' + p[1];
+}
+function shiftDcEntriesMonth(delta) {
+  const [y, m] = dcEntriesMonth.split('-').map(Number);
+  const dt = new Date(y, m - 1 + delta, 1);
+  dcEntriesMonth = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0');
+  renderDcEntriesTable();
+}
+function setDcEntriesSort(key) {
+  if (dcEntriesSort.key === key) dcEntriesSort.dir = dcEntriesSort.dir === 'desc' ? 'asc' : 'desc';
+  else { dcEntriesSort.key = key; dcEntriesSort.dir = 'desc'; }
+  renderDcEntriesTable();
+}
+
+// Per-record derived stats: 40% savings split, Home/GP-sourced daily expenses, 40% adjustment, combined Exp/Out
+function computeDcEntryStats(r) {
+  const cashSale = (r.sale || 0) - (r.gpay || 0);
+  const cashSavings = roundTo100(cashSale * 0.4);
+  const bankSavings = roundTo100((r.gpay || 0) * 0.4);
+  const dayExps = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.shopId === r.shopId && e.date === r.date);
+  const homeExp = dayExps.filter(e => e.source === 'HOME').reduce((s, e) => s + (e.amount || 0), 0);
+  const gpExp = dayExps.filter(e => e.source === 'GP').reduce((s, e) => s + (e.amount || 0), 0);
+  const adj40 = Math.max(0, cashSavings - (r.cashHome || 0));
+  const expTotal = (r.expense || 0) + homeExp + gpExp;
+  const outTotal = (STATE.outflows || []).filter(o => o.shopId === r.shopId && o.entryDate === r.date).reduce((s, o) => s + (o.amount || 0), 0);
+  return { cashSavings, bankSavings, homeExp, gpExp, adj40, expTotal, outTotal };
+}
+
+function renderDcEntriesTable() {
+  const tbody = $('dc-entries-tbody');
+  if (!tbody) return;
+  const lbl = $('dce-month-label');
+  if (lbl) lbl.textContent = DCE_MONTH_NAMES[parseInt(dcEntriesMonth.split('-')[1], 10) - 1];
+  ['date','sale','savings','netcash','gpay','expense'].forEach(k => {
+    const arrow = $('dce-arrow-' + k);
+    if (arrow) arrow.textContent = dcEntriesSort.key === k ? (dcEntriesSort.dir === 'desc' ? '▼' : '▲') : '';
+  });
+
+  const q = ($('dce-search')?.value || '').trim().toLowerCase();
+  let visible = STATE.dayClose.filter(r => !r.hidden && !r.deleted && (r.date || '').slice(0, 7) === dcEntriesMonth);
+  if (q) visible = visible.filter(r => (r.shopName || shopName(r.shopId) || '').toLowerCase().includes(q) || (r.date || '').includes(q));
+
+  if (!visible.length) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--muted);font-family:inherit;">Is mahine mein koi Day Close entry nahi</td></tr>`;
+    return;
+  }
+
+  const rows = visible.map(r => ({ r, s: computeDcEntryStats(r) }));
+
+  const dir = dcEntriesSort.dir === 'asc' ? 1 : -1;
+  rows.sort((a, b) => {
+    switch (dcEntriesSort.key) {
+      case 'sale': return dir * ((a.r.sale||0) - (b.r.sale||0));
+      case 'savings': return dir * ((a.s.cashSavings+a.s.bankSavings) - (b.s.cashSavings+b.s.bankSavings));
+      case 'netcash': return dir * ((a.r.cashHome||0) - (b.r.cashHome||0));
+      case 'gpay': return dir * ((a.r.gpay||0) - (b.r.gpay||0));
+      case 'expense': return dir * ((a.s.expTotal+a.s.outTotal) - (b.s.expTotal+b.s.outTotal));
+      case 'date':
+      default: return dir * (a.r.date||'').localeCompare(b.r.date||'');
+    }
+  });
+
+  tbody.innerHTML = rows.map(({ r, s }) => {
+    return `<tr onclick="openDcDetail('${r.id}')">
+      <td onclick="event.stopPropagation();"><button class="btn btn-good btn-xs" style="border-radius:50%;width:26px;height:26px;padding:0;" onclick="shareDcDayReport('${r.id}')" title="Share on WhatsApp"><i class="fa-brands fa-whatsapp"></i></button></td>
+      <td style="font-weight:700;">${fmtDateShort(r.date)}</td>
+      <td style="color:${(r.sale||0)>=0?'var(--good)':'var(--bad)'};font-weight:700;">${fmt(r.sale)}</td>
+      <td>
+        <div style="color:var(--good);">C: ${fmt(s.cashSavings)}</div>
+        <div style="color:var(--accent2);">B: ${fmt(s.bankSavings)}</div>
+      </td>
+      <td>
+        <div style="color:var(--warn);font-weight:700;">${fmt(r.cashHome)}</div>
+        <div class="dce-sub">40% Adj: ${fmt(s.adj40)}</div>
+        <div class="dce-sub">Exp (H): ${fmt(s.homeExp)}</div>
+      </td>
+      <td>
+        <div style="font-weight:700;">${fmt(r.gpay)}</div>
+        <div class="dce-sub">Exp (G): ${fmt(s.gpExp)}</div>
+      </td>
+      <td>
+        <div style="color:var(--bad);">Exp: ${fmt(s.expTotal)}</div>
+        <div style="color:var(--bad);">Out: ${fmt(s.outTotal)}</div>
+      </td>
+      <td onclick="event.stopPropagation();">
+        <button class="btn btn-ghost btn-xs" style="padding:4px 6px;" onclick="openDcDetail('${r.id}')" title="Edit"><i class="fa-solid fa-pen" style="font-size:10px;"></i></button>
+        <button class="btn btn-bad btn-xs" style="padding:4px 6px;" onclick="deleteDayClose('${r.id}')" title="Delete"><i class="fa-solid fa-xmark"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── WhatsApp share: single day row ───
+function shareDcDayReport(id) {
+  const r = STATE.dayClose.find(x => x.id === id); if (!r) return;
+  const sh = STATE.shops.find(s => s.id === r.shopId);
+  const nf = n => { const v = parseFloat(n)||0; return (v<0?'-':'') + 'Rs ' + Math.abs(v).toLocaleString('en-IN'); };
+  const profit = r.profit != null ? r.profit : Math.round((r.sale||0)*((sh?.profitPct)||40)/100);
+  
+  let msg = `*${r.shopName || shopName(r.shopId)}* — ${fmtDate(r.date)}\n`;
+  msg += `━━━━━━━━━━━━━━━\n`;
+  msg += `*Day Close*\n`;
+  msg += `Sale : ${nf(r.sale)}\n`;
+  msg += `Profit : ${nf(profit)}\n\n`;
+  msg += `Cash Home : ${nf(r.cashHome)}\n`;
+  msg += `Counter : ${nf(r.counterCash)}\n`;
+  msg += `GPay : ${nf(r.gpay)}\n\n`;
+  msg += `Expenses: ${nf(r.expense)}\n`;
+  if (r.note) msg += `Note: ${r.note}\n`;
+  msg += `━━━━━━━━━━━━━\n`;
+  msg += `_Sent from JMD Traders Software_`;
+  
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+// ─── WhatsApp share: whole month currently in view (respects search filter) ───
+function shareDcMonthReport() {
+  const q = ($('dce-search')?.value || '').trim().toLowerCase();
+  let visible = STATE.dayClose.filter(r => !r.hidden && !r.deleted && (r.date || '').slice(0, 7) === dcEntriesMonth);
+  if (q) visible = visible.filter(r => (r.shopName || shopName(r.shopId) || '').toLowerCase().includes(q) || (r.date || '').includes(q));
+  if (!visible.length) { toast('Is mahine mein koi entry nahi hai', 'error'); return; }
+
+  const totals = visible.reduce((acc, r) => {
+    const s = computeDcEntryStats(r);
+    acc.sale += r.sale || 0; acc.cashSavings += s.cashSavings; acc.bankSavings += s.bankSavings;
+    acc.cashHome += r.cashHome || 0; acc.gpay += r.gpay || 0; acc.exp += s.expTotal; acc.out += s.outTotal;
+    return acc;
+  }, { sale: 0, cashSavings: 0, bankSavings: 0, cashHome: 0, gpay: 0, exp: 0, out: 0 });
+
+  const monthName = DCE_MONTH_NAMES[parseInt(dcEntriesMonth.split('-')[1], 10) - 1];
+  const msg = `*Day Close Report — ${monthName} ${dcEntriesMonth.split('-')[0]}*\n` +
+    `Entries: ${visible.length}\n` +
+    `Total Sale: ${fmt(totals.sale)}\n` +
+    `Savings — Cash: ${fmt(totals.cashSavings)} | Bank: ${fmt(totals.bankSavings)}\n` +
+    `Net Cash: ${fmt(totals.cashHome)}\n` +
+    `GPay Bal: ${fmt(totals.gpay)}\n` +
+    `Exp/Out — Exp: ${fmt(totals.exp)} | Out: ${fmt(totals.out)}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
 function openDcDetail(id) {
@@ -3686,6 +3986,51 @@ function setUFilter(f) {
   renderUdhaari();
 }
 
+// ─── Avatar initials (used by pc-row lists on mobile) ───
+function pcInitials(name) {
+  const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '?';
+  return (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
+}
+
+// ─── Tap handler for pc-row accordion (mobile) / history modal (desktop) ───
+// On narrow screens the row toggles open to reveal progress + actions inline;
+// on wider screens there's already room so the whole row opens history directly.
+function pcRowClick(el, type, name, shopId) {
+  if (window.innerWidth <= 700) {
+    const willOpen = !el.classList.contains('pc-open');
+    const container = el.parentElement;
+    if (container) container.querySelectorAll('.pc-row.pc-open').forEach(r => { if (r !== el) r.classList.remove('pc-open'); });
+    el.classList.toggle('pc-open', willOpen);
+  } else {
+    openPersonHistory(type, name, shopId);
+  }
+}
+
+// ─── Shared sort helper for person-grouped row lists (Market Credit / Outflows / Loans) ───
+// cfg: { pending(g)->num, name(g)->str, date(g)->str (latest activity date), overdue(g)->bool }
+function sortPCGroups(list, sortKey, cfg) {
+  const arr = [...list];
+  switch (sortKey) {
+    case 'pending_asc':
+      arr.sort((a, b) => cfg.pending(a) - cfg.pending(b));
+      break;
+    case 'name_asc':
+      arr.sort((a, b) => cfg.name(a).localeCompare(cfg.name(b)));
+      break;
+    case 'recent':
+      arr.sort((a, b) => (cfg.date(b) || '').localeCompare(cfg.date(a) || ''));
+      break;
+    case 'overdue':
+      arr.sort((a, b) => (cfg.overdue(b) ? 1 : 0) - (cfg.overdue(a) ? 1 : 0) || cfg.pending(b) - cfg.pending(a));
+      break;
+    case 'pending_desc':
+    default:
+      arr.sort((a, b) => cfg.pending(b) - cfg.pending(a));
+  }
+  return arr;
+}
+
 function renderUdhaari() {
   let list = [...STATE.udhaari];
   if (uFilter==='active') list=list.filter(u=>u.status==='Active'&&!isOverdue(u));
@@ -3709,49 +4054,49 @@ function renderUdhaari() {
     if (u.phone && !groups[key].phone) groups[key].phone = u.phone;
   });
 
-  const grouped = Object.values(groups).sort((a,b) => (b.totalBill - b.received) - (a.totalBill - a.received));
+  let grouped = Object.values(groups);
+  const sortKey = $('uf-sort')?.value || 'pending_desc';
+  grouped = sortPCGroups(grouped, sortKey, {
+    pending: g => g.totalBill - g.received,
+    name: g => (g.customer || '').toLowerCase(),
+    date: g => g.entries.reduce((mx, e) => (e.dueDate || '') > mx ? e.dueDate : mx, ''),
+    overdue: g => g.entries.some(e => isOverdue(e))
+  });
 
   $('udhaari-cards').innerHTML = grouped.length ? grouped.map(g => {
     const pending = g.totalBill - g.received;
     const pct = Math.min(100,Math.round(g.received/Math.max(1,g.totalBill)*100));
     const allSettled = g.entries.every(e => e.status === 'Settle');
     const anyOverdue = g.entries.some(e => isOverdue(e));
-    return `<div class="rec-card${anyOverdue?' overdue':''}${allSettled?' settled':''}" style="cursor:pointer;" onclick="openPersonHistory('udhaari','${escJsAttr(g.customer)}','${g.shopId}')">
-      <div class="rec-head">
-        <div style="flex:1;">
-          <div class="rec-name">${escHtml(g.customer)}</div>
-          <div style="margin-top:3px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-            <span class="badge" style="background:${shopColor(g.shopId)}22;color:${shopColor(g.shopId)};border:1px solid ${shopColor(g.shopId)}44;">${shopName(g.shopId)}</span>
-            ${g.phone?`<span class="badge badge-blue"><i class="fa-solid fa-phone" style="font-size:8px;margin-right:3px;"></i>${escHtml(formatPhoneDisplay(g.phone))}</span>`:''}
-            ${anyOverdue?`<span class="badge badge-red">Overdue</span>`:''}
-            ${allSettled?`<span class="badge badge-green">Settled</span>`:`<span class="badge badge-amber">Active</span>`}
-            <span class="badge badge-gray">${g.entries.length} entr${g.entries.length===1?'y':'ies'}</span>
-          </div>
-        </div>
-        <div style="display:flex;gap:4px;">
-          <button class="btn btn-ghost btn-sm" style="padding:4px 6px;" onclick="event.stopPropagation();openEditUdhaari('${g.entries[0].id}')" title="Edit"><i class="fa-solid fa-pen" style="font-size:10px;"></i></button>
-          <button class="btn btn-bad btn-sm" style="padding:4px 6px;" onclick="event.stopPropagation();deleteUdhaari('${g.entries[0].id}')" title="Delete"><i class="fa-solid fa-trash" style="font-size:10px;"></i></button>
+    const sc = shopColor(g.shopId);
+    return `<div class="pc-row${anyOverdue?' pc-overdue':''}${allSettled?' pc-settled':''}" onclick="pcRowClick(this,'udhaari','${escJsAttr(g.customer)}','${g.shopId}')">
+      <div class="pc-avatar" style="background:linear-gradient(135deg,${sc},${sc}88);box-shadow:0 2px 8px ${sc}33;">${pcInitials(g.customer)}</div>
+      <div class="pc-main">
+        <div class="pc-name">${escHtml(g.customer)}</div>
+        <div class="pc-badges">
+          <span class="badge" style="background:${sc}22;color:${sc};border:1px solid ${sc}44;">${shopName(g.shopId)}</span>
+          ${g.phone?`<span class="badge badge-blue"><i class="fa-solid fa-phone" style="font-size:8px;margin-right:3px;"></i>${escHtml(formatPhoneDisplay(g.phone))}</span>`:''}
+          ${anyOverdue?`<span class="badge badge-red">Overdue</span>`:''}
+          ${allSettled?`<span class="badge badge-green">Settled</span>`:`<span class="badge badge-amber">Active</span>`}
+          <span class="badge badge-gray pc-badge-extra">${g.entries.length} entr${g.entries.length===1?'y':'ies'}</span>
         </div>
       </div>
-      <div class="rec-meta">
-        <div class="rec-cell"><div class="k">Total Bill</div><div class="v">${fmt(g.totalBill)}</div></div>
-        <div class="rec-cell"><div class="k">Received</div><div class="v" style="color:var(--good);">${fmt(g.received)}</div></div>
-        <div class="rec-cell"><div class="k">Pending</div><div class="v" style="color:${pending>0?'var(--bad)':'var(--good)'};">${fmt(pending)}</div></div>
-      </div>
-      <div>
-        <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin-bottom:3px;"><span>Recovery</span><span>${pct}%</span></div>
+      <div class="pc-stat"><div class="k">Total</div><div class="v">${fmt(g.totalBill)}</div></div>
+      <div class="pc-stat"><div class="k">Pending</div><div class="v" style="color:${pending>0?'var(--bad)':'var(--good)'};">${fmt(pending)}</div></div>
+      <i class="fa-solid fa-chevron-down pc-chevron"></i>
+      <div class="pc-progress">
         <div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:var(--good);"></div></div>
+        <span>${pct}% recovered</span>
       </div>
-      <div class="rec-foot">
-        <span class="meta-info"><i class="fa-solid fa-clock"></i> ${g.entries.length} transaction${g.entries.length===1?'':'s'}</span>
-        <span class="meta-info"><i class="fa-solid fa-calendar"></i> ${fmtDate(g.entries[0].dueDate)||'—'}</span>
-        <div style="display:flex;gap:6px;">
-          ${!allSettled && g.phone?`<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();sendGroupReminder('${escJsAttr(g.customer)}','${g.shopId}')"><i class="fa-brands fa-whatsapp" style="color:#25D366;"></i> Reminder</button>`:''}
-          ${!allSettled?`<button class="btn btn-good btn-sm" onclick="event.stopPropagation();openCollectGroup('${escJsAttr(g.customer)}','${g.shopId}')">Collect</button>`:''}
-        </div>
+      <div class="pc-actions">
+        ${!allSettled && g.phone?`<button class="btn btn-ghost btn-sm" style="padding:4px 8px;flex:0 0 auto;" onclick="event.stopPropagation();sendGroupReminder('${escJsAttr(g.customer)}','${g.shopId}')" title="Reminder"><i class="fa-brands fa-whatsapp" style="color:#25D366;"></i></button>`:''}
+        ${!allSettled?`<button class="btn btn-good btn-sm" style="flex:2;" onclick="event.stopPropagation();openCollectGroup('${escJsAttr(g.customer)}','${g.shopId}')">Collect</button>`:''}
+        <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="event.stopPropagation();openPersonHistory('udhaari','${escJsAttr(g.customer)}','${g.shopId}')" title="View transactions"><i class="fa-solid fa-list-ul" style="font-size:10px;margin-right:4px;"></i>View</button>
+        <button class="btn btn-ghost btn-sm" style="padding:4px 6px;flex:0 0 auto;" onclick="event.stopPropagation();openEditUdhaari('${g.entries[0].id}')" title="Edit"><i class="fa-solid fa-pen" style="font-size:10px;"></i></button>
+        <button class="btn btn-bad btn-sm" style="padding:4px 6px;flex:0 0 auto;" onclick="event.stopPropagation();deleteUdhaari('${g.entries[0].id}')" title="Delete"><i class="fa-solid fa-trash" style="font-size:10px;"></i></button>
       </div>
     </div>`;
-  }).join('') : `<div class="empty" style="grid-column:1/-1;"><div class="empty-icon"><i class="fa-solid fa-users-slash"></i></div>No market credit records</div>`;
+  }).join('') : `<div class="empty"><div class="empty-icon"><i class="fa-solid fa-users-slash"></i></div>No market credit records</div>`;
 }
 
 function resetUdhaariModal() {
@@ -3764,6 +4109,14 @@ function resetUdhaariModal() {
 }
 function openAddUdhaariModal() {
   resetUdhaariModal();
+  openModal('modal-add-udhaari');
+}
+function openAddUdhaariForCustomer(name, shopId) {
+  resetUdhaariModal();
+  $('au-cust').value = name || '';
+  const existing = STATE.udhaari.find(u => u.customer && u.customer.toLowerCase() === (name||'').toLowerCase() && u.shopId === shopId);
+  if (existing && existing.phone) $('au-phone').value = localPhoneDigits(existing.phone);
+  chipPick('au-shop', shopId || 'SHOP01');
   openModal('modal-add-udhaari');
 }
 function openEditUdhaari(uid) {
@@ -3794,6 +4147,27 @@ function deleteUdhaari(uid) {
       auditLog('DELETE_UDHAARI', `Deleted market credit: ${u.customer || 'Customer'} — ${fmt(u.totalBill || 0)}`);
       saveStateLocal(); renderUdhaari(); updateBadges(); renderDashboard();
       toast('Market credit deleted', 'info');
+    }
+  });
+}
+
+function deleteUdhaariPayment(parentId, logId) {
+  const u = STATE.udhaari.find(x => x.id === parentId);
+  if (!u || !u.collectionLog) return;
+  const logIdx = u.collectionLog.findIndex(c => c.id === logId);
+  if (logIdx < 0) return;
+  const logEntry = u.collectionLog[logIdx];
+  showConfirm({
+    title: 'Delete Payment?',
+    msg: `Delete payment of <strong>${fmt(logEntry.amount)}</strong> from <strong>${escHtml(u.customer)}</strong>?`,
+    icon: '!', yesText: 'Delete', yesCls: 'btn-bad',
+    onYes: () => {
+      u.collectionLog.splice(logIdx, 1);
+      u.received = Math.max(0, (u.received || 0) - logEntry.amount);
+      if (u.received < u.totalBill) u.status = 'Active';
+      auditLog('DELETE_UDHAARI_PAYMENT', `Deleted payment ${fmt(logEntry.amount)} from ${u.customer}`);
+      saveStateLocal(); renderUdhaari(); updateBadges(); renderDashboard();
+      toast('Payment deleted', 'info');
     }
   });
 }
@@ -3857,7 +4231,7 @@ function saveCollect() {
     const toApply = Math.min(remaining, pendingForEntry);
     entry.received += toApply;
     entry.collectionLog = entry.collectionLog || [];
-    entry.collectionLog.push({ mode, amount: toApply });
+    entry.collectionLog.push({ id: newId('CL'), mode, amount: toApply, date: todayStr() });
     if (entry.received >= entry.totalBill) {
       entry.status = 'Settle';
     }
@@ -3955,45 +4329,47 @@ function renderOutflows() {
     groups[key].lateFee += o.lateFee || 0;
   });
 
-  const grouped = Object.values(groups).sort((a,b) => (b.amount - b.paid) - (a.amount - a.paid));
+  let grouped = Object.values(groups);
+  const sortKey = $('of-sort')?.value || 'pending_desc';
+  grouped = sortPCGroups(grouped, sortKey, {
+    pending: g => g.amount + g.lateFee - g.paid,
+    name: g => (g.payee || '').toLowerCase(),
+    date: g => g.entries.reduce((mx, e) => (e.dueDate || '') > mx ? e.dueDate : mx, ''),
+    overdue: g => g.entries.some(e => isOutflowOverdue(e))
+  });
 
   $('outflow-cards').innerHTML=grouped.length?grouped.map(g=>{
     const pending=g.amount+g.lateFee-g.paid;
     const pct=Math.min(100,Math.round(g.paid/Math.max(1,g.amount+g.lateFee)*100));
     const allPaid = g.entries.every(e => e.status === 'Paid');
     const anyOverdue = g.entries.some(e => isOutflowOverdue(e));
-    return `<div class="rec-card${anyOverdue?' overdue':''}${allPaid?' settled':''}" style="cursor:pointer;" onclick="openPersonHistory('outflow','${escJsAttr(g.payee)}','${g.shopId}')">
-      <div class="rec-head">
-        <div style="flex:1;">
-          <div class="rec-name">${escHtml(g.payee)}</div>
-          <div style="margin-top:3px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-            <span class="badge" style="background:${shopColor(g.shopId)}22;color:${shopColor(g.shopId)};border:1px solid ${shopColor(g.shopId)}44;">${shopName(g.shopId)}</span>
-            ${anyOverdue?`<span class="badge badge-red">Overdue</span>`:''}
-            ${allPaid?`<span class="badge badge-green">Paid</span>`:`<span class="badge badge-amber">Pending</span>`}
-            <span class="badge badge-gray">${g.entries.length} entr${g.entries.length===1?'y':'ies'}</span>
-          </div>
-        </div>
-        <div style="display:flex;gap:4px;">
-          <button class="btn btn-ghost btn-sm" style="padding:4px 6px;" onclick="event.stopPropagation();openEditOutflow('${g.entries[0].id}')" title="Edit"><i class="fa-solid fa-pen" style="font-size:10px;"></i></button>
-          <button class="btn btn-bad btn-sm" style="padding:4px 6px;" onclick="event.stopPropagation();deleteOutflow('${g.entries[0].id}')" title="Delete"><i class="fa-solid fa-trash" style="font-size:10px;"></i></button>
+    const sc = shopColor(g.shopId);
+    return `<div class="pc-row${anyOverdue?' pc-overdue':''}${allPaid?' pc-settled':''}" onclick="pcRowClick(this,'outflow','${escJsAttr(g.payee)}','${g.shopId}')">
+      <div class="pc-avatar" style="background:linear-gradient(135deg,${sc},${sc}88);box-shadow:0 2px 8px ${sc}33;">${pcInitials(g.payee)}</div>
+      <div class="pc-main">
+        <div class="pc-name">${escHtml(g.payee)}</div>
+        <div class="pc-badges">
+          <span class="badge" style="background:${sc}22;color:${sc};border:1px solid ${sc}44;">${shopName(g.shopId)}</span>
+          ${anyOverdue?`<span class="badge badge-red">Overdue</span>`:''}
+          ${allPaid?`<span class="badge badge-green">Paid</span>`:`<span class="badge badge-amber">Pending</span>`}
+          <span class="badge badge-gray pc-badge-extra">${g.entries.length} entr${g.entries.length===1?'y':'ies'}</span>
         </div>
       </div>
-      <div class="rec-meta">
-        <div class="rec-cell"><div class="k">Total Bill</div><div class="v">${fmt(g.amount)}</div></div>
-        <div class="rec-cell"><div class="k">Paid</div><div class="v" style="color:var(--good);">${fmt(g.paid)}</div></div>
-        <div class="rec-cell"><div class="k">Pending</div><div class="v" style="color:${pending>0?'var(--bad)':'var(--good)'};">${fmt(pending)}</div></div>
-      </div>
-      <div>
-        <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin-bottom:3px;"><span>Payment Progress</span><span>${pct}%</span></div>
+      <div class="pc-stat"><div class="k">Total</div><div class="v">${fmt(g.amount)}</div></div>
+      <div class="pc-stat"><div class="k">Pending</div><div class="v" style="color:${pending>0?'var(--bad)':'var(--good)'};">${fmt(pending)}</div></div>
+      <i class="fa-solid fa-chevron-down pc-chevron"></i>
+      <div class="pc-progress">
         <div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:${allPaid?'var(--good)':'var(--warn)'};"></div></div>
+        <span>${pct}% paid</span>
       </div>
-      <div class="rec-foot">
-        <span class="meta-info"><i class="fa-solid fa-clock"></i> ${g.entries.length} transaction${g.entries.length===1?'':'s'}</span>
-        <span class="meta-info"><i class="fa-solid fa-calendar"></i> Due: ${fmtDate(g.entries[0].dueDate)}</span>
-        ${!allPaid?`<button class="btn btn-warn btn-sm" onclick="event.stopPropagation();openPayOutflowGroup('${escJsAttr(g.payee)}','${g.shopId}')">Pay Bill</button>`:''}
+      <div class="pc-actions">
+        ${!allPaid?`<button class="btn btn-warn btn-sm" style="flex:2;" onclick="event.stopPropagation();openPayOutflowGroup('${escJsAttr(g.payee)}','${g.shopId}')">Pay Bill</button>`:''}
+        <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="event.stopPropagation();openPersonHistory('outflow','${escJsAttr(g.payee)}','${g.shopId}')" title="View transactions"><i class="fa-solid fa-list-ul" style="font-size:10px;margin-right:4px;"></i>View</button>
+        <button class="btn btn-ghost btn-sm" style="padding:4px 6px;flex:0 0 auto;" onclick="event.stopPropagation();openEditOutflow('${g.entries[0].id}')" title="Edit"><i class="fa-solid fa-pen" style="font-size:10px;"></i></button>
+        <button class="btn btn-bad btn-sm" style="padding:4px 6px;flex:0 0 auto;" onclick="event.stopPropagation();deleteOutflow('${g.entries[0].id}')" title="Delete"><i class="fa-solid fa-trash" style="font-size:10px;"></i></button>
       </div>
     </div>`;
-  }).join(''):`<div class="empty" style="grid-column:1/-1;"><div class="empty-icon"><i class="fa-solid fa-receipt"></i></div>No outflows recorded</div>`;
+  }).join(''):`<div class="empty"><div class="empty-icon"><i class="fa-solid fa-receipt"></i></div>No outflows recorded</div>`;
 }
 
 function resetOutflowModal() {
@@ -4006,6 +4382,12 @@ function resetOutflowModal() {
 }
 function openAddOutflowModal() {
   resetOutflowModal();
+  openModal('modal-add-outflow');
+}
+function openAddOutflowForPayee(name, shopId) {
+  resetOutflowModal();
+  $('ao-payee').value = name || '';
+  chipPick('ao-shop', shopId || 'SHOP01');
   openModal('modal-add-outflow');
 }
 function openEditOutflow(oid) {
@@ -4069,6 +4451,34 @@ function deleteOutflow(oid) {
       onYes:()=>doDelete(true)
     });
   }
+}
+
+function deleteOutflowPayment(parentId, logId) {
+  const o = STATE.outflows.find(x => x.id === parentId);
+  if (!o || !o.paymentLog) return;
+  const logIdx = o.paymentLog.findIndex(p => p.id === logId);
+  if (logIdx < 0) return;
+  const logEntry = o.paymentLog[logIdx];
+  showConfirm({
+    title: 'Delete Payment?',
+    msg: `Delete payment of <strong>${fmt(logEntry.amount)}</strong> to <strong>${escHtml(o.payee)}</strong>?`,
+    icon: '!', yesText: 'Delete', yesCls: 'btn-bad',
+    onYes: () => {
+      // Reverse the fund effect
+      const vsh = STATE.shops.find(s => s.id === logEntry.vault);
+      if (vsh) {
+        if (logEntry.mode === 'GPay') vsh.online = (vsh.online || 0) + logEntry.amount;
+        else if (logEntry.mode === 'Home') vsh.homeTransfer = (vsh.homeTransfer || 0) - logEntry.amount;
+        else if (logEntry.mode === 'Cash') vsh.galla = (vsh.galla || 0) + logEntry.amount;
+      }
+      o.paymentLog.splice(logIdx, 1);
+      o.paid = Math.max(0, (o.paid || 0) - logEntry.amount);
+      if (o.paid < o.amount + (o.lateFee || 0)) o.status = 'Active';
+      auditLog('DELETE_OUTFLOW_PAYMENT', `Deleted payment ${fmt(logEntry.amount)} to ${o.payee}`);
+      saveStateLocal(); renderOutflows(); updateBadges(); renderDashboard();
+      toast('Payment deleted', 'info');
+    }
+  });
 }
 
 function saveOutflow() {
@@ -4179,7 +4589,7 @@ function savePayOutflow() {
     const toApply = Math.min(remaining, pendingForEntry);
     entry.paid += toApply;
     entry.paymentLog = entry.paymentLog || [];
-    entry.paymentLog.push({ vault, mode, amount: toApply, date: payDate });
+    entry.paymentLog.push({ id: newId('PL'), vault, mode, amount: toApply, date: payDate });
     if (entry.paid >= entry.amount + entry.lateFee) {
       entry.status = 'Paid';
     }
@@ -4456,49 +4866,62 @@ function renderLoans() {
     groups[key].repaid += l.repaid || 0;
   });
 
-  const grouped = Object.values(groups).sort((a,b) => (b.amount - b.repaid) - (a.amount - a.repaid));
+  let grouped = Object.values(groups);
+  const sortKey = $('lf-sort')?.value || 'pending_desc';
+  grouped = sortPCGroups(grouped, sortKey, {
+    pending: g => g.amount - g.repaid,
+    name: g => (g.from || '').toLowerCase(),
+    date: g => g.entries.reduce((mx, e) => (e.date || '') > mx ? e.date : mx, ''),
+    overdue: () => false
+  });
 
   $('loan-cards').innerHTML=grouped.length?grouped.map(g=>{
     const pending=g.amount-g.repaid;
     const pct=Math.min(100,Math.round(g.repaid/Math.max(1,g.amount)*100));
     const allRepaid = g.entries.every(e => e.status === 'Repaid');
-    return `<div class="loan-card${allRepaid?' repaid':''}" style="cursor:pointer;" onclick="openPersonHistory('loan','${escJsAttr(g.from)}','${g.shopId}')">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="flex:1;">
-          <div style="font-size:14px;font-weight:700;">${escHtml(g.from)}</div>
-          <div style="margin-top:3px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-            <span class="badge" style="background:${shopColor(g.shopId)}22;color:${shopColor(g.shopId)};border:1px solid ${shopColor(g.shopId)}44;">${g.shopId==='GENERAL'?'General':shopName(g.shopId)}</span>
-            ${g.entries[0].mode === 'GPay' ? 
-              `<span class="badge badge-blue"><i class="fa-solid fa-mobile-screen" style="margin-right:3px;font-size:8px;"></i>GPay</span>` : 
-              `<span class="badge badge-purple"><i class="fa-solid fa-house" style="margin-right:3px;font-size:8px;"></i>Home</span>`
-            }
-            ${allRepaid?`<span class="badge badge-green">Repaid</span>`:`<span class="badge badge-red">Pending</span>`}
-            <span class="badge badge-gray">${g.entries.length} entr${g.entries.length===1?'y':'ies'}</span>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div class="mono" style="font-size:16px;font-weight:800;color:${allRepaid?'var(--muted)':'var(--bad)'};">${fmt(g.amount)}</div>
-          <div style="display:flex;gap:4px;">
-            <button class="btn btn-ghost btn-sm" style="padding:4px 6px;" onclick="event.stopPropagation();openEditLoan('${g.entries[0].id}')" title="Edit"><i class="fa-solid fa-pen" style="font-size:10px;"></i></button>
-            <button class="btn btn-bad btn-sm" style="padding:4px 6px;" onclick="event.stopPropagation();deleteLoan('${g.entries[0].id}')" title="Delete"><i class="fa-solid fa-trash" style="font-size:10px;"></i></button>
-          </div>
+    const sc = shopColor(g.shopId);
+    return `<div class="pc-row${allRepaid?' pc-settled':''}" onclick="pcRowClick(this,'loan','${escJsAttr(g.from)}','${g.shopId}')">
+      <div class="pc-avatar" style="background:linear-gradient(135deg,${sc},${sc}88);box-shadow:0 2px 8px ${sc}33;">${pcInitials(g.from)}</div>
+      <div class="pc-main">
+        <div class="pc-name">${escHtml(g.from)}</div>
+        <div class="pc-badges">
+          <span class="badge" style="background:${sc}22;color:${sc};border:1px solid ${sc}44;">${g.shopId==='GENERAL'?'General':shopName(g.shopId)}</span>
+          ${g.entries[0].mode === 'GPay' ?
+            `<span class="badge badge-blue"><i class="fa-solid fa-mobile-screen" style="margin-right:3px;font-size:8px;"></i>GPay</span>` :
+            `<span class="badge badge-purple"><i class="fa-solid fa-house" style="margin-right:3px;font-size:8px;"></i>Home</span>`
+          }
+          ${allRepaid?`<span class="badge badge-green">Repaid</span>`:`<span class="badge badge-red">Pending</span>`}
+          <span class="badge badge-gray pc-badge-extra">${g.entries.length} entr${g.entries.length===1?'y':'ies'}</span>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;background:var(--panel2);border-radius:7px;padding:9px 11px;margin-bottom:8px;">
-        <div class="rec-cell"><div class="k">Total</div><div class="v">${fmt(g.amount)}</div></div>
-        <div class="rec-cell"><div class="k">Repaid</div><div class="v" style="color:var(--good);">${fmt(g.repaid)}</div></div>
-        <div class="rec-cell"><div class="k">Pending</div><div class="v" style="color:${pending>0?'var(--bad)':'var(--good)'};">${fmt(pending)}</div></div>
+      <div class="pc-stat"><div class="k">Total</div><div class="v">${fmt(g.amount)}</div></div>
+      <div class="pc-stat"><div class="k">Pending</div><div class="v" style="color:${pending>0?'var(--bad)':'var(--good)'};">${fmt(pending)}</div></div>
+      <i class="fa-solid fa-chevron-down pc-chevron"></i>
+      <div class="pc-progress">
+        <div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:${allRepaid?'var(--good)':'var(--bad)'};"></div></div>
+        <span>${pct}% repaid</span>
       </div>
-      <div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:${allRepaid?'var(--good)':'var(--bad)'};"></div></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
-        <span class="meta-info" style="font-size:11px;color:var(--muted);"><i class="fa-solid fa-clock"></i> ${g.entries.length} transaction${g.entries.length===1?'':'s'}</span>
-        <span class="meta-info" style="font-size:11px;color:var(--muted);"><i class="fa-solid fa-calendar"></i> ${fmtDate(g.entries[0].date)}</span>
-        ${!allRepaid?`<button class="btn btn-good btn-sm" onclick="event.stopPropagation();openRepayLoanGroup('${escJsAttr(g.from)}','${g.shopId}')">Repay</button>`:''}
+      <div class="pc-actions">
+        ${!allRepaid?`<button class="btn btn-good btn-sm" style="flex:2;" onclick="event.stopPropagation();openRepayLoanGroup('${escJsAttr(g.from)}','${g.shopId}')">Repay</button>`:''}
+        <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="event.stopPropagation();openPersonHistory('loan','${escJsAttr(g.from)}','${g.shopId}')" title="View transactions"><i class="fa-solid fa-list-ul" style="font-size:10px;margin-right:4px;"></i>View</button>
+        <button class="btn btn-ghost btn-sm" style="padding:4px 6px;flex:0 0 auto;" onclick="event.stopPropagation();openEditLoan('${g.entries[0].id}')" title="Edit"><i class="fa-solid fa-pen" style="font-size:10px;"></i></button>
+        <button class="btn btn-bad btn-sm" style="padding:4px 6px;flex:0 0 auto;" onclick="event.stopPropagation();deleteLoan('${g.entries[0].id}')" title="Delete"><i class="fa-solid fa-trash" style="font-size:10px;"></i></button>
       </div>
     </div>`;
-  }).join(''):`<div class="empty" style="grid-column:1/-1;"><div class="empty-icon"><i class="fa-solid fa-piggy-bank"></i></div>No loans — all money is yours </div>`;
+  }).join(''):`<div class="empty"><div class="empty-icon"><i class="fa-solid fa-piggy-bank"></i></div>No loans — all money is yours </div>`;
 }
 
+function openAddLoanForPerson(name, shopId) {
+  $('al-from').value = name || '';
+  $('al-amt').value = '';
+  $('al-purpose').value = '';
+  $('al-date').value = todayStr();
+  chipPick('al-shop', shopId || 'SHOP01');
+  chipPick('al-mode', 'Cash');
+  openModal('modal-add-loan');
+  const btn = document.querySelector('#modal-add-loan .btn-primary');
+  if (btn) { btn.textContent = 'Add Loan'; btn.onclick = () => saveLoan(); }
+}
 function saveLoan() {
   const from=$('al-from').value.trim(), shop=chipValue('al-shop');
   const amt=parseFloat($('al-amt').value)||0, purpose=$('al-purpose').value.trim(), date=$('al-date').value;
@@ -4601,7 +5024,7 @@ function saveRepayLoan() {
     const toApply = Math.min(remaining, pendingForEntry);
     entry.repaid += toApply;
     if(!entry.repayments) entry.repayments=[];
-    entry.repayments.push({date:repayDate,amount:toApply,mode});
+    entry.repayments.push({id:newId('RP'),date:repayDate,amount:toApply,mode});
     if(entry.repaid>=entry.amount) entry.status='Repaid';
     remaining -= toApply;
   });
@@ -4744,6 +5167,38 @@ function deleteLoan(lid) {
   }
 }
 
+function deleteLoanRepayment(parentId, logId) {
+  const l = STATE.loans.find(x => x.id === parentId);
+  if (!l || !l.repayments) return;
+  const logIdx = l.repayments.findIndex(r => r.id === logId);
+  if (logIdx < 0) return;
+  const logEntry = l.repayments[logIdx];
+  showConfirm({
+    title: 'Delete Repayment?',
+    msg: `Delete repayment of <strong>${fmt(logEntry.amount)}</strong> to <strong>${escHtml(l.from)}</strong>?`,
+    icon: '!', yesText: 'Delete', yesCls: 'btn-bad',
+    onYes: () => {
+      // Reverse the fund effect
+      if (l.shopId !== 'GENERAL') {
+        const sh = STATE.shops.find(s => s.id === l.shopId);
+        if (sh) {
+          if (logEntry.mode === 'GPay') {
+            sh.online = (sh.online || 0) + logEntry.amount;
+          } else {
+            sh.homeTransfer = (sh.homeTransfer || 0) - logEntry.amount;
+          }
+        }
+      }
+      l.repayments.splice(logIdx, 1);
+      l.repaid = Math.max(0, (l.repaid || 0) - logEntry.amount);
+      if (l.repaid < l.amount) l.status = 'Pending';
+      auditLog('DELETE_LOAN_REPAYMENT', `Deleted repayment ${fmt(logEntry.amount)} to ${l.from}`);
+      saveStateLocal(); renderLoans(); updateBadges(); renderDashboard();
+      toast('Repayment deleted', 'info');
+    }
+  });
+}
+
 function openPersonHistory(type, personName, shopId) {
   // Remove any existing history modal first
   const existingModal = $('modal-person-history');
@@ -4770,19 +5225,19 @@ function openPersonHistory(type, personName, shopId) {
         amount: l.amount,
         balance: 0,
         note: l.purpose || 'Loan taken',
-        id: l.id
+        id: l.id, recordId: l.id, isParent: true
       });
       totalGiven += l.amount || 0;
       
-      if (l.repayments) {
+      if (l.repayments && l.repayments.length) {
         l.repayments.forEach(r => {
           entries.push({
             date: r.date,
             type: 'Repaid',
             amount: -r.amount,
             balance: 0,
-            note: 'Repayment',
-            id: l.id
+            note: `Repayment (${r.mode||'Cash'})`,
+            id: r.id || l.id, recordId: l.id, isParent: !r.id
           });
           totalReceived += r.amount || 0;
         });
@@ -4801,18 +5256,31 @@ function openPersonHistory(type, personName, shopId) {
         amount: u.totalBill,
         balance: 0,
         note: u.note || 'Market credit',
-        id: u.id
+        id: u.id, recordId: u.id, isParent: true
       });
       totalGiven += u.totalBill || 0;
       
-      if (u.received > 0) {
+      if (u.collectionLog && u.collectionLog.length) {
+        u.collectionLog.forEach(p => {
+          entries.push({
+            date: p.date || u.date,
+            type: 'Payment Received',
+            amount: -p.amount,
+            balance: 0,
+            note: `Payment collected (${p.mode||'Cash'})`,
+            id: p.id, recordId: u.id, isParent: false
+          });
+          totalReceived += p.amount || 0;
+        });
+      } else if (u.received > 0) {
+        // Legacy records saved before itemized payment logging existed
         entries.push({
           date: u.date,
           type: 'Payment Received',
           amount: -u.received,
           balance: 0,
           note: 'Payment collected',
-          id: u.id
+          id: u.id, recordId: u.id, isParent: true
         });
         totalReceived += u.received || 0;
       }
@@ -4830,18 +5298,31 @@ function openPersonHistory(type, personName, shopId) {
         amount: o.amount,
         balance: 0,
         note: o.category || 'Outflow',
-        id: o.id
+        id: o.id, recordId: o.id, isParent: true
       });
       totalGiven += o.amount || 0;
       
-      if (o.paid > 0) {
+      if (o.paymentLog && o.paymentLog.length) {
+        o.paymentLog.forEach(p => {
+          entries.push({
+            date: p.date || o.entryDate || o.dueDate,
+            type: 'Payment Made',
+            amount: -p.amount,
+            balance: 0,
+            note: `Paid via ${p.mode||'Cash'}`,
+            id: p.id, recordId: o.id, isParent: false
+          });
+          totalReceived += p.amount || 0;
+        });
+      } else if (o.paid > 0) {
+        // Legacy records saved before itemized payment logging existed
         entries.push({
           date: o.entryDate || o.dueDate,
           type: 'Payment Made',
           amount: -o.paid,
           balance: 0,
           note: 'Bill paid',
-          id: o.id
+          id: o.id, recordId: o.id, isParent: true
         });
         totalReceived += o.paid || 0;
       }
@@ -4860,74 +5341,98 @@ function openPersonHistory(type, personName, shopId) {
   
   const currentBalance = totalGiven - totalReceived;
   const allSettled = currentBalance === 0;
-  
-  // Determine action button based on type
-  let actionButton = '';
-  // Map type to edit/delete function names for row-level actions
+
+  // Map to edit/delete functions for row-level actions
   const editFn = type === 'loan' ? 'openEditLoan' : type === 'udhaari' ? 'openEditUdhaari' : 'openEditOutflow';
   const deleteFn = type === 'loan' ? 'deleteLoan' : type === 'udhaari' ? 'deleteUdhaari' : 'deleteOutflow';
-  if (type === 'loan' && !allSettled) {
-    actionButton = `<button class="btn btn-good" onclick="closeModal('modal-person-history');openRepayLoanGroup('${safeAttr}','${shopId}')"><i class="fa-solid fa-money-bill-wave"></i> Repay Loan</button>`;
-  } else if (type === 'udhaari' && !allSettled) {
-    actionButton = `<button class="btn btn-good" onclick="closeModal('modal-person-history');openCollectGroup('${safeAttr}','${shopId}')"><i class="fa-solid fa-hand-holding-dollar"></i> Collect Payment</button>`;
-  } else if (type === 'outflow' && !allSettled) {
-    actionButton = `<button class="btn btn-warn" onclick="closeModal('modal-person-history');openPayOutflowGroup('${safeAttr}','${shopId}')"><i class="fa-solid fa-money-check"></i> Pay Bill</button>`;
-  }
-  
+  const subDeleteFn = type === 'loan' ? 'deleteLoanRepayment' : type === 'udhaari' ? 'deleteUdhaariPayment' : 'deleteOutflowPayment';
+
+  // Per-type ledger config: labels + colors + which action grows/shrinks the balance
+  const LEDGER_CFG = {
+    udhaari: {
+      heroLabel: currentBalance >= 0 ? 'You will get' : 'You owe',
+      giveLabel: 'You gave', getLabel: 'You got',
+      giveTypes: ['Credit Given'],
+      giveAction: `openAddUdhaariForCustomer('${safeAttr}','${shopId}')`,
+      getAction: `openCollectGroup('${safeAttr}','${shopId}')`,
+      icon: 'fa-user'
+    },
+    loan: {
+      heroLabel: currentBalance >= 0 ? 'You owe' : 'They owe you',
+      giveLabel: 'You repaid', getLabel: 'You took',
+      giveTypes: ['Repaid'],
+      giveAction: `openRepayLoanGroup('${safeAttr}','${shopId}')`,
+      getAction: `openAddLoanForPerson('${safeAttr}','${shopId}')`,
+      icon: 'fa-hand-holding-dollar'
+    },
+    outflow: {
+      heroLabel: currentBalance >= 0 ? 'You owe' : 'Settled',
+      giveLabel: 'You paid', getLabel: 'Bill added',
+      giveTypes: ['Payment Made'],
+      giveAction: `openPayOutflowGroup('${safeAttr}','${shopId}')`,
+      getAction: `openAddOutflowForPayee('${safeAttr}','${shopId}')`,
+      icon: 'fa-receipt'
+    }
+  };
+  const cfg = LEDGER_CFG[type];
+  // Which column ("give" or "get") an entry belongs to is decided by its explicit type string,
+  // not by the sign of its amount — sign convention differs between udhaari/loan/outflow.
+
+  // Group entries by date for the ledger view
+  let lastDateKey = null;
+  const rowsHtml = entries.map(e => {
+    const dateKey = e.date || '';
+    const dateHeader = dateKey !== lastDateKey
+      ? `<div style="text-align:center;color:var(--muted);font-size:10px;font-weight:600;letter-spacing:0.04em;margin:12px 0 6px;text-transform:uppercase;">${fmtDate(e.date)}</div>`
+      : '';
+    lastDateKey = dateKey;
+    const isGive = cfg.giveTypes.includes(e.type);
+    return `${dateHeader}<div style="display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px solid var(--line);">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12.5px;color:var(--jtext);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(e.note)}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;">Bal ${fmt(Math.abs(e.balance))}</div>
+      </div>
+      <div style="width:64px;text-align:right;font-size:12.5px;font-weight:700;color:var(--bad);">${isGive?fmt(Math.abs(e.amount)):''}</div>
+      <div style="width:64px;text-align:right;font-size:12.5px;font-weight:700;color:var(--good);">${!isGive?fmt(Math.abs(e.amount)):''}</div>
+      <div style="display:flex;gap:3px;flex-shrink:0;">
+        ${e.isParent ? `<button class="btn btn-ghost btn-xs" style="padding:3px 6px;" onclick="closeModal('modal-person-history');${editFn}('${e.id}')" title="Edit"><i class="fa-solid fa-pen" style="font-size:9px;"></i></button>` : `<button class="btn btn-ghost btn-xs" style="padding:3px 6px;opacity:0.3;cursor:not-allowed;" title="Edit not available for sub-entries" disabled><i class="fa-solid fa-pen" style="font-size:9px;"></i></button>`}
+        <button class="btn btn-bad btn-xs" style="padding:3px 6px;" onclick="closeModal('modal-person-history');${e.isParent ? `${deleteFn}('${e.id}')` : `${subDeleteFn}('${e.recordId}','${e.id}')`}" title="Delete"><i class="fa-solid fa-trash" style="font-size:9px;"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+
   // Create modal
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
   modal.id = 'modal-person-history';
   modal.onclick = (e) => { if (e.target === modal) closeModal('modal-person-history'); };
-  
+
   modal.innerHTML = `
-    <div class="modal-box" style="max-width:700px;">
-      <div class="modal-title">${title} <button class="modal-close" onclick="closeModal('modal-person-history')">×</button></div>
-      <div style="max-height:400px;overflow-y:auto;">
-        <table style="width:100%;border-collapse:collapse;font-size:12px;">
-          <thead>
-            <tr style="background:var(--panel2);position:sticky;top:0;">
-              <th style="padding:10px;text-align:left;border-bottom:2px solid var(--line);">Date</th>
-              <th style="padding:10px;text-align:left;border-bottom:2px solid var(--line);">Type</th>
-              <th style="padding:10px;text-align:right;border-bottom:2px solid var(--line);">Amount</th>
-              <th style="padding:10px;text-align:right;border-bottom:2px solid var(--line);">Balance</th>
-              <th style="padding:10px;text-align:left;border-bottom:2px solid var(--line);">Note</th>
-              <th style="padding:10px;text-align:center;border-bottom:2px solid var(--line);">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${entries.map(e => `
-              <tr style="border-bottom:1px solid var(--line);">
-                <td style="padding:10px;">${fmtDate(e.date)}</td>
-                <td style="padding:10px;"><span class="badge ${e.amount>0?'badge-red':'badge-green'}">${e.type}</span></td>
-                <td style="padding:10px;text-align:right;color:${e.amount>0?'var(--good)':'var(--bad)'};">${fmt(Math.abs(e.amount))}</td>
-                <td style="padding:10px;text-align:right;font-weight:600;">${fmt(Math.abs(e.balance))}</td>
-                <td style="padding:10px;color:var(--muted);">${escHtml(e.note)}</td>
-                <td style="padding:10px;text-align:center;white-space:nowrap;">
-                  <button class="btn btn-ghost btn-xs" style="padding:3px 6px;" onclick="closeModal('modal-person-history');${editFn}('${e.id}')" title="Edit"><i class="fa-solid fa-pen" style="font-size:9px;"></i></button>
-                  <button class="btn btn-bad btn-xs" style="padding:3px 6px;" onclick="closeModal('modal-person-history');${deleteFn}('${e.id}')" title="Delete"><i class="fa-solid fa-trash" style="font-size:9px;"></i></button>
-                </td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-      <div style="margin-top:16px;padding:12px;background:var(--panel2);border-radius:8px;">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
-          <div>
-            <div style="font-size:11px;color:var(--muted);">Total Given</div>
-            <div style="font-size:16px;font-weight:700;color:var(--good);">${fmt(totalGiven)}</div>
-          </div>
-          <div>
-            <div style="font-size:11px;color:var(--muted);">Total Received</div>
-            <div style="font-size:16px;font-weight:700;color:var(--bad);">${fmt(totalReceived)}</div>
-          </div>
-          <div>
-            <div style="font-size:11px;color:var(--muted);">Current Balance</div>
-            <div style="font-size:16px;font-weight:700;color:${currentBalance>0?'var(--bad)':'var(--good)'};">${fmt(currentBalance)}</div>
-          </div>
+    <div class="modal-box" style="max-width:420px;padding:0;overflow:hidden;">
+      <div style="background:linear-gradient(135deg,var(--accent),var(--accent2));padding:16px 18px;position:relative;">
+        <button class="modal-close" style="position:absolute;top:8px;right:10px;color:#fff;" onclick="closeModal('modal-person-history')">×</button>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <i class="fa-solid ${cfg.icon}" style="color:rgba(255,255,255,0.85);font-size:13px;"></i>
+          <div style="color:#fff;font-size:15px;font-weight:700;">${safeName}</div>
         </div>
-        ${actionButton ? `<div style="text-align:center;">${actionButton}</div>` : ''}
+        <div style="color:rgba(255,255,255,0.75);font-size:11px;margin-top:2px;margin-left:21px;">${type==='loan'&&shopId==='GENERAL'?'General':shopName(shopId)}</div>
+        <div style="margin-top:14px;">
+          <div style="color:rgba(255,255,255,0.75);font-size:10px;text-transform:uppercase;letter-spacing:0.05em;">${cfg.heroLabel}</div>
+          <div style="color:#fff;font-size:24px;font-weight:800;">${fmt(Math.abs(currentBalance))}</div>
+        </div>
+      </div>
+      <div style="display:flex;padding:8px 14px 2px;font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;">
+        <div style="flex:1;">Entries</div>
+        <div style="width:64px;text-align:right;">${cfg.giveLabel}</div>
+        <div style="width:64px;text-align:right;">${cfg.getLabel}</div>
+        <div style="width:52px;"></div>
+      </div>
+      <div style="max-height:360px;overflow-y:auto;padding:0 14px;">
+        ${rowsHtml || `<div class="empty" style="padding:24px 0;"><div class="empty-icon"><i class="fa-solid fa-inbox"></i></div>No entries yet</div>`}
+      </div>
+      <div style="display:flex;border-top:1px solid var(--line);">
+        <button style="flex:1;background:none;border:none;border-right:1px solid var(--line);padding:14px;color:var(--bad);font-weight:700;font-size:12.5px;cursor:pointer;" onclick="closeModal('modal-person-history');${cfg.giveAction}">${cfg.giveLabel.toUpperCase()} ₹</button>
+        <button style="flex:1;background:none;border:none;padding:14px;color:var(--good);font-weight:700;font-size:12.5px;cursor:pointer;" onclick="closeModal('modal-person-history');${cfg.getAction}">${cfg.getLabel.toUpperCase()} ₹</button>
       </div>
     </div>
   `;
@@ -5538,7 +6043,7 @@ function exportPdfReport() {
   doc.setTextColor(255, 255, 255);
   doc.text('NET POSITION', margin + 4, y + 5);
   doc.setFontSize(14);
-  doc.text(pdfFmt(netPos), margin + 4, y + 11);
+  doc.text(pdfFmtSigned(netPos), margin + 4, y + 11);
   
   // Right side stats in the box
   const boxStats = [
@@ -5977,119 +6482,45 @@ function buildDailySummary() {
   const persDrain = personalWalletDrain();
   const personalWallet = Math.max(0, totHc - persDrain);
   const confirmedSavings = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.desc && e.desc.startsWith('Savings (40%')).reduce((s, e) => s + (e.amount || 0), 0);
+  const cashSavingsToday = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.date === today && e.desc && e.desc.startsWith('Savings (40%') && e.source === 'HOME').reduce((s, e) => s + (e.amount || 0), 0);
+  const bankSavingsToday = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.date === today && e.desc && e.desc.startsWith('Savings (40%') && e.source === 'GP').reduce((s, e) => s + (e.amount || 0), 0);
   const netPos = personalWallet + totalOnlineGross + totalUd - totalLiab - pendLoanAmt + confirmedSavings;
 
-  const todayDCs = STATE.dayClose.filter(r => r.date===today && !r.deleted);
-  const totalSale = todayDCs.reduce((s,r)=>s+(r.sale||0),0);
-  const totalProfit = todayDCs.reduce((s,r)=>s+(r.profit||0),0);
-  const totalCashHome = todayDCs.reduce((s,r)=>s+(r.cashHome||0),0);
-  const totalCounter = todayDCs.reduce((s,r)=>s+(r.counterCash||0),0);
-  const totalGpay = todayDCs.reduce((s,r)=>s+(r.gpay||0),0);
-  const totalCounterExp = todayDCs.reduce((s,r)=>s+(r.expense||0),0);
-  const totalPrevCounter = todayDCs.reduce((s,r)=>s+(r.prevCounter||0),0);
+  const nf = n => { const v = parseFloat(n)||0; return (v<0?'-':'') + '₹' + Math.abs(v).toLocaleString('en-IN'); };
 
-  const nf = n => '₹' + (parseFloat(n)||0).toLocaleString('en-IN');
+  let msg = `*JMD Traders — Daily Summary*\n`;
+  msg += `*_${todayFmt}_*\n\n`;
 
-  const remDueToday = (STATE.reminders||[]).filter(r => daysUntil(r.dueDate) <= 0);
-  const remDue7 = (STATE.reminders||[]).filter(r => { const d = daysUntil(r.dueDate); return d > 0 && d <= 7; });
-  const overdueBills = STATE.outflows.filter(o => o.status==='Pending' && o.dueDate && o.dueDate < today).length;
-
-  let msg = `*JMD Traders — Daily Summary*
-${todayFmt}
-
-`;
-
-  msg += `*TODAY'S COUNTER-WISE DAY CLOSE*
-`;
-  if (todayDCs.length) {
-    todayDCs.forEach((r, idx) => {
-      msg += `${idx + 1}. ${r.shopName||shopName(r.shopId)}
-`;
-      msg += `   Cash taken home: ${nf(r.cashHome)}
-`;
-      msg += `   Counter cash kept: ${nf(r.counterCash)}
-`;
-      msg += `   GPay / Online: ${nf(r.gpay)}
-`;
-      msg += `   Counter expenses: ${nf(r.expense)}
-`;
-      msg += `   Previous counter cash: ${nf(r.prevCounter)}
-`;
-      msg += `   Sale: ${nf(r.sale)}
-`;
-      msg += `   Profit: ${nf(r.profit||0)}
-`;
-      if (r.note) msg += `   Note: ${r.note}
-`;
-      msg += `
-`;
-    });
-    msg += `*Day Close Totals*
-`;
-    msg += `Cash taken home: ${nf(totalCashHome)}
-`;
-    msg += `Counter cash kept: ${nf(totalCounter)}
-`;
-    msg += `GPay / Online: ${nf(totalGpay)}
-`;
-    msg += `Counter expenses: ${nf(totalCounterExp)}
-`;
-    msg += `Previous counter cash: ${nf(totalPrevCounter)}
-`;
-    msg += `Total sale: *${nf(totalSale)}*
-`;
-    msg += `Total profit: *${nf(totalProfit)}*
-
-`;
-  } else {
-    msg += `No day close has been submitted today.
-
-`;
-  }
-
-  msg += `*CURRENT FINANCIAL POSITION*
-`;
-  msg += `Personal wallet: ${nf(personalWallet)}
-`;
-  msg += `GPay / Online: ${nf(totalOnline)}
-`;
-  msg += `Market credit due: ${nf(totalUd)}
-`;
-  msg += `Bills pending: ${nf(totalLiab)}
-`;
-  msg += `Loans pending: ${nf(pendLoanAmt)}
-`;
-  msg += `Counter cash working capital: ${nf(totalGalla)}
-`;
-  msg += `Net position: *${nf(netPos)}*
-
-`;
-
-  if (remDueToday.length || remDue7.length || overdueBills) {
-    msg += `*ALERTS*
-`;
-    if (remDueToday.length) msg += `Payments due today/overdue: ${remDueToday.length}
-`;
-    if (remDue7.length)     msg += `Due in next 7 days: ${remDue7.length}
-`;
-    if (overdueBills)       msg += `Overdue bills: ${overdueBills}
-`;
-    if (remDueToday.length) {
-      msg += `
-Urgent payments:
-`;
-      remDueToday.slice(0,5).forEach(r => {
-        const du = daysUntil(r.dueDate);
-        const label = du===0 ? 'due today' : `${Math.abs(du)} days overdue`;
-        msg += `- ${r.name} — ${nf(r.amount)} (${label})
-`;
-      });
+  msg += `*TODAY'S COUNTER-WISE DAY CLOSE*\n`;
+  
+  // Show all shops, even those with no entries
+  STATE.shops.forEach(sh => {
+    const dc = STATE.dayClose.find(r => r.shopId === sh.id && r.date === today && !r.deleted);
+    msg += `> *${sh.name}*\n`;
+    if (dc) {
+      msg += `- Cash taken home: ${nf(dc.cashHome)}\n`;
+      msg += `- Counter cash kept: ${nf(dc.counterCash)}\n`;
+      msg += `- GPay / Online: ${nf(dc.gpay)}\n`;
+      msg += `- Counter expenses: ${nf(dc.expense)}\n`;
+      const profit = dc.profit != null ? dc.profit : Math.round((dc.sale||0)*(sh.profitPct||40)/100);
+      msg += `- Sale: ${nf(dc.sale)}   ||   Profit: ${nf(profit)}\n`;
+    } else {
+      msg += `_No Entries_\n`;
     }
-    msg += `
-`;
-  }
+    msg += `\n`;
+  });
 
-  msg += `Sent from JMD Traders Command Center`;
+  msg += `━━━━━━━━━━━━━━━\n`;
+  msg += `*CURRENT FINANCIAL POSITION*\n`;
+  msg += `* Personal wallet: ${nf(personalWallet)}\n`;
+  msg += `* GPay / Online: ${nf(totalOnline)}\n\n`;
+  msg += `* Market credit due: ${nf(totalUd)}\n`;
+  msg += `* Bills pending: ${nf(totalLiab)}\n`;
+  msg += `- Loans pending: ${nf(pendLoanAmt)}\n\n`;
+  msg += `Net position: *${nf(netPos)}*\n`;
+  msg += `> Savings (40%) - C: ${nf(cashSavingsToday)}  || B: ${nf(bankSavingsToday)}\n`;
+  msg += `-----------------\n`;
+  msg += `_Sent from JMD Traders Software_`;
   return msg;
 }
 
@@ -6098,7 +6529,7 @@ function buildShopDailySummary(shopId, dateStr) {
   const sh = STATE.shops.find(s => s.id === shopId);
   if (!sh) return '';
   const d = dateStr || todayStr();
-  const nf = n => 'Rs ' + (parseFloat(n)||0).toLocaleString('en-IN');
+  const nf = n => { const v = parseFloat(n)||0; return (v<0?'-':'') + 'Rs ' + Math.abs(v).toLocaleString('en-IN'); };
   const dc = STATE.dayClose.find(r => r.shopId===shopId && r.date===d && !r.deleted);
   const items = STATE.dailyExpenses.filter(e => e.shopId===shopId && e.date===d && !e.deleted);
   const udhaariNew = STATE.udhaari.filter(u => u.shopId===shopId && u.date===d);
@@ -6111,92 +6542,91 @@ function buildShopDailySummary(shopId, dateStr) {
   m += `━━━━━━━━━━━━━━━\n`;
 
   if (dc) {
-    m += `💰 *Day Close*\n`;
-    m += `Sale: ${nf(dc.sale)}\n`;
-    m += `Profit: ${nf(dc.profit != null ? dc.profit : Math.round((dc.sale||0)*(sh.profitPct||40)/100))}\n`;
-    m += `Cash Home: ${nf(dc.cashHome)}\n`;
-    m += `Counter: ${nf(dc.counterCash)}\n`;
-    m += `GPay: ${nf(dc.gpay)}\n`;
+    m += `*Day Close*\n`;
+    m += `Sale : ${nf(dc.sale)}\n`;
+    m += `Profit : ${nf(dc.profit != null ? dc.profit : Math.round((dc.sale||0)*(sh.profitPct||40)/100))}\n\n`;
+    m += `Cash Home : ${nf(dc.cashHome)}\n`;
+    m += `Counter : ${nf(dc.counterCash)}\n`;
+    m += `GPay : ${nf(dc.gpay)}\n\n`;
     m += `Expenses: ${nf(dc.expense)}\n`;
     if (dc.note) m += `Note: ${dc.note}\n`;
   } else {
-    m += `⚠️ Day Close pending\n`;
+    m += `Day Close pending\n`;
   }
 
+  // {DETAILS} section
+  let details = '';
   if (items.length) {
-    m += `\n🧾 *Expenses (${items.length})*\n`;
-    items.forEach(e => m += `• ${e.desc} — ${nf(e.amount)} (${DE_SOURCE_LABEL[e.source]})\n`);
+    details += `\n*Expenses (${items.length})*\n`;
+    items.forEach(e => details += `• ${e.desc} — ${nf(e.amount)} (${DE_SOURCE_LABEL[e.source]||e.source})\n`);
   }
 
   if (udhaariNew.length) {
-    m += `\n📒 *Nayi Udhaari*\n`;
-    udhaariNew.forEach(u => m += `• ${u.customer}: ${nf(u.totalBill)}\n`);
+    details += `\n*Nayi Udhaari*\n`;
+    udhaariNew.forEach(u => details += `• ${u.customer}: ${nf(u.totalBill)}\n`);
   }
 
   if (outNew.length) {
-    m += `\n📤 *Outflows*\n`;
-    outNew.forEach(o => m += `• ${o.payee} (${o.category}): ${nf(o.amount)}\n`);
+    details += `\n*Outflows*\n`;
+    outNew.forEach(o => details += `• ${o.payee} (${o.category}): ${nf(o.amount)}\n`);
   }
 
   if (loanNew.length) {
-    m += `\n🏦 *Loans*\n`;
-    loanNew.forEach(l => m += `• ${l.from}: ${nf(l.amount)} — ${l.purpose||''}\n`);
+    details += `\n*Loans*\n`;
+    loanNew.forEach(l => details += `• ${l.from}: ${nf(l.amount)} — ${l.purpose||''}\n`);
   }
 
   if (isNew.length) {
-    m += `\n🔄 *Inter-shop*\n`;
-    isNew.forEach(i => m += `• ${shopName(i.fromShop)} → ${shopName(i.toShop)}: ${nf(i.amount)}\n`);
+    details += `\n*Inter-shop*\n`;
+    isNew.forEach(i => details += `• ${shopName(i.fromShop)} → ${shopName(i.toShop)}: ${nf(i.amount)}\n`);
   }
 
   if (remPending.length) {
-    m += `\n⏰ *Pending Reminders*\n`;
+    details += `\n*Pending Reminders*\n`;
     remPending.slice(0, 3).forEach(r => {
       const du = daysUntil(r.dueDate);
       const label = du === 0 ? 'due today' : du < 0 ? `${Math.abs(du)}d overdue` : `in ${du}d`;
-      m += `• ${r.name} — ${nf(r.amount)} (${label})\n`;
+      details += `• ${r.name} — ${nf(r.amount)} (${label})\n`;
     });
   }
 
-  m += `\n_Sent from JMD Traders_`;
+  m += details;
+  m += `━━━━━━━━━━━━━\n`;
+  m += `_Sent from JMD Traders Software_`;
   return m.trim();
 }
 
-function sendShopWaSummary(shopId) {
-  const msg = buildShopDailySummary(shopId);
+function sendShopWaSummary(shopId, dateStr) {
+  const msg = buildShopDailySummary(shopId, dateStr);
   const phone = ($('wa-phone').value||'').replace(/[^0-9]/g,'');
   const encoded = encodeURIComponent(msg);
   const url = phone ? `https://wa.me/91${phone}?text=${encoded}` : `https://wa.me/?text=${encoded}`;
   window.open(url, '_blank');
+  closeModal('modal-wa-share');
+  toast('WhatsApp opened', 'success');
 }
 
-function sendAllShopsWaSummary() {
+function sendAllShopsWaSummary(dateStr) {
   const phone = ($('wa-phone').value||'').replace(/[^0-9]/g,'');
   STATE.shops.forEach((sh, i) => {
     setTimeout(() => {
-      const msg = buildShopDailySummary(sh.id);
+      const msg = buildShopDailySummary(sh.id, dateStr);
       const encoded = encodeURIComponent(msg);
       const url = phone ? `https://wa.me/91${phone}?text=${encoded}` : `https://wa.me/?text=${encoded}`;
       window.open(url, '_blank');
     }, i * 1500);
   });
+  closeModal('modal-wa-share');
+  toast('Opening WhatsApp for all shops...', 'success');
 }
 
 function openWaShareModal() {
-  const msg = buildDailySummary();
-  $('wa-msg').value = msg;
-
-  // Build per-shop summary buttons
-  const shopBtnsEl = $('wa-shop-btns');
-  if (shopBtnsEl) {
-    shopBtnsEl.innerHTML = STATE.shops.map(sh =>
-      `<button class="btn btn-ghost btn-xs" style="display:inline-flex;align-items:center;gap:5px;border-left:3px solid ${shopColor(sh.id)};" onclick="sendShopWaSummary('${sh.id}')">
-        <i class="fa-brands fa-whatsapp" style="color:#25D366;"></i> ${sh.name}
-      </button>`
-    ).join('') + `<button class="btn btn-good btn-xs" style="display:inline-flex;align-items:center;gap:5px;" onclick="sendAllShopsWaSummary()">
-        <i class="fa-brands fa-whatsapp"></i> Send All (separate)
-      </button>`;
-  }
-
+  // Set date picker to today
+  $('wa-date').value = todayStr();
+  
+  // Build shop buttons
+  refreshWaShopButtons();
+  
   // Populate saved contacts
   const chipWrap = $('wa-contacts-chips');
   const contacts = STATE.waContacts || [];
@@ -6213,6 +6643,23 @@ function openWaShareModal() {
   }
   $('wa-phone').value = '';
   openModal('modal-wa-share');
+}
+
+function refreshWaShopButtons() {
+  const date = $('wa-date').value || todayStr();
+  const shopBtnsEl = $('wa-shop-btns');
+  if (shopBtnsEl) {
+    shopBtnsEl.innerHTML = STATE.shops.map(sh =>
+      `<button class="btn btn-ghost" style="display:flex;align-items:center;gap:8px;border-left:3px solid ${shopColor(sh.id)};padding:10px 14px;" onclick="sendShopWaSummary('${sh.id}','${date}')">
+        <i class="fa-brands fa-whatsapp" style="color:#25D366;font-size:16px;"></i>
+        <span style="flex:1;text-align:left;font-weight:600;">${sh.name}</span>
+        <i class="fa-solid fa-chevron-right" style="font-size:10px;color:var(--muted);"></i>
+      </button>`
+    ).join('') + `<button class="btn btn-good" style="display:flex;align-items:center;gap:8px;padding:12px 14px;margin-top:4px;background:#25D366;border-color:#1ea952;color:#fff;" onclick="sendAllShopsWaSummary('${date}')">
+        <i class="fa-brands fa-whatsapp" style="font-size:16px;"></i>
+        <span style="flex:1;text-align:left;font-weight:700;">Send All Shops</span>
+      </button>`;
+  }
 }
 
 function pickWaContact(phone) { $('wa-phone').value = localPhoneDigits(phone); }
@@ -6245,35 +6692,6 @@ function removeWaContact(idx) {
       openWaShareModal();
     }
   });
-}
-
-function copyWaMessage() {
-  const txt = $('wa-msg').value;
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(txt).then(
-      () => toast('Message copied — paste anywhere', 'success'),
-      () => fallbackCopy(txt)
-    );
-  } else fallbackCopy(txt);
-}
-function fallbackCopy(txt) {
-  const ta = document.createElement('textarea');
-  ta.value = txt; document.body.appendChild(ta); ta.select();
-  try { document.execCommand('copy'); toast('Message copied', 'success'); }
-  catch(e){ toast('Copy failed — please copy manually', 'error'); }
-  ta.remove();
-}
-
-function sendWhatsapp() {
-  const msg   = $('wa-msg').value;
-  const local = localPhoneDigits($('wa-phone').value||'');
-  const phone = local ? normalizePhone(local) : '';
-  if (local && !phone) { toast('Enter a valid 10-digit phone number', 'error'); return; }
-  const encoded = encodeURIComponent(msg);
-  const url = phone ? `https://wa.me/${phone}?text=${encoded}` : `https://wa.me/?text=${encoded}`;
-  window.open(url, '_blank');
-  closeModal('modal-wa-share');
-  toast('WhatsApp opened. Select the recipient and send.', 'success');
 }
 
 // ─── Home Expenses Donut Chart ────────────────────────────────
@@ -6892,6 +7310,7 @@ function installPWA() {
   });
 }
 </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
