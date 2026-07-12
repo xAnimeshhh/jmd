@@ -681,8 +681,9 @@ select.csel-native { position: absolute; width: 1px; height: 1px; padding: 0; ma
   background: linear-gradient(135deg, #fff, #c4b5fd);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
-.nw-breakdown { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 16px; }
-@media(max-width:640px){ .nw-breakdown { grid-template-columns: repeat(2,1fr); } }
+.nw-breakdown { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 16px; }
+@media(max-width: 768px){ .nw-breakdown { grid-template-columns: repeat(3, 1fr); } }
+@media(max-width: 480px){ .nw-breakdown { grid-template-columns: repeat(2, 1fr); } }
 .nw-bd-item .k { font-size: 9.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
 .nw-bd-item .v { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; }
 
@@ -943,10 +944,11 @@ html,body{overflow-x:hidden;max-width:100%;}
             <div class="nw-bd-item"><div class="k">GPay / Online</div><div class="v" style="color:var(--accent2);" id="nw-online">₹0</div></div>
             <div class="nw-bd-item"><div class="k">Credit Due</div><div class="v" style="color:var(--warn);" id="nw-udhaar">₹0</div></div>
             <div class="nw-bd-item"><div class="k">Bills Pending</div><div class="v" style="color:var(--bad);" id="nw-liab">₹0</div></div>
+            <div class="nw-bd-item"><div class="k">Confirmed Savings</div><div class="v" style="color:var(--good);" id="nw-savings" title="Total confirmed 40% savings (Cash + Bank)">₹0</div></div>
           </div>
           <div style="margin-top:14px;font-size:10.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;">
             <i class="fa-solid fa-circle-info" style="margin-right:4px;color:var(--accent2);"></i>
-            <strong style="color:var(--jtext);">Formula:</strong> Personal Wallet + GPay/Online + Credit Due − Bills Pending. Counter Cash is working capital, not net worth.
+            <strong style="color:var(--jtext);">Formula:</strong> Personal Wallet + GPay/Online + Credit Due + Confirmed Savings − Bills Pending − Loans Pending. Counter Cash is working capital, not net worth.
           </div>
         </div>
 
@@ -1046,10 +1048,12 @@ html,body{overflow-x:hidden;max-width:100%;}
               <div class="ms-tile">
                 <div class="ms-tile-label"><i class="fa-solid fa-piggy-bank" style="color:var(--good);"></i> Cash Savings (40%)</div>
                 <div class="ms-tile-val" id="ms-cashsave-val" style="color:var(--good);">₹0</div>
+                <div class="ms-tile-sub" id="ms-cashsave-sub" style="font-size:10px;color:var(--muted);">Target: ₹0 · Confirmed: ₹0</div>
               </div>
               <div class="ms-tile">
                 <div class="ms-tile-label"><i class="fa-solid fa-building-columns" style="color:var(--accent2);"></i> Bank Savings (40%)</div>
                 <div class="ms-tile-val" id="ms-banksave-val" style="color:var(--accent2);">₹0</div>
+                <div class="ms-tile-sub" id="ms-banksave-sub" style="font-size:10px;color:var(--muted);">Target: ₹0 · Confirmed: ₹0</div>
               </div>
               <div class="ms-tile">
                 <div class="ms-tile-label"><i class="fa-solid fa-hand-holding-dollar" style="color:var(--bad);"></i> Loans Borrowed</div>
@@ -1122,9 +1126,6 @@ html,body{overflow-x:hidden;max-width:100%;}
         <div class="dc-shop-tabs" id="dc-shop-tabs"></div>
         <!-- Active shop form -->
         <div id="dc-forms"></div>
-
-        <!-- Market Credit Reminder -->
-        <div id="dc-credit-reminder" style="margin-top:20px;"></div>
 
         <div style="margin-top:24px;">
           <div class="section-hd"><h2>History</h2></div>
@@ -1468,13 +1469,6 @@ html,body{overflow-x:hidden;max-width:100%;}
       <div class="fg"><div class="lbl">Due Date</div><input class="inp" id="au-due" type="date"></div>
     </div>
     <div class="fg"><div class="lbl">Note (optional)</div><input class="inp" id="au-note" placeholder="Optional note"></div>
-    <div class="fg">
-      <div class="lbl">Included in Today's Sale?</div>
-      <div class="chip-group" id="au-in-sale" data-value="no">
-        <button type="button" class="chip-tile active" data-value="no" onclick="chipPick(&#39;au-in-sale&#39;,&#39;no&#39;)"><i class="fa-solid fa-times-circle"></i> No</button>
-        <button type="button" class="chip-tile" data-value="yes" onclick="chipPick(&#39;au-in-sale&#39;,&#39;yes&#39;)"><i class="fa-solid fa-check-circle"></i> Yes</button>
-      </div>
-    </div>
     <div style="display:flex;gap:10px;margin-top:6px;"><button class="btn btn-ghost" style="flex:1;" onclick="closeModal(&#39;modal-add-udhaari&#39;)">Cancel</button><button class="btn btn-primary" id="au-save-btn" style="flex:2;" onclick="saveUdhaari()">Add Market Credit</button></div>
   </div>
 </div>
@@ -1490,13 +1484,6 @@ html,body{overflow-x:hidden;max-width:100%;}
       <div class="chip-group" id="cu-mode" data-value="Cash">
         <button type="button" class="chip-tile active" data-value="Cash" onclick="chipPick(&#39;cu-mode&#39;,&#39;Cash&#39;)"><i class="fa-solid fa-money-bill-wave"></i>Cash</button>
         <button type="button" class="chip-tile" data-value="GPay" onclick="chipPick(&#39;cu-mode&#39;,&#39;GPay&#39;)"><i class="fa-solid fa-mobile-screen"></i>GPay</button>
-      </div>
-    </div>
-    <div class="fg">
-      <div class="lbl">Sale Status</div>
-      <div class="chip-group" id="cu-sale-status" data-value="no">
-        <button type="button" class="chip-tile active" data-value="no" onclick="chipPick(&#39;cu-sale-status&#39;,&#39;no&#39;)"><i class="fa-solid fa-plus-circle"></i> Add to Sale</button>
-        <button type="button" class="chip-tile" data-value="yes" onclick="chipPick(&#39;cu-sale-status&#39;,&#39;yes&#39;)"><i class="fa-solid fa-check-circle"></i> Already in Sale</button>
       </div>
     </div>
     <div style="display:flex;gap:10px;margin-top:6px;"><button class="btn btn-ghost" style="flex:1;" onclick="closeModal(&#39;modal-collect-udhaari&#39;)">Cancel</button><button class="btn btn-good" style="flex:2;" onclick="saveCollect()">Mark Collected</button></div>
@@ -1539,12 +1526,13 @@ html,body{overflow-x:hidden;max-width:100%;}
       <div class="fg"><div class="lbl">Late Fee (₹)</div><input class="inp" id="po-latefee" type="number" value="0"></div>
     </div>
     <div class="fg"><div class="lbl">Paid Via</div>
-      <div class="chip-group" id="po-mode" data-value="Cash">
-        <button type="button" class="chip-tile active" data-value="Cash" onclick="chipPick(&#39;po-mode&#39;,&#39;Cash&#39;)"><i class="fa-solid fa-money-bill-wave"></i>Cash</button>
-        <button type="button" class="chip-tile" data-value="GPay" onclick="chipPick(&#39;po-mode&#39;,&#39;GPay&#39;)"><i class="fa-solid fa-mobile-screen"></i>GPay</button>
+      <div class="chip-group" id="po-mode" data-value="Home">
+        <button type="button" class="chip-tile active" data-value="Home" onclick="chipPick(&#39;po-mode&#39;,&#39;Home&#39;,&#39;onPoModeChange&#39;)"><i class="fa-solid fa-house"></i>Home</button>
+        <button type="button" class="chip-tile" data-value="Counter" onclick="chipPick(&#39;po-mode&#39;,&#39;Counter&#39;,&#39;onPoModeChange&#39;)"><i class="fa-solid fa-cash-register"></i>Counter</button>
+        <button type="button" class="chip-tile" data-value="GPay" onclick="chipPick(&#39;po-mode&#39;,&#39;GPay&#39;,&#39;onPoModeChange&#39;)"><i class="fa-solid fa-mobile-screen"></i>GPay</button>
       </div>
     </div>
-    <div class="fg"><div class="lbl">Shop (Cash From)</div>
+    <div class="fg"><div class="lbl">Shop</div>
       <div class="chip-group chip-shops" id="po-vault" data-value="SHOP01">
         <button type="button" class="chip-tile active" data-value="SHOP01" onclick="chipPick(&#39;po-vault&#39;,&#39;SHOP01&#39;,&#39;onPoVaultChange&#39;)"><span class="chip-dot" style="background:#7c5cfc;"></span>JMD Pooja</button>
         <button type="button" class="chip-tile" data-value="SHOP02" onclick="chipPick(&#39;po-vault&#39;,&#39;SHOP02&#39;,&#39;onPoVaultChange&#39;)"><span class="chip-dot" style="background:#06b6d4;"></span>SMS Pooja</button>
@@ -1552,6 +1540,7 @@ html,body{overflow-x:hidden;max-width:100%;}
         <button type="button" class="chip-tile" data-value="SHOP04" onclick="chipPick(&#39;po-vault&#39;,&#39;SHOP04&#39;,&#39;onPoVaultChange&#39;)"><span class="chip-dot" style="background:#f59e0b;"></span>Graphics</button>
       </div>
     </div>
+    <div id="po-counter-note" style="display:none;background:rgba(139,108,255,0.08);border:1px solid rgba(139,108,255,0.25);border-radius:7px;padding:9px 12px;font-size:11.5px;color:var(--accent);margin-bottom:12px;"><i class="fa-solid fa-circle-info" style="margin-right:5px;"></i>Counter se koi balance abhi minus nahi hoga — is date ka Day Close bharte waqt reminder dikhega</div>
     <div id="po-is-warn" style="display:none;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:7px;padding:9px 12px;font-size:11.5px;color:var(--warn);margin-bottom:12px;"><i class="fa-solid fa-triangle-exclamation" style="margin-right:5px;"></i>An InterShop obligation will be created</div>
     <div style="display:flex;gap:10px;margin-top:6px;"><button class="btn btn-ghost" style="flex:1;" onclick="closeModal(&#39;modal-pay-outflow&#39;)">Cancel</button><button class="btn btn-warn" style="flex:2;" onclick="savePayOutflow()">Pay Bill</button></div>
   </div>
@@ -1581,8 +1570,30 @@ html,body{overflow-x:hidden;max-width:100%;}
       <div class="fg"><div class="lbl">Amount (₹)</div><input class="inp" id="is-amt" type="number" placeholder="0"></div>
       <div class="fg"><div class="lbl">Date</div><input class="inp" id="is-date" type="date"></div>
     </div>
+    <div class="fg"><div class="lbl">Funding Mode</div>
+      <div class="chip-group" id="is-mode" data-value="Cash">
+        <button type="button" class="chip-tile active" data-value="Cash" onclick="chipPick(&#39;is-mode&#39;,&#39;Cash&#39;)"><i class="fa-solid fa-house"></i>Home Cash</button>
+        <button type="button" class="chip-tile" data-value="GPay" onclick="chipPick(&#39;is-mode&#39;,&#39;GPay&#39;)"><i class="fa-solid fa-mobile-screen"></i>GPay</button>
+      </div>
+    </div>
     <div class="fg"><div class="lbl">Reason</div><input class="inp" id="is-reason" placeholder="Reason"></div>
+    <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:7px;padding:9px 12px;font-size:11.5px;color:var(--warn);margin-bottom:6px;"><i class="fa-solid fa-triangle-exclamation" style="margin-right:5px;"></i>This will be recorded as an <strong>Open loan</strong> — settle it later from the InterShop tab.</div>
     <div style="display:flex;gap:10px;margin-top:6px;"><button class="btn btn-ghost" style="flex:1;" onclick="closeModal(&#39;modal-add-intershop&#39;)">Cancel</button><button class="btn btn-primary" id="is-save-btn" style="flex:2;" onclick="saveIntershop()">Add Transfer</button></div>
+  </div>
+</div>
+
+<!-- Settle InterShop -->
+<div class="modal-overlay" id="modal-settle-intershop" onclick="modalBgClose(event,&#39;modal-settle-intershop&#39;)">
+  <div class="modal-box">
+    <div class="modal-title">Settle InterShop Loan <button class="modal-close" onclick="closeModal(&#39;modal-settle-intershop&#39;)">×</button></div>
+    <div id="is-settle-info" style="background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:16px;"></div>
+    <div class="fg"><div class="lbl">Repay Via</div>
+      <div class="chip-group" id="ris-mode" data-value="Cash">
+        <button type="button" class="chip-tile active" data-value="Cash" onclick="chipPick(&#39;ris-mode&#39;,&#39;Cash&#39;)"><i class="fa-solid fa-house"></i>Home Cash</button>
+        <button type="button" class="chip-tile" data-value="GPay" onclick="chipPick(&#39;ris-mode&#39;,&#39;GPay&#39;)"><i class="fa-solid fa-mobile-screen"></i>GPay</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:6px;"><button class="btn btn-ghost" style="flex:1;" onclick="closeModal(&#39;modal-settle-intershop&#39;)">Cancel</button><button class="btn btn-good" style="flex:2;" onclick="saveSettleIntershop()">Settle</button></div>
   </div>
 </div>
 
@@ -1786,8 +1797,9 @@ html,body{overflow-x:hidden;max-width:100%;}
     <div class="jmd-modal-icon" id="jmd-ci">!</div>
     <div class="jmd-modal-title" id="jmd-ct">Confirm</div>
     <div class="jmd-modal-msg" id="jmd-cm"></div>
-    <div class="jmd-modal-row">
-      <button class="btn btn-ghost" onclick="_jmdNo()" id="jmd-cn">Cancel</button>
+    <div class="jmd-modal-row" style="flex-wrap:wrap;">
+      <button class="btn btn-ghost" onclick="_jmdNo()" id="jmd-cn" style="flex:1;">Cancel</button>
+      <button class="btn btn-primary" onclick="_jmdExtra()" id="jmd-ce" style="flex:2;display:none;"></button>
       <button class="btn btn-bad" onclick="_jmdYes()" id="jmd-cy" style="flex:2;">Confirm</button>
     </div>
   </div>
@@ -1819,7 +1831,7 @@ html,body{overflow-x:hidden;max-width:100%;}
 // The Settings URL field will be hidden/locked automatically.
 //
 // Leave empty if each user should manually enter the URL in Settings.
-const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbzFEg0AYLUN1R7AR6EboEUjY9XBJV4E9N-J97aqKMp7VBnbGNLaxpDF15Z8j6rY4QPS/exec'; // ← e.g. 'https://script.google.com/macros/s/AKfyc.../exec'
+const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbyR1kzXY5pj0c9sdmpNfpGUMTT-6j-uKjRoSUSRX3ONvrGbTiJpQ4staSxTF__smKq1/exec'; // ← e.g. 'https://script.google.com/macros/s/AKfyc.../exec'
 // ═══════════════════════════════════════════════════════════════════
 
 // ─── Initial State ──────────────────────────────────────────────
@@ -1861,30 +1873,42 @@ function defaultState() {
   };
 }
 
+// Bug 7 fix: shared migration function — ensures all required fields exist after loading state
+// from localStorage OR from sheet pull. Without this, old schema data can crash the app.
+function migrateState(s) {
+  if (!s.shops || s.shops.length < 4) s.shops = JSON.parse(JSON.stringify(DEFAULT_SHOPS));
+  if (!s.audit) s.audit = [];
+  if (!s.dayClose) s.dayClose = [];
+  // onlineCounted tracks whether a DC entry's gpay was actually added to shop.online at the
+  // time it was created/edited (it may not be, if the entry was backdated behind a newer DC).
+  // Legacy entries predating this field are assumed counted (true) to preserve existing
+  // balances — only new create/edit/delete/restore actions going forward use the real value.
+  (s.dayClose||[]).forEach(dc => { if (dc.onlineCounted === undefined) dc.onlineCounted = true; });
+  if (!s.loans) s.loans = [];
+  // Ensure mode and repayments exist on all loans
+  (s.loans||[]).forEach(l => { if (!l.mode) l.mode = 'Cash'; if (!l.repayments) l.repayments = []; });
+  if (!s.intershop) s.intershop = [];
+  if (!s.homeExpenses) s.homeExpenses = [];
+  if (!s.dailyExpenses) s.dailyExpenses = [];
+  if (!s.reminders) s.reminders = [];
+  if (!s.waContacts) s.waContacts = [];
+  if (!s.pin) s.pin = '1234';
+  if (s.lockEnabled !== true) s.lockEnabled = false;
+  if (!s.lastSyncAt) s.lastSyncAt = '';
+  (s.udhaari||[]).forEach(u => { if (u.phone == null) u.phone = ''; });
+  // Ensure homeTransfer exists on all shops
+  (s.shops||[]).forEach(sh => { if (sh.homeTransfer == null) sh.homeTransfer = 0; });
+  // Inbuilt URL always overrides local setting
+  if (INBUILT_SHEET_URL) s.sheetUrl = INBUILT_SHEET_URL;
+  return s;
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem('jmd_state');
     if (raw) {
       const s = JSON.parse(raw);
-      if (!s.shops || s.shops.length < 4) s.shops = JSON.parse(JSON.stringify(DEFAULT_SHOPS));
-      if (!s.audit) s.audit = [];
-      if (!s.loans) s.loans = [];
-      // Ensure mode and repayments exist on all loans
-      (s.loans||[]).forEach(l => { if (!l.mode) l.mode = 'Cash'; if (!l.repayments) l.repayments = []; });
-      if (!s.intershop) s.intershop = [];
-      if (!s.homeExpenses) s.homeExpenses = [];
-      if (!s.dailyExpenses) s.dailyExpenses = [];
-      if (!s.reminders) s.reminders = [];
-      if (!s.waContacts) s.waContacts = [];
-      if (!s.pin) s.pin = '1234';
-      if (s.lockEnabled !== true) s.lockEnabled = false;
-      if (!s.lastSyncAt) s.lastSyncAt = '';
-      (s.udhaari||[]).forEach(u => { if (u.phone == null) u.phone = ''; });
-      // Ensure homeTransfer exists on all shops
-      (s.shops||[]).forEach(sh => { if (sh.homeTransfer == null) sh.homeTransfer = 0; });
-      // Inbuilt URL always overrides local setting
-      if (INBUILT_SHEET_URL) s.sheetUrl = INBUILT_SHEET_URL;
-      return s;
+      return migrateState(s);
     }
   } catch(e){}
   const st = defaultState();
@@ -2283,13 +2307,15 @@ function renderDashboard() {
   const totalHomeCash = STATE.shops.reduce((s,sh)=>s+shopHomeCash(sh.id), 0);
   const persDrain   = personalWalletDrain();
   const personalWallet = Math.max(0, totalHomeCash - persDrain);        // net home savings
-  const nw = personalWallet + totalOnlineGross + totalUd - totalLiab - totalLoanPending;         // TRUE NET POSITION (loans reduce net worth)
+  const confirmedSavings = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.desc && e.desc.startsWith('Savings (40%')).reduce((s, e) => s + (e.amount || 0), 0);
+  const nw = personalWallet + totalOnlineGross + totalUd - totalLiab - totalLoanPending + confirmedSavings;         // TRUE NET POSITION (loans reduce net worth, confirmed savings add back)
 
   $('nw-val').textContent = fmt(nw);
   $('nw-galla').textContent  = fmt(personalWallet);
   $('nw-online').textContent = fmt(totalOnlineGross);
   $('nw-udhaar').textContent = fmt(totalUd);
   $('nw-liab').textContent   = fmt(totalLiab);
+  $('nw-savings').textContent = fmt(confirmedSavings);
 
   // Shop matrix
   const shopUd = id => STATE.udhaari.filter(u=>u.shopId===id&&u.status==='Active').reduce((s,u)=>s+(u.totalBill-u.received),0);
@@ -2312,7 +2338,7 @@ function renderDashboard() {
     const loanPending = shopLoanPending(sh.id);
     tbody += `<tr>
       <td><span style="display:inline-flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:${shopColor(sh.id)};"></span><strong>${sh.name}</strong></span></td>
-      <td><span class="mono" style="color:var(--accent);" title="Spendable Home Cash (gross ${fmt(shopHomeCash(sh.id))} minus ${fmt(shopHomeReserved(sh.id))} reserved for 40% cash-savings)">${fmt(hc)}</span></td>
+      <td><span class="mono editable-cell" style="color:var(--accent);" ondblclick="inlineEditHomeCash(this,'${sh.id}',${shopHomeCash(sh.id)})" title="Spendable Home Cash (gross ${fmt(shopHomeCash(sh.id))} minus ${fmt(shopHomeReserved(sh.id))} reserved for 40% cash-savings) — dbl-click to set opening balance">${fmt(hc)}</span></td>
       <td><span class="mono editable-cell" style="color:var(--muted);font-size:11.5px;" ondblclick="inlineEdit(this,'${sh.id}','galla',${sh.galla})" title="Working capital in counter (opening balance for next day) — dbl-click to edit">${fmt(sh.galla)}</span></td>
       <td><span class="mono editable-cell" ondblclick="inlineEdit(this,'${sh.id}','online',${sh.online})" title="Spendable GPay (gross ${fmt(sh.online)} minus ${fmt(shopOnlineReserved(sh.id))} reserved for pending 40% bank-savings) — dbl-click to edit gross">${fmt(shopSpendableOnline(sh.id))}</span></td>
       <td><span class="mono" style="color:var(--warn);">${fmt(shopUd(sh.id))}</span></td>
@@ -2327,7 +2353,8 @@ function renderDashboard() {
   const totLiab2= STATE.shops.reduce((s,sh)=>s+shopLiab(sh.id),0);
   const totLoanBorrowed = STATE.shops.reduce((s,sh)=>s+shopLoanBorrowed(sh.id),0);
   const totLoanRepaid = STATE.shops.reduce((s,sh)=>s+shopLoanRepaid(sh.id),0);
-  const totNet  = totHc + totalOnlineGross + totUd - totLiab2 - totalLoanPending;
+  // Bug 6 fix: use same formula as hero Net Worth for consistency
+  const totNet  = personalWallet + totalOnlineGross + totUd - totLiab2 - totalLoanPending + confirmedSavings;
   tbody += `<tr><td>Total</td>
     <td class="mono" style="color:var(--accent);">${fmt(totHcSpendable)}</td>
     <td class="mono" style="color:var(--muted);font-size:11.5px;">${fmt(totalGalla)}</td>
@@ -2352,93 +2379,6 @@ function renderDashboard() {
   try { renderSalesChart(); } catch (e) { console.error('renderSalesChart failed', e); }
   renderProfitBox();
   renderMonthlySummary();
-  renderCreditReminder();
-}
-
-// ─── Credit Reminder for Day Close ──────────────────────────────
-function renderCreditReminder() {
-  const reminderEl = $('dc-credit-reminder');
-  if (!reminderEl) return;
-  
-  const today = todayStr();
-  const notInSale = STATE.udhaari.filter(u => u.date === today && !u.inSale && u.status === 'Active');
-  
-  if (notInSale.length === 0) {
-    reminderEl.innerHTML = '';
-    return;
-  }
-  
-  // Group by shop
-  const byShop = {};
-  notInSale.forEach(u => {
-    if (!byShop[u.shopId]) byShop[u.shopId] = [];
-    byShop[u.shopId].push(u);
-  });
-  
-  let html = `<div style="background:linear-gradient(135deg, rgba(239,68,68,0.08), rgba(239,68,68,0.03));border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:16px;margin-bottom:16px;">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-      <i class="fa-solid fa-bell" style="color:var(--bad);font-size:14px;"></i>
-      <div style="font-size:13px;font-weight:700;color:var(--bad);">Market Credit Reminder</div>
-      <div style="font-size:10px;color:var(--muted);margin-left:auto;">${notInSale.length} entr${notInSale.length===1?'y':'ies'} not in sale</div>
-    </div>`;
-  
-  Object.keys(byShop).forEach(shopId => {
-    const entries = byShop[shopId];
-    const total = entries.reduce((s,u) => s + (u.totalBill - u.received), 0);
-    const sh = STATE.shops.find(s => s.id === shopId);
-    
-    html += `<div style="background:rgba(255,255,255,0.03);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-        <span style="width:8px;height:8px;border-radius:50%;background:${shopColor(shopId)};"></span>
-        <div style="font-size:12px;font-weight:600;">${sh ? sh.name : shopId}</div>
-        <div style="font-size:11px;color:var(--bad);margin-left:auto;font-weight:700;">${fmt(total)} pending</div>
-      </div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">
-        ${entries.length} credit entr${entries.length===1?'y':'ies'} today not included in sale. Add to sale or mark as already included.
-      </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button class="btn btn-good btn-sm" style="font-size:10px;padding:4px 10px;" onclick="addAllCreditsToSale('${shopId}')">
-          <i class="fa-solid fa-plus-circle"></i> Add All to Sale
-        </button>
-        <button class="btn btn-ghost btn-sm" style="font-size:10px;padding:4px 10px;" onclick="markAllCreditsInSale('${shopId}')">
-          <i class="fa-solid fa-check-circle"></i> Mark All as in Sale
-        </button>
-      </div>
-    </div>`;
-  });
-  
-  html += `</div>`;
-  reminderEl.innerHTML = html;
-}
-
-function addAllCreditsToSale(shopId) {
-  const today = todayStr();
-  const entries = STATE.udhaari.filter(u => u.date === today && u.shopId === shopId && !u.inSale && u.status === 'Active');
-  
-  // This would add the credit amounts to today's day close sale
-  // For now, just mark them as in sale to prevent double counting
-  entries.forEach(u => {
-    u.inSale = true;
-  });
-  
-  saveStateLocal();
-  renderCreditReminder();
-  renderUdhaari();
-  toast(`Added ${entries.length} credit entries to sale`, 'success');
-}
-
-function markAllCreditsInSale(shopId) {
-  const today = todayStr();
-  const entries = STATE.udhaari.filter(u => u.date === today && u.shopId === shopId && !u.inSale && u.status === 'Active');
-  
-  entries.forEach(u => {
-    u.inSale = true;
-  });
-  
-  saveStateLocal();
-  renderCreditReminder();
-  renderUdhaari();
-  toast(`Marked ${entries.length} entries as already in sale`, 'success');
 }
 
 // ─── Overall Profit Box (Daily/Weekly/Monthly/Yearly) ──────────────
@@ -2568,7 +2508,8 @@ function confirmSavingsDone(dcId, type) {
     id: newId('DE'), shopId: r.shopId, date: r.date,
     desc: `Savings (40% ${type === 'cash' ? 'Cash' : 'GPay'})`,
     source: type === 'cash' ? 'HOME' : 'GP',
-    amount: amt, deleted: false
+    amount: amt, deleted: false,
+    linkedDcId: r.id  // link to the DC that created this savings expense
   });
   if (type === 'bank') {
     const sh = STATE.shops.find(s => s.id === r.shopId);
@@ -2659,8 +2600,18 @@ function renderMonthlySummary() {
   // 40% savings targets, rounded to nearest ₹100 — cash & GPay portions calculated separately
   const cashSavings = roundTo100(cashSale * 0.4);
   const bankSavings = roundTo100(gpaySale * 0.4);
+  // Monthly Summary fix: also calculate confirmed savings for this month/shop filter
+  const monthShopExps = (STATE.dailyExpenses || []).filter(e => !e.deleted && (e.date || '').slice(0, 7) === ym && (_msShopFilter === 'ALL' || e.shopId === _msShopFilter));
+  const confirmedCashSave = monthShopExps.filter(e => e.desc && e.desc.startsWith('Savings (40% Cash')).reduce((s, e) => s + (e.amount || 0), 0);
+  const confirmedBankSave = monthShopExps.filter(e => e.desc && e.desc.startsWith('Savings (40% GPay')).reduce((s, e) => s + (e.amount || 0), 0);
   $('ms-cashsave-val').textContent = fmt(cashSavings);
   $('ms-banksave-val').textContent = fmt(bankSavings);
+  const pendingCash = Math.max(0, cashSavings - confirmedCashSave);
+  const pendingBank = Math.max(0, bankSavings - confirmedBankSave);
+  $('ms-cashsave-sub').textContent = `Confirmed: ${fmt(confirmedCashSave)}${pendingCash > 0 ? ' · Pending: ' + fmt(pendingCash) : ''}`;
+  $('ms-cashsave-sub').style.color = pendingCash > 0 ? 'var(--warn)' : 'var(--muted)';
+  $('ms-banksave-sub').textContent = `Confirmed: ${fmt(confirmedBankSave)}${pendingBank > 0 ? ' · Pending: ' + fmt(pendingBank) : ''}`;
+  $('ms-banksave-sub').style.color = pendingBank > 0 ? 'var(--warn)' : 'var(--muted)';
 
   // Adjustment: shortfall between the cash-savings target and what was actually brought home this
   // month — this shortfall is carried against the shop(s)' previously accumulated home balance.
@@ -2903,6 +2854,38 @@ function inlineEdit(el, shopId, field, current) {
   inp.addEventListener('keydown', e=>{if(e.key==='Enter')inp.blur();if(e.key==='Escape'){inp.value=current;inp.blur();}});
 }
 
+// Home Cash is a derived value (cumulative cash-brought-home from Day Close entries, minus
+// home expenses, minus homeTransfer corrections) — not a raw stored field like galla/online.
+// This lets you punch in the ACTUAL home cash you're holding right now as a one-time "opening
+// balance", by solving homeTransfer so shopHomeCash() comes out to exactly what you typed —
+// no need to recreate past Day Close history to get there.
+function inlineEditHomeCash(el, shopId, current) {
+  const inp = document.createElement('input');
+  inp.className='inp-inline'; inp.type='number'; inp.value=current; inp.style.width='100px';
+  el.replaceWith(inp); inp.focus(); inp.select();
+  function save() {
+    const val = parseFloat(inp.value)||0;
+    const sh = STATE.shops.find(s=>s.id===shopId);
+    if (sh) {
+      const brought = STATE.dayClose.filter(r=>r.shopId===shopId && !r.deleted).reduce((s,r)=>s+(r.cashHome||0), 0);
+      const spent = (STATE.dailyExpenses||[]).filter(e=>e.shopId===shopId && e.source==='HOME' && !e.deleted).reduce((s,e)=>s+(e.amount||0), 0);
+      sh.homeTransfer = brought - spent - val; // forces shopHomeCash(shopId) to equal val
+    }
+    const span = document.createElement('span');
+    span.className='mono editable-cell'; span.style.color='var(--accent)';
+    span.ondblclick=()=>inlineEditHomeCash(span,shopId, shopHomeCash(shopId));
+    span.setAttribute('title','Double-click to set opening balance');
+    span.textContent=fmt(shopSpendableHomeCash(shopId));
+    inp.replaceWith(span);
+    auditLog('MANUAL_ADJUST',`${shopName(shopId)} → Home Cash = ${fmt(val)}`);
+    saveStateLocal();
+    renderDashboard();
+    toast(`${shopName(shopId)} Home Cash updated to ${fmt(val)}`);
+  }
+  inp.addEventListener('blur', save);
+  inp.addEventListener('keydown', e=>{if(e.key==='Enter')inp.blur();if(e.key==='Escape'){inp.value=current;inp.blur();}});
+}
+
 function renderPerfTracker() {
   const allDC = STATE.dayClose.filter(r=>!r.deleted);
   const maxSale = Math.max(1, ...STATE.shops.map(sh=>allDC.filter(r=>r.shopId===sh.id).reduce((s,r)=>s+(r.sale||0),0)));
@@ -2991,6 +2974,7 @@ function initDcForms() {
           <div class="lbl">Date <span style="color:var(--accent2);text-transform:none;letter-spacing:0;font-weight:400;">(kis din ki entry?)</span></div>
           <input class="inp" id="dc-date-${sh.id}" type="date" value="${pf.date || today}" max="${today}" onchange="onDcDateChange('${sh.id}')" style="max-width:200px;padding:7px 10px;font-size:12px;" />
         </div>
+        <div id="dc-cash-reminder-${sh.id}" style="margin-bottom:10px;"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
           <div class="fg" style="margin-bottom:0;">
             <div class="lbl"><i class="fa-solid fa-house" style="color:var(--good);margin-right:3px;font-size:8px;"></i>Home Cash (₹)</div>
@@ -3063,7 +3047,7 @@ function initDcForms() {
   }).join('');
 
   activeDcShop = STATE.shops[0]?.id;
-  STATE.shops.forEach(sh => { updateDcCalc(sh.id); renderDailyExpenses(sh.id); });
+  STATE.shops.forEach(sh => { updateDcCalc(sh.id); renderDailyExpenses(sh.id); renderDcCashReminder(sh.id); });
 }
 
 function switchDcShop(shopId) {
@@ -3098,23 +3082,42 @@ function addDailyExpense(shopId) {
   if (!amt || amt <= 0) { toast('Amount daalo', 'error'); return; }
 
   const entryDate = $(`dc-date-${shopId}`)?.value || todayStr();
-  STATE.dailyExpenses.unshift({
-    id: newId('DE'), shopId, date: entryDate, desc, source, amount: amt, deleted: false
-  });
 
-  descEl.value = ''; amtEl.value = '';
-  chipPick(`de-source-${shopId}`, 'COUNTER');
+  function _finishDailyExpense() {
+    STATE.dailyExpenses.unshift({
+      id: newId('DE'), shopId, date: entryDate, desc, source, amount: amt, deleted: false
+    });
+    descEl.value = ''; amtEl.value = '';
+    chipPick(`de-source-${shopId}`, 'COUNTER');
+    renderDailyExpenses(shopId);
+    syncDcExpenseFromItems(shopId);
+    if (source === 'GP') {
+      const sh = STATE.shops.find(s=>s.id===shopId);
+      if (sh) sh.online = (sh.online||0) - amt;
+      renderDashboard();
+    }
+    auditLog('DAILY_EXPENSE', `${shopName(shopId)} — ${desc} (${DE_SOURCE_LABEL[source]}) ₹${amt}`);
+    saveStateLocal();
+    toast(`${desc} — ₹${fmtNum(amt)} added (${DE_SOURCE_LABEL[source]})`, 'success');
+  }
 
-  renderDailyExpenses(shopId);
-  syncDcExpenseFromItems(shopId);
+  // Bug 9 fix: warn before making GPay negative
   if (source === 'GP') {
     const sh = STATE.shops.find(s=>s.id===shopId);
-    if (sh) sh.online = (sh.online||0) - amt;
-    renderDashboard();
+    if (sh) {
+      const available = shopSpendableOnline(shopId);
+      if (available < amt) {
+        showConfirm({
+          title:'Low GPay Balance!',
+          msg:`<strong>${escHtml(sh.name)}</strong> ka spendable GPay sirf <strong>${fmt(available)}</strong> hai. Expense ${fmt(amt)} add karne se GPay negative ho jayega. Continue?`,
+          icon:'!',yesText:'Add Anyway',yesCls:'btn-bad',
+          onYes:()=>{ _finishDailyExpense(); }
+        });
+        return;
+      }
+    }
   }
-  auditLog('DAILY_EXPENSE', `${shopName(shopId)} — ${desc} (${DE_SOURCE_LABEL[source]}) ₹${amt}`);
-  saveStateLocal();
-  toast(`${desc} — ₹${fmtNum(amt)} added (${DE_SOURCE_LABEL[source]})`, 'success');
+  _finishDailyExpense();
 }
 
 function removeDailyExpense(id) {
@@ -3150,7 +3153,7 @@ function renderDailyExpenses(shopId) {
 
   listEl.innerHTML = items.map(e => `
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 10px;">
-      <div style="flex:1;font-size:12px;">${e.desc} <span style="color:${DE_SOURCE_COLOR[e.source]};font-weight:600;">(${DE_SOURCE_LABEL[e.source]})</span></div>
+      <div style="flex:1;font-size:12px;">${escHtml(e.desc)} <span style="color:${DE_SOURCE_COLOR[e.source]};font-weight:600;">(${DE_SOURCE_LABEL[e.source]})</span></div>
       <div class="mono" style="font-size:12px;font-weight:700;">₹${fmtNum(e.amount)}</div>
       <button type="button" onclick="removeDailyExpense('${e.id}')" style="background:none;border:none;color:var(--bad);cursor:pointer;font-size:13px;padding:2px 4px;"><i class="fa-solid fa-xmark"></i></button>
     </div>`).join('') || `<div style="font-size:11px;color:var(--muted);">${fmtDate(entryDate)} ko koi expense add nahi hua</div>`;
@@ -3195,6 +3198,16 @@ function markProfitEdited(shopId) {
   if (pInp) pInp.dataset.userEdited = '1';
 }
 
+// Helper: check if a day-close entry is the newest active (non-deleted) one for its shop.
+// Used to decide whether editing/deleting that entry should touch sh.galla (counter cash).
+function isNewestActiveDayClose(shopId, date, entryId) {
+  const entryIdx = STATE.dayClose.findIndex(e => e.id === entryId);
+  return !STATE.dayClose.some((x, i) =>
+    x.shopId === shopId && !x.deleted && x.id !== entryId &&
+    (x.date > date || (x.date === date && i < entryIdx))
+  );
+}
+
 function submitDayClose(shopId) {
   const g = id => parseFloat($(id)?.value)||0;
   const home    = g(`dc-home-${shopId}`);
@@ -3228,10 +3241,28 @@ function submitDayClose(shopId) {
     const homeDelta    = home    - oldHome;
     const counterDelta = counter - oldCounter;
     const gpayDelta    = gpay    - oldGpay;
+    const isNewestNow  = isNewestActiveDayClose(shopId, entryDate, existing.id);
 
     if (sh) {
-      sh.online = Math.max(0, (sh.online || 0) + gpayDelta);
-      sh.galla  = Math.max(0, (sh.galla  || 0) + counterDelta);
+      // Extra fix: only touch sh.online the way the delta assumes if this entry's gpay was
+      // actually counted in it before. A backdated entry that was never added to online (see
+      // fresh-entry path below) must not have a delta applied to it — that would subtract/add
+      // against an amount that was never there. Instead, if such an entry becomes the newest
+      // active one during this edit, add its FULL current gpay (not just the delta).
+      const wasCounted = existing.onlineCounted !== false;
+      if (wasCounted && isNewestNow) {
+        sh.online = Math.max(0, (sh.online || 0) + gpayDelta);
+      } else if (!wasCounted && isNewestNow) {
+        sh.online = (sh.online || 0) + gpay;
+      } else if (wasCounted && !isNewestNow) {
+        sh.online = Math.max(0, (sh.online || 0) - oldGpay);
+      }
+      // else (!wasCounted && !isNewestNow): still not counted, nothing to do.
+      existing.onlineCounted = isNewestNow;
+      // Only update counter cash if this is the newest active day close for the shop
+      if (isNewestNow) {
+        sh.galla  = Math.max(0, (sh.galla  || 0) + counterDelta);
+      }
       // Home cash isn't a running shop balance — it's derived fresh from the sum of dayClose.cashHome
       // every time (see shopHomeCash()), so correcting existing.cashHome below is enough on its own.
     }
@@ -3242,8 +3273,26 @@ function submitDayClose(shopId) {
     // Counter cash (galla) is pure shop working capital and is never part of the 60/40 split.
     const newCashSaveTarget = roundTo100(home * 0.4);
     const newBankSaveTarget = roundTo100(gpay * 0.4);
-    const cashSaveDone = (existing.cashSaveDone && existing.cashSaveTarget === newCashSaveTarget) || false;
-    const bankSaveDone = (existing.bankSaveDone && existing.bankSaveTarget === newBankSaveTarget) || false;
+    // Bug 2 fix: If savings was previously confirmed but target changed, delete old savings
+    // dailyExpenses linked to this DC and reverse the GPay deduction. Otherwise we'd get
+    // duplicate savings expenses when user confirms the new (different) target.
+    const cashTargetChanged = existing.cashSaveTarget !== newCashSaveTarget;
+    const bankTargetChanged = existing.bankSaveTarget !== newBankSaveTarget;
+    if (existing.cashSaveDone && cashTargetChanged) {
+      const oldCashSaveExp = (STATE.dailyExpenses||[]).find(e => e.linkedDcId === existing.id && !e.deleted && e.desc && e.desc.includes('Cash'));
+      if (oldCashSaveExp) oldCashSaveExp.deleted = true;
+    }
+    if (existing.bankSaveDone && bankTargetChanged) {
+      const oldBankSaveExp = (STATE.dailyExpenses||[]).find(e => e.linkedDcId === existing.id && !e.deleted && e.desc && e.desc.includes('GPay'));
+      if (oldBankSaveExp) {
+        oldBankSaveExp.deleted = true;
+        // Reverse the GPay deduction that confirmSavingsDone applied
+        const oldSh = STATE.shops.find(s=>s.id===existing.shopId);
+        if (oldSh) oldSh.online = (oldSh.online||0) + (oldBankSaveExp.amount||0);
+      }
+    }
+    const cashSaveDone = (existing.cashSaveDone && !cashTargetChanged) || false;
+    const bankSaveDone = (existing.bankSaveDone && !bankTargetChanged) || false;
 
     Object.assign(existing, {
       cashHome: home, counterCash: counter, gpay, expense: exp, prevCounter: prev,
@@ -3284,8 +3333,20 @@ function submitDayClose(shopId) {
   };
   STATE.dayClose.unshift(entry);
   if (sh) {
-    sh.galla = counter;
-    sh.online = (sh.online||0) + gpay;
+    // Only update shop balances if this is the newest active DC for the shop.
+    // A backdated fresh entry (older than an existing DC) must NOT overwrite today's galla
+    // or add gpay that's already in the running balance from a newer DC.
+    const isNewestNow = isNewestActiveDayClose(shopId, entryDate, entry.id);
+    entry.onlineCounted = isNewestNow;
+    if (isNewestNow) {
+      sh.galla = counter;
+      sh.online = (sh.online||0) + gpay;
+    }
+    // For backdated entries: only the record is created; shop balances stay as-is
+    // because the newer DC already set them. The backdated DC's numbers will flow
+    // through correctly when the newer DC is eventually edited/deleted.
+  } else {
+    entry.onlineCounted = false;
   }
   auditLog('DAY_CLOSE', `${shopName(shopId)} ${fmtDate(entryDate)} — Sale ${fmt(sale)} · Profit ${fmt(profit)} · Counter ${fmt(counter)} · GPay ${fmt(gpay)}`);
   saveStateLocal();
@@ -3311,10 +3372,58 @@ function submitDayClose(shopId) {
 }
 
 // Called when user changes the date picker in a DC form
+// ─── Cash Movement Reminder (Day Close) ─────────────────────────
+// Counter-mode Outflow payments don't touch sh.galla (Counter Cash resets fresh from
+// whatever figure you type in at Day Close, so an app-side deduction would just get
+// overwritten). Instead, when you're filling/editing the Day Close for a specific date,
+// this reminds you which Counter payments happened on THAT exact date so you remember
+// to account for them in the Counter Cash figure you type. Loan repayments (Home/GPay)
+// already deduct automatically, but are also listed here for visibility on that date.
+function renderDcCashReminder(shopId) {
+  const el = $(`dc-cash-reminder-${shopId}`);
+  if (!el) return;
+  const dateEl = $(`dc-date-${shopId}`);
+  const entryDate = dateEl?.value || todayStr();
+
+  const counterPays = [];
+  STATE.outflows.forEach(o => {
+    (o.paymentLog || []).forEach(p => {
+      if (p.mode === 'Counter' && p.vault === shopId && p.date === entryDate) {
+        counterPays.push({ amount: p.amount, payee: o.payee });
+      }
+    });
+  });
+
+  const loanRepays = [];
+  STATE.loans.filter(l => l.shopId === shopId).forEach(l => {
+    (l.repayments || []).forEach(r => {
+      if (r.date === entryDate) loanRepays.push({ amount: r.amount, from: l.from, mode: r.mode });
+    });
+  });
+
+  if (!counterPays.length && !loanRepays.length) { el.innerHTML = ''; return; }
+
+  let html = `<div style="background:linear-gradient(135deg, rgba(251,191,36,0.08), rgba(251,191,36,0.03));border:1px solid rgba(251,191,36,0.25);border-radius:10px;padding:11px 13px;">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:7px;">
+      <i class="fa-solid fa-bell" style="color:var(--warn);font-size:11px;"></i>
+      <div style="font-size:11px;font-weight:700;color:var(--warn);">Cash Movement Reminder — ${fmtDate(entryDate)}</div>
+    </div>`;
+  counterPays.forEach(p => {
+    html += `<div style="font-size:11px;color:var(--muted);margin-bottom:3px;"><i class="fa-solid fa-cash-register" style="margin-right:5px;color:var(--warn);width:12px;"></i>${fmt(p.amount)} paid to <strong style="color:var(--jtext);">${escHtml(p.payee || 'Payee')}</strong> from Counter — is date ka Counter Cash usko minus karke bharo</div>`;
+  });
+  loanRepays.forEach(r => {
+    const modeLabel = r.mode === 'GPay' ? 'GPay' : 'Home Cash';
+    html += `<div style="font-size:11px;color:var(--muted);margin-bottom:3px;"><i class="fa-solid ${r.mode==='GPay'?'fa-mobile-screen':'fa-house'}" style="margin-right:5px;color:var(--accent2);width:12px;"></i>${fmt(r.amount)} loan repaid to <strong style="color:var(--jtext);">${escHtml(r.from || 'Lender')}</strong> via ${modeLabel} (already adjusted)</div>`;
+  });
+  html += `</div>`;
+  el.innerHTML = html;
+}
+
 function onDcDateChange(shopId) {
   const dateEl = $(`dc-date-${shopId}`);
   if (!dateEl) return;
   const entryDate = dateEl.value || todayStr();
+  renderDcCashReminder(shopId);
 
   // Update prev counter based on selected date
   const prevInfo = getPrevCounterForShop(shopId, entryDate);
@@ -3443,7 +3552,7 @@ function openDcDetail(id) {
         <div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Est. Profit (${sh?.profitPct||40}%)</div>
         <div class="mono" style="font-size:18px;font-weight:800;color:var(--accent);">${fmt(profit)}</div>
       </div>
-      ${r.note?`<div style="font-size:12px;color:var(--muted);max-width:200px;text-align:right;"><i class="fa-solid fa-note-sticky" style="margin-right:4px;"></i>${r.note}</div>`:''}
+      ${r.note?`<div style="font-size:12px;color:var(--muted);max-width:200px;text-align:right;"><i class="fa-solid fa-note-sticky" style="margin-right:4px;"></i>${escHtml(r.note)}</div>`:''}
     </div>`;
   openModal('modal-dc-detail');
 }
@@ -3459,12 +3568,19 @@ function deleteDayClose(id) {
       r.deleted = true;
       const sh = STATE.shops.find(s=>s.id===r.shopId);
       if (sh) {
-        sh.online = Math.max(0, (sh.online||0) - (r.gpay||0));
-        const priorDC = STATE.dayClose.find(x =>
-          x.shopId===r.shopId && !x.deleted && x.id!==r.id &&
-          (x.date < r.date || (x.date===r.date && STATE.dayClose.indexOf(x) > STATE.dayClose.indexOf(r)))
-        );
-        sh.galla = priorDC ? (priorDC.counterCash||0) : (r.prevCounter||0);
+        // Extra fix: only reverse gpay from online if it was actually counted in there —
+        // a backdated entry that never contributed to online must not wrongly reduce it.
+        if (r.onlineCounted !== false) {
+          sh.online = Math.max(0, (sh.online||0) - (r.gpay||0));
+        }
+        // Only rollback counter cash if the deleted entry was the newest active day close
+        if (isNewestActiveDayClose(r.shopId, r.date, r.id)) {
+          const priorDC = STATE.dayClose.find(x =>
+            x.shopId===r.shopId && !x.deleted && x.id!==r.id &&
+            (x.date < r.date || (x.date===r.date && STATE.dayClose.indexOf(x) > STATE.dayClose.indexOf(r)))
+          );
+          sh.galla = priorDC ? (priorDC.counterCash||0) : (r.prevCounter||0);
+        }
       }
       auditLog('DELETE_DC', `Soft-deleted DC: ${r.shopName||shopName(r.shopId)} — ${fmtDate(r.date)} — Sale ${fmt(r.sale)} (rollback applied)`);
       saveStateLocal(); renderDcHistory(); renderDashboard(); initDcForms();
@@ -3479,10 +3595,15 @@ function restoreDayClose(id) {
   r.deleted = false;
   const sh = STATE.shops.find(s=>s.id===r.shopId);
   if (sh) {
-    sh.online = (sh.online||0) + (r.gpay||0);
-    // If this is the newest non-deleted entry for the shop, set galla to its counter
-    const newest = STATE.dayClose.find(x => x.shopId===r.shopId && !x.deleted);
-    if (newest && newest.id === r.id) sh.galla = r.counterCash||0;
+    // Extra fix: only add gpay back to online if this entry is (now) the newest active DC —
+    // matches the same rule used at creation time, and updates onlineCounted to match so a
+    // future delete reverses it correctly.
+    const isNewestNow = isNewestActiveDayClose(r.shopId, r.date, r.id);
+    if (isNewestNow) {
+      sh.online = (sh.online||0) + (r.gpay||0);
+      sh.galla = r.counterCash||0;
+    }
+    r.onlineCounted = isNewestNow;
   }
   auditLog('DAY_CLOSE', `Restored DC: ${r.shopName||shopName(r.shopId)} — ${fmtDate(r.date)}`);
   saveStateLocal(); renderDcHistory(); renderDashboard(); initDcForms();
@@ -3501,12 +3622,18 @@ function hardDeleteDayClose(id) {
       if (!r.deleted) {
         const sh = STATE.shops.find(s=>s.id===r.shopId);
         if (sh) {
-          sh.online = Math.max(0, (sh.online||0) - (r.gpay||0));
-          const priorDC = STATE.dayClose.find(x =>
-            x.shopId===r.shopId && !x.deleted && x.id!==r.id &&
-            (x.date < r.date || (x.date===r.date && STATE.dayClose.indexOf(x) > STATE.dayClose.indexOf(r)))
-          );
-          sh.galla = priorDC ? (priorDC.counterCash||0) : (r.prevCounter||0);
+          // Extra fix: only reverse gpay from online if it was actually counted in there.
+          if (r.onlineCounted !== false) {
+            sh.online = Math.max(0, (sh.online||0) - (r.gpay||0));
+          }
+          // Only rollback counter cash if the deleted entry was the newest active day close
+          if (isNewestActiveDayClose(r.shopId, r.date, r.id)) {
+            const priorDC = STATE.dayClose.find(x =>
+              x.shopId===r.shopId && !x.deleted && x.id!==r.id &&
+              (x.date < r.date || (x.date===r.date && STATE.dayClose.indexOf(x) > STATE.dayClose.indexOf(r)))
+            );
+            sh.galla = priorDC ? (priorDC.counterCash||0) : (r.prevCounter||0);
+          }
         }
       }
       STATE.dayClose.splice(idx, 1);
@@ -3589,7 +3716,7 @@ function renderUdhaari() {
     const pct = Math.min(100,Math.round(g.received/Math.max(1,g.totalBill)*100));
     const allSettled = g.entries.every(e => e.status === 'Settle');
     const anyOverdue = g.entries.some(e => isOverdue(e));
-    return `<div class="rec-card${anyOverdue?' overdue':''}${allSettled?' settled':''}" style="cursor:pointer;" onclick="openPersonHistory('udhaari','${g.customer}','${g.shopId}')">
+    return `<div class="rec-card${anyOverdue?' overdue':''}${allSettled?' settled':''}" style="cursor:pointer;" onclick="openPersonHistory('udhaari','${escJsAttr(g.customer)}','${g.shopId}')">
       <div class="rec-head">
         <div style="flex:1;">
           <div class="rec-name">${escHtml(g.customer)}</div>
@@ -3619,8 +3746,8 @@ function renderUdhaari() {
         <span class="meta-info"><i class="fa-solid fa-clock"></i> ${g.entries.length} transaction${g.entries.length===1?'':'s'}</span>
         <span class="meta-info"><i class="fa-solid fa-calendar"></i> ${fmtDate(g.entries[0].dueDate)||'—'}</span>
         <div style="display:flex;gap:6px;">
-          ${!allSettled && g.phone?`<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();sendGroupReminder('${g.customer}','${g.shopId}')"><i class="fa-brands fa-whatsapp" style="color:#25D366;"></i> Reminder</button>`:''}
-          ${!allSettled?`<button class="btn btn-good btn-sm" onclick="event.stopPropagation();openCollectGroup('${g.customer}','${g.shopId}')">Collect</button>`:''}
+          ${!allSettled && g.phone?`<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();sendGroupReminder('${escJsAttr(g.customer)}','${g.shopId}')"><i class="fa-brands fa-whatsapp" style="color:#25D366;"></i> Reminder</button>`:''}
+          ${!allSettled?`<button class="btn btn-good btn-sm" onclick="event.stopPropagation();openCollectGroup('${escJsAttr(g.customer)}','${g.shopId}')">Collect</button>`:''}
         </div>
       </div>
     </div>`;
@@ -3634,7 +3761,6 @@ function resetUdhaariModal() {
   $('au-cust').value=''; $('au-phone').value=''; $('au-amt').value=''; $('au-note').value='';
   $('au-date').value = todayStr(); $('au-due').value = todayStr();
   chipPick('au-shop','SHOP01');
-  chipPick('au-in-sale','no');
 }
 function openAddUdhaariModal() {
   resetUdhaariModal();
@@ -3653,7 +3779,6 @@ function openEditUdhaari(uid) {
   $('au-due').value = u.dueDate || todayStr();
   $('au-note').value = u.note || '';
   chipPick('au-shop', u.shopId || 'SHOP01');
-  chipPick('au-in-sale', u.inSale ? 'yes' : 'no');
   openModal('modal-add-udhaari');
 }
 function deleteUdhaari(uid) {
@@ -3662,21 +3787,9 @@ function deleteUdhaari(uid) {
   const u = STATE.udhaari[idx];
   showConfirm({
     title:'Delete Market Credit?',
-    msg:`Delete <strong>${escHtml(u.customer || 'Customer')}</strong> — ${fmt(u.totalBill || 0)}?<br><br>Any collection already applied to shop balances will be rolled back.`,
+    msg:`Delete <strong>${escHtml(u.customer || 'Customer')}</strong> — ${fmt(u.totalBill || 0)}?`,
     icon:'!', yesText:'Delete', yesCls:'btn-bad',
     onYes:()=>{
-      const sh = STATE.shops.find(s=>s.id===u.shopId);
-      if (sh) {
-        if (u.collectionLog && u.collectionLog.length) {
-          u.collectionLog.forEach(c => {
-            if (c.mode === 'GPay') sh.online = Math.max(0, (sh.online||0) - c.amount);
-            else sh.galla = Math.max(0, (sh.galla||0) - c.amount);
-          });
-        } else if (u.received) {
-          // Legacy entry saved before mode-tracking existed — best-effort assume Cash
-          sh.galla = Math.max(0, (sh.galla||0) - u.received);
-        }
-      }
       STATE.udhaari.splice(idx, 1);
       auditLog('DELETE_UDHAARI', `Deleted market credit: ${u.customer || 'Customer'} — ${fmt(u.totalBill || 0)}`);
       saveStateLocal(); renderUdhaari(); updateBadges(); renderDashboard();
@@ -3689,7 +3802,6 @@ function saveUdhaari() {
   const cust=$('au-cust').value.trim(), shop=chipValue('au-shop');
   const phone=normalizePhone($('au-phone').value);
   const amt=parseFloat($('au-amt').value)||0, date=$('au-date').value, due=$('au-due').value, note=$('au-note').value.trim();
-  const inSale = chipValue('au-in-sale') === 'yes';
   if(!cust||!amt){ toast('Customer name and amount are required','error'); return; }
   if(!phone){ toast('A valid 10-digit WhatsApp number is required','error'); return; }
   if(!date||!due){ toast('Date and due date are required','error'); return; }
@@ -3697,15 +3809,15 @@ function saveUdhaari() {
   if (editUdhaariId) {
     const u = STATE.udhaari.find(x => x.id === editUdhaariId);
     if (!u) return;
-    u.customer = cust; u.phone = phone; u.shopId = shop; u.date = date; u.dueDate = due; u.totalBill = amt; u.note = note; u.inSale = inSale;
+    u.customer = cust; u.phone = phone; u.shopId = shop; u.date = date; u.dueDate = due; u.totalBill = amt; u.note = note;
     u.received = Math.min(u.received || 0, amt);
     u.status = (u.received || 0) >= amt ? 'Settle' : 'Active';
     auditLog('EDIT_UDHAARI', `Edited market credit: ${cust} — ${fmt(amt)} due ${fmtDate(due)}`);
     toast(`Market credit updated — ${cust}`);
   } else {
-    const entry={ id:newId('U'), customer:cust, phone, shopId:shop, date, dueDate:due, totalBill:amt, received:0, status:'Active', note, inSale };
+    const entry={ id:newId('U'), customer:cust, phone, shopId:shop, date, dueDate:due, totalBill:amt, received:0, status:'Active', note };
     STATE.udhaari.unshift(entry);
-    auditLog('ADD_UDHAARI',`${cust} — ${shopName(shop)} — ${fmt(amt)} due ${fmtDate(due)}${inSale?' (already in sale)':''}`);
+    auditLog('ADD_UDHAARI',`${cust} — ${shopName(shop)} — ${fmt(amt)} due ${fmtDate(due)}`);
     toast(`Market credit saved — ${cust} ${fmt(amt)}`);
   }
   saveStateLocal(); renderUdhaari(); updateBadges(); renderDashboard();
@@ -3752,12 +3864,6 @@ function saveCollect() {
     remaining -= toApply;
   });
   
-  // Add received money to shop's balance (Cash → galla, GPay → online)
-  const sh = STATE.shops.find(s=>s.id===u.shopId);
-  if (sh) {
-    if (mode==='GPay') sh.online = (sh.online||0) + amt;
-    else               sh.galla  = (sh.galla||0)  + amt;
-  }
   auditLog('COLLECT_UDHAARI',`${u.customer} — ${fmt(amt)} collected via ${mode} across ${allEntries.length} entries`);
   saveStateLocal(); renderUdhaari(); updateBadges(); renderDashboard();
   closeModal('modal-collect-udhaari');
@@ -3791,9 +3897,12 @@ function sendGroupReminder(customerName, shopId) {
   const entries = STATE.udhaari.filter(u => u.customer && u.customer.toLowerCase() === customerName.toLowerCase() && u.shopId === shopId && u.status !== 'Settle');
   if (!entries.length) { toast('No pending entries', 'error'); return; }
   
-  // Get phone from first entry
-  const phone = entries[0].phone;
-  if (!phone) { toast('No phone number found', 'error'); return; }
+  // Get phone from first entry (already stored with 91 prefix from normalizePhone)
+  const rawPhone = entries[0].phone;
+  if (!rawPhone) { toast('No phone number found', 'error'); return; }
+  // Bug 4 fix: phone may already have 91 prefix — normalize to avoid doubling
+  const phone = normalizePhone(rawPhone);
+  if (!phone) { toast('Invalid phone number', 'error'); return; }
   
   // Calculate totals
   const totalBill = entries.reduce((s, u) => s + (u.totalBill || 0), 0);
@@ -3811,8 +3920,8 @@ function sendGroupReminder(customerName, shopId) {
   msg += `\nPlease clear the dues at the earliest.\n\n`;
   msg += `Thank you!\n${shopName(shopId)}`;
   
-  // Open WhatsApp
-  const url = `https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`;
+  // Open WhatsApp — phone already has 91 prefix from normalizePhone
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
   
   toast(`Reminder sent to ${customerName}`, 'success');
@@ -3853,7 +3962,7 @@ function renderOutflows() {
     const pct=Math.min(100,Math.round(g.paid/Math.max(1,g.amount+g.lateFee)*100));
     const allPaid = g.entries.every(e => e.status === 'Paid');
     const anyOverdue = g.entries.some(e => isOutflowOverdue(e));
-    return `<div class="rec-card${anyOverdue?' overdue':''}${allPaid?' settled':''}" style="cursor:pointer;" onclick="openPersonHistory('outflow','${g.payee}','${g.shopId}')">
+    return `<div class="rec-card${anyOverdue?' overdue':''}${allPaid?' settled':''}" style="cursor:pointer;" onclick="openPersonHistory('outflow','${escJsAttr(g.payee)}','${g.shopId}')">
       <div class="rec-head">
         <div style="flex:1;">
           <div class="rec-name">${escHtml(g.payee)}</div>
@@ -3881,7 +3990,7 @@ function renderOutflows() {
       <div class="rec-foot">
         <span class="meta-info"><i class="fa-solid fa-clock"></i> ${g.entries.length} transaction${g.entries.length===1?'':'s'}</span>
         <span class="meta-info"><i class="fa-solid fa-calendar"></i> Due: ${fmtDate(g.entries[0].dueDate)}</span>
-        ${!allPaid?`<button class="btn btn-warn btn-sm" onclick="event.stopPropagation();openPayOutflowGroup('${g.payee}','${g.shopId}')">Pay Bill</button>`:''}
+        ${!allPaid?`<button class="btn btn-warn btn-sm" onclick="event.stopPropagation();openPayOutflowGroup('${escJsAttr(g.payee)}','${g.shopId}')">Pay Bill</button>`:''}
       </div>
     </div>`;
   }).join(''):`<div class="empty" style="grid-column:1/-1;"><div class="empty-icon"><i class="fa-solid fa-receipt"></i></div>No outflows recorded</div>`;
@@ -3918,30 +4027,48 @@ function deleteOutflow(oid) {
   const idx = STATE.outflows.findIndex(x => x.id === oid);
   if (idx < 0) return;
   const o = STATE.outflows[idx];
-  showConfirm({
-    title:'Delete Outflow?',
-    msg:`Delete <strong>${escHtml(o.payee || 'Payee')}</strong> — ${fmt(o.amount || 0)}?<br><br>Any payment already deducted from shop balances will be rolled back.`,
-    icon:'!', yesText:'Delete', yesCls:'btn-bad',
-    onYes:()=>{
-      if (o.paymentLog && o.paymentLog.length) {
-        o.paymentLog.forEach(p => {
-          const vsh = STATE.shops.find(s=>s.id===p.vault);
-          if (vsh) {
-            if (p.mode === 'GPay') vsh.online = (vsh.online||0) + p.amount;
-            else vsh.galla = (vsh.galla||0) + p.amount;
-          }
-        });
-      } else if (o.paid) {
-        // Legacy entry saved before mode-tracking existed — best-effort assume Cash from its own shop
-        const vsh = STATE.shops.find(s=>s.id===o.shopId);
-        if (vsh) vsh.galla = (vsh.galla||0) + o.paid;
-      }
-      STATE.outflows.splice(idx, 1);
-      auditLog('DELETE_OUTFLOW', `Deleted outflow: ${o.payee || 'Payee'} — ${fmt(o.amount || 0)}`);
-      saveStateLocal(); renderOutflows(); updateBadges(); renderDashboard();
-      toast('Outflow deleted', 'info');
+
+  const doDelete = (reverse) => {
+    if (reverse && o.paymentLog && o.paymentLog.length) {
+      o.paymentLog.forEach(p => {
+        const vsh = STATE.shops.find(s=>s.id===p.vault);
+        if (!vsh) return;
+        if (p.mode === 'GPay') vsh.online = (vsh.online||0) + p.amount;
+        else if (p.mode === 'Home') vsh.homeTransfer = (vsh.homeTransfer||0) - p.amount;
+        else if (p.mode === 'Cash') vsh.galla = (vsh.galla||0) + p.amount; // legacy entries from before Home/Counter/GPay update
+        // Counter: nothing was deducted at pay-time, so nothing to reverse here
+      });
+    } else if (reverse && o.paid) {
+      const vsh = STATE.shops.find(s=>s.id===o.shopId);
+      if (vsh) vsh.galla = (vsh.galla||0) + o.paid;
     }
-  });
+    STATE.outflows.splice(idx, 1);
+    auditLog('DELETE_OUTFLOW', `Deleted outflow: ${o.payee || 'Payee'} — ${fmt(o.amount || 0)}${reverse?' (balance reversed)':' (balance kept as-is)'}`);
+    saveStateLocal(); renderOutflows(); updateBadges(); renderDashboard();
+    toast('Outflow deleted', 'info');
+  };
+
+  if (o.paid > 0) {
+    // Some money has actually already moved for this entry — deleting means two very
+    // different things depending on WHY: (1) the whole entry was a mistake, so the
+    // payment should come back too, or (2) it's a genuine, already-settled bill and
+    // you're just tidying up records — in which case the money really was spent and
+    // should NOT reappear in the balance.
+    showConfirm({
+      title:'Delete Outflow?',
+      msg:`<strong>${escHtml(o.payee || 'Payee')}</strong> — ${fmt(o.paid)} already paid out of ${fmt(o.amount)}.<br><br>Ye entry <strong>galti se</strong> bani thi (payment bhi wapas chahiye), ya ye <strong>sahi/settled</strong> thi aur sirf record clean karna hai (paisa jaisa hai waisa hi rahega)?`,
+      icon:'!', yesText:'Galti thi — Reverse karo', yesCls:'btn-bad',
+      extraText:'Sahi thi — Sirf record hatao', onExtra:()=>doDelete(false),
+      onYes:()=>doDelete(true)
+    });
+  } else {
+    showConfirm({
+      title:'Delete Outflow?',
+      msg:`Delete <strong>${escHtml(o.payee || 'Payee')}</strong> — ${fmt(o.amount || 0)}?`,
+      icon:'!', yesText:'Delete', yesCls:'btn-bad',
+      onYes:()=>doDelete(true)
+    });
+  }
 }
 
 function saveOutflow() {
@@ -3976,10 +4103,11 @@ function openPayOutflow(oid) {
     <div class="rec-cell"><div class="k">Paid</div><div class="v" style="color:var(--good);">${fmt(o.paid)}</div></div>
     <div class="rec-cell"><div class="k">Pending</div><div class="v" style="color:var(--bad);">${fmt(pending)}</div></div>`;
   $('po-amt').value=''; $('po-latefee').value='0';
-  chipPick('po-mode','Cash');
+  chipPick('po-mode','Home');
   chipPick('po-vault', o.shopId);
   openModal('modal-pay-outflow');
   $('po-is-warn').style.display='none';
+  $('po-counter-note').style.display='none';
 }
 
 function openPayOutflowGroup(payeeName, shopId) {
@@ -4002,29 +4130,37 @@ function openPayOutflowGroup(payeeName, shopId) {
     <div class="rec-cell"><div class="k">Pending</div><div class="v" style="color:var(--bad);">${fmt(pending)}</div></div>`;
   $('po-amt').value = pending; // Pre-fill with pending amount
   $('po-latefee').value='0';
-  chipPick('po-mode','Cash');
+  chipPick('po-mode','Home');
   chipPick('po-vault', shopId);
   openModal('modal-pay-outflow');
   $('po-is-warn').style.display='none';
+  $('po-counter-note').style.display='none';
 }
 
-// Called by chipPick when vault (Cash From shop) changes
+// Called by chipPick when Paid Via mode changes
+function onPoModeChange() {
+  onPoVaultChange();
+}
+
+// Called by chipPick when vault (Shop) changes
 function onPoVaultChange() {
   const o = STATE.outflows.find(x=>x.id===activeOutflowId); if(!o) return;
   const vault = chipValue('po-vault');
-  $('po-is-warn').style.display = vault!==o.shopId ? 'block' : 'none';
+  const mode = chipValue('po-mode');
+  $('po-is-warn').style.display = (mode!=='Counter' && vault!==o.shopId) ? 'block' : 'none';
+  $('po-counter-note').style.display = mode==='Counter' ? 'block' : 'none';
 }
 
 function savePayOutflow() {
   const o=STATE.outflows.find(x=>x.id===activeOutflowId); if(!o) return;
   const amt=parseFloat($('po-amt').value)||0, lf=parseFloat($('po-latefee').value)||0;
   const vault=chipValue('po-vault');
-  const mode =chipValue('po-mode') || 'Cash';
+  const mode =chipValue('po-mode') || 'Home';
   if(amt<=0){ toast('Enter a valid amount','error'); return; }
   const vsh0 = STATE.shops.find(s=>s.id===vault);
-  if (vsh0) {
-    const avail = mode==='GPay' ? shopSpendableOnline(vsh0.id) : (vsh0.galla||0);
-    if (avail < amt) { toast(`${vsh0.name} ka spendable ${mode==='GPay'?'GPay':'counter cash'} sirf ${fmt(avail)} hai (40% savings reserve minus ho chuka hai)`, 'error'); return; }
+  if (vsh0 && mode !== 'Counter') {
+    const avail = mode==='GPay' ? shopSpendableOnline(vsh0.id) : shopSpendableHomeCash(vsh0.id);
+    if (avail < amt) { toast(`${vsh0.name} ka spendable ${mode==='GPay'?'GPay':'Home Cash'} sirf ${fmt(avail)} hai (40% savings reserve minus ho chuka hai)`, 'error'); return; }
   }
   
   // Find all entries for this payee+shop
@@ -4034,6 +4170,7 @@ function savePayOutflow() {
     entry.status !== 'Paid'
   );
   
+  const payDate = todayStr();
   // Distribute payment across all entries
   let remaining = amt;
   allEntries.forEach(entry => {
@@ -4042,7 +4179,7 @@ function savePayOutflow() {
     const toApply = Math.min(remaining, pendingForEntry);
     entry.paid += toApply;
     entry.paymentLog = entry.paymentLog || [];
-    entry.paymentLog.push({ vault, mode, amount: toApply });
+    entry.paymentLog.push({ vault, mode, amount: toApply, date: payDate });
     if (entry.paid >= entry.amount + entry.lateFee) {
       entry.status = 'Paid';
     }
@@ -4054,18 +4191,22 @@ function savePayOutflow() {
     allEntries[0].lateFee += lf;
   }
   
-  // Deduct from vault shop's balance (galla for Cash, online for GPay)
+  // Deduct from vault shop's balance — Home Cash or GPay only.
+  // Counter mode: NO deduction here — Counter Cash resets fresh from what you physically
+  // count and type in at Day Close, so an app-side deduction now would just get overwritten
+  // (or double-counted) later. Instead this just gets remembered for the Day Close reminder.
   const vsh = STATE.shops.find(s=>s.id===vault);
   if (vsh) {
     if (mode==='GPay') vsh.online = Math.max(0, (vsh.online||0) - amt);
-    else               vsh.galla  = Math.max(0, (vsh.galla||0)  - amt);
+    else if (mode==='Home') vsh.homeTransfer = (vsh.homeTransfer||0) + amt;
   }
-  if(vault!==o.shopId){
-    STATE.intershop.unshift({id:newId('IS'),fromShop:vault,toShop:o.shopId,date:todayStr(),amount:amt,reason:`Outflow: ${o.payee}`,status:'Open'});
+  if(mode!=='Counter' && vault!==o.shopId){
+    STATE.intershop.unshift({id:newId('IS'),fromShop:vault,toShop:o.shopId,date:payDate,amount:amt,reason:`Outflow: ${o.payee}`,status:'Open'});
     auditLog('INTERSHOP',`${shopName(vault)} → ${shopName(o.shopId)} ${fmt(amt)} for ${o.payee}`);
   }
   auditLog('SETTLE_OUTFLOW',`${o.payee} — ${fmt(amt)} paid via ${mode} across ${allEntries.length} entries${lf>0?` + ${fmt(lf)} late fee`:''}`);
   saveStateLocal(); renderOutflows(); renderIntershop(); updateBadges(); renderDashboard();
+  renderDcCashReminder(vault);
   closeModal('modal-pay-outflow');
   toast(`${o.payee} — ${fmt(amt)} paid${remaining===0?' — Fully Cleared!':''}`);
 }
@@ -4093,12 +4234,14 @@ function renderIntershop() {
       </div>
       <div style="display:flex;align-items:center;gap:12px;background:var(--panel2);border-radius:7px;padding:10px 12px;">
         <div style="flex:1;"><div class="k" style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Amount</div><div class="mono" style="font-size:15px;font-weight:700;">${fmt(i.amount)}</div></div>
+        ${i.kind==='loan'?`<div style="flex:1;"><div class="k" style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Given Via</div><div style="font-size:12px;"><i class="fa-solid ${i.mode==='GPay'?'fa-mobile-screen':'fa-house'}" style="margin-right:4px;color:var(--muted);"></i>${i.mode||'Cash'}</div></div>`:''}
         <div style="flex:1;"><div class="k" style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Reason</div><div style="font-size:12px;">${i.reason||'—'}</div></div>
       </div>
+      ${i.status==='Settled' && i.kind==='loan'?`<div style="font-size:11px;color:var(--good);margin-top:6px;"><i class="fa-solid fa-check"></i> Repaid via ${i.repayMode||'Cash'}</div>`:''}
       <div class="rec-foot">
         <span class="meta-info"><i class="fa-solid fa-calendar"></i> ${fmtDate(i.date)}</span>
         <div style="display:flex;gap:6px;">
-          ${i.status==='Open'?`<button class="btn btn-good btn-sm" onclick="settleIntershop('${i.id}')">Settle</button>`:''}
+          ${i.status==='Open'?`<button class="btn btn-good btn-sm" onclick="openSettleIntershop('${i.id}')">Settle</button>`:''}
           <button class="btn btn-ghost btn-xs" onclick="openEditIntershop('${i.id}')"><i class="fa-solid fa-pen"></i></button>
           <button class="btn btn-bad btn-xs" onclick="deleteIntershop('${i.id}')"><i class="fa-solid fa-trash"></i></button>
         </div>
@@ -4107,21 +4250,56 @@ function renderIntershop() {
   `).join(''):`<div class="empty" style="grid-column:1/-1;"><div class="empty-icon"><i class="fa-solid fa-right-left"></i></div>No InterShop transfers recorded</div>`;
 }
 
-// Reverse whatever balance movement an intershop entry's creation/settlement applied.
-// 'direct' = an instant Add Transfer (fromShop lost, toShop gained at creation time).
-// 'reimbursement' = created via settleIntershop() on an Open entry (toShop paid back fromShop).
+// ─── Fund movement helpers ─────────────────────────────────────────
+// "Loan" leg: From Shop funds To Shop at creation time (always happens).
+// "Repay" leg: To Shop pays back From Shop, applied only once Settled.
+// Both legs move either Home Cash (via homeTransfer) or GPay (via .online),
+// chosen independently by i.mode (loan) and i.repayMode (repayment).
+function applyLoanMovement(i) {
+  const fromShop = STATE.shops.find(s=>s.id===i.fromShop);
+  const toShop = STATE.shops.find(s=>s.id===i.toShop);
+  if (!fromShop || !toShop) return;
+  if (i.mode === 'GPay') { fromShop.online = (fromShop.online||0) - i.amount; toShop.online = (toShop.online||0) + i.amount; }
+  else { fromShop.homeTransfer = (fromShop.homeTransfer||0) + i.amount; toShop.homeTransfer = (toShop.homeTransfer||0) - i.amount; }
+}
+function reverseLoanMovement(i) {
+  const fromShop = STATE.shops.find(s=>s.id===i.fromShop);
+  const toShop = STATE.shops.find(s=>s.id===i.toShop);
+  if (!fromShop || !toShop) return;
+  if (i.mode === 'GPay') { fromShop.online = (fromShop.online||0) + i.amount; toShop.online = (toShop.online||0) - i.amount; }
+  else { fromShop.homeTransfer = (fromShop.homeTransfer||0) - i.amount; toShop.homeTransfer = (toShop.homeTransfer||0) + i.amount; }
+}
+function applyRepayMovement(i) {
+  const fromShop = STATE.shops.find(s=>s.id===i.fromShop);
+  const toShop = STATE.shops.find(s=>s.id===i.toShop);
+  if (!fromShop || !toShop) return;
+  if (i.repayMode === 'GPay') { toShop.online = (toShop.online||0) - i.amount; fromShop.online = (fromShop.online||0) + i.amount; }
+  else { toShop.homeTransfer = (toShop.homeTransfer||0) + i.amount; fromShop.homeTransfer = (fromShop.homeTransfer||0) - i.amount; }
+}
+function reverseRepayMovement(i) {
+  const fromShop = STATE.shops.find(s=>s.id===i.fromShop);
+  const toShop = STATE.shops.find(s=>s.id===i.toShop);
+  if (!fromShop || !toShop) return;
+  if (i.repayMode === 'GPay') { toShop.online = (toShop.online||0) + i.amount; fromShop.online = (fromShop.online||0) - i.amount; }
+  else { toShop.homeTransfer = (toShop.homeTransfer||0) - i.amount; fromShop.homeTransfer = (fromShop.homeTransfer||0) + i.amount; }
+}
+// Full undo of an entry — reverses the repayment leg (if settled) and the loan leg.
+// i.kind==='loan' entries come from the Add Transfer modal (Home Cash / GPay based).
+// Entries without kind are legacy obligation records auto-created by "Pay Bill" (Vault),
+// which still move Counter Cash (galla) only at settle-time — handled separately so
+// existing Pay Bill accounting isn't disturbed.
 function reverseIntershopFunds(i) {
+  if (i.kind === 'loan') {
+    if (i.status === 'Settled') reverseRepayMovement(i);
+    reverseLoanMovement(i);
+    return;
+  }
   if (!i.fundsMoved) return;
   const fromShop = STATE.shops.find(s=>s.id===i.fromShop);
   const toShop = STATE.shops.find(s=>s.id===i.toShop);
   if (!fromShop || !toShop) return;
-  if (i.settlementDirection === 'reimbursement') {
-    toShop.galla = (toShop.galla||0) + i.amount;
-    fromShop.galla = (fromShop.galla||0) - i.amount;
-  } else {
-    fromShop.galla = (fromShop.galla||0) + i.amount;
-    toShop.galla = (toShop.galla||0) - i.amount;
-  }
+  toShop.galla = (toShop.galla||0) + i.amount;
+  fromShop.galla = (fromShop.galla||0) - i.amount;
 }
 
 function resetIntershopModal() {
@@ -4132,6 +4310,7 @@ function resetIntershopModal() {
   $('is-date').value = todayStr();
   chipPick('is-from','SHOP01');
   chipPick('is-to','SHOP02');
+  chipPick('is-mode','Cash');
 }
 function openAddIntershopModal() {
   resetIntershopModal();
@@ -4145,6 +4324,7 @@ function openEditIntershop(iid) {
   $('is-save-btn').textContent = 'Save Changes';
   chipPick('is-from', i.fromShop);
   chipPick('is-to', i.toShop);
+  chipPick('is-mode', i.mode || 'Cash');
   $('is-amt').value = i.amount || 0;
   $('is-date').value = i.date || todayStr();
   $('is-reason').value = i.reason || '';
@@ -4153,6 +4333,7 @@ function openEditIntershop(iid) {
 
 function saveIntershop() {
   const from=chipValue('is-from'), to=chipValue('is-to');
+  const mode=chipValue('is-mode')||'Cash';
   const amt=parseFloat($('is-amt').value)||0, date=$('is-date').value, reason=$('is-reason').value.trim();
   if(from===to){ toast('From and To shops must be different','error'); return; }
   if(!amt||!date){ toast('Amount and date are required','error'); return; }
@@ -4163,28 +4344,26 @@ function saveIntershop() {
   if (editIntershopId) {
     const i = STATE.intershop.find(x=>x.id===editIntershopId);
     if (!i) return;
-    reverseIntershopFunds(i); // undo old effect first
-    if (fromShop.galla < amt) {
+    reverseIntershopFunds(i); // fully undo old effect (loan + repay if settled)
+    const avail = mode==='GPay' ? shopSpendableOnline(from) : shopSpendableHomeCash(from);
+    if (avail < amt) {
       // put old effect back before bailing, so state isn't left half-reversed
-      if (i.fundsMoved) {
-        if (i.settlementDirection === 'reimbursement') { toShop.galla -= amt; fromShop.galla += amt; }
-        else { fromShop.galla -= amt; toShop.galla += amt; }
-      }
-      toast(`${fromShop.name} has only ${fmt(fromShop.galla)} counter cash`, 'error'); return;
+      applyLoanMovement(i);
+      if (i.status === 'Settled') applyRepayMovement(i);
+      toast(`${fromShop.name} ka spendable ${mode==='GPay'?'GPay':'Home Cash'} sirf ${fmt(avail)} hai (40% savings reserve minus ho chuka hai)`, 'error'); return;
     }
-    fromShop.galla -= amt;
-    toShop.galla += amt;
-    i.fromShop = from; i.toShop = to; i.amount = amt; i.date = date; i.reason = reason;
-    i.fundsMoved = true; i.settlementDirection = 'direct';
-    auditLog('EDIT_INTERSHOP', `Edited transfer: ${shopName(from)} → ${shopName(to)} ${fmt(amt)}`);
+    i.fromShop = from; i.toShop = to; i.amount = amt; i.date = date; i.reason = reason; i.mode = mode; i.kind = 'loan';
+    applyLoanMovement(i);
+    if (i.status === 'Settled') applyRepayMovement(i); // reapply repayment (same repayMode) with new amount
+    auditLog('EDIT_INTERSHOP', `Edited transfer: ${shopName(from)} → ${shopName(to)} ${fmt(amt)} (${mode})`);
     toast(`Transfer updated — ${shopName(from)} → ${shopName(to)} ${fmt(amt)}`);
   } else {
-    if (fromShop.galla < amt) { toast(`${fromShop.name} has only ${fmt(fromShop.galla)} counter cash`, 'error'); return; }
-    // Move funds immediately
-    fromShop.galla -= amt;
-    toShop.galla += amt;
-    STATE.intershop.unshift({id:newId('IS'),fromShop:from,toShop:to,date,amount:amt,reason,status:'Settled',fundsMoved:true,settlementDirection:'direct'});
-    auditLog('INTERSHOP',`${shopName(from)} → ${shopName(to)} ${fmt(amt)}${reason?' — '+reason:''} — funds moved`);
+    const avail = mode==='GPay' ? shopSpendableOnline(from) : shopSpendableHomeCash(from);
+    if (avail < amt) { toast(`${fromShop.name} ka spendable ${mode==='GPay'?'GPay':'Home Cash'} sirf ${fmt(avail)} hai (40% savings reserve minus ho chuka hai)`, 'error'); return; }
+    const entry = {id:newId('IS'), fromShop:from, toShop:to, date, amount:amt, reason, mode, status:'Open', kind:'loan'};
+    applyLoanMovement(entry);
+    STATE.intershop.unshift(entry);
+    auditLog('INTERSHOP',`${shopName(from)} → ${shopName(to)} ${fmt(amt)} via ${mode}${reason?' — '+reason:''} — loan created`);
     toast(`Transfer recorded — ${shopName(from)} → ${shopName(to)} ${fmt(amt)}`);
   }
   saveStateLocal(); renderIntershop(); updateBadges(); renderDashboard();
@@ -4209,22 +4388,49 @@ function deleteIntershop(iid) {
   });
 }
 
-function settleIntershop(iid) {
-  const i=STATE.intershop.find(x=>x.id===iid); if(!i) return;
+let activeIntershopSettleId = null;
+function openSettleIntershop(iid) {
+  const i = STATE.intershop.find(x=>x.id===iid);
+  if (!i) return;
   if (i.status === 'Settled') { toast('Already settled', 'info'); return; }
+  if (i.kind !== 'loan') { legacySettleIntershop(iid); return; } // Pay-Bill obligation entries keep old galla-based settle
+  activeIntershopSettleId = iid;
+  $('is-settle-info').innerHTML = `<div style="font-size:13px;"><strong>${shopName(i.toShop)}</strong> repaying <strong>${shopName(i.fromShop)}</strong></div><div class="mono" style="font-size:18px;font-weight:700;margin-top:4px;">${fmt(i.amount)}</div>`;
+  chipPick('ris-mode','Cash');
+  openModal('modal-settle-intershop');
+}
+// Legacy path for entries auto-created by "Pay Bill" (vault paying another shop's bill) —
+// these settle by moving Counter Cash (galla), same as the original behavior.
+function legacySettleIntershop(iid) {
+  const i = STATE.intershop.find(x=>x.id===iid); if (!i) return;
   const fromShop = STATE.shops.find(s=>s.id===i.fromShop);
   const toShop = STATE.shops.find(s=>s.id===i.toShop);
   if (!fromShop || !toShop) { toast('Shop not found','error'); return; }
-  if (toShop.galla < i.amount) { toast(`${toShop.name} has only ${fmt(toShop.galla)} counter cash`, 'error'); return; }
-  // Move funds: toShop gives back to fromShop
+  if ((toShop.galla||0) < i.amount) { toast(`${toShop.name} has only ${fmt(toShop.galla)} counter cash`, 'error'); return; }
   toShop.galla -= i.amount;
   fromShop.galla += i.amount;
   i.status='Settled';
   i.fundsMoved = true;
-  i.settlementDirection = 'reimbursement';
   auditLog('INTERSHOP',`Settled: ${shopName(i.fromShop)} → ${shopName(i.toShop)} ${fmt(i.amount)} — funds moved`);
   saveStateLocal(); renderIntershop(); updateBadges(); renderDashboard();
   toast(`InterShop settled — ${fmt(i.amount)}`);
+}
+function saveSettleIntershop() {
+  const i = STATE.intershop.find(x=>x.id===activeIntershopSettleId);
+  if (!i) return;
+  const repayMode = chipValue('ris-mode')||'Cash';
+  const fromShop = STATE.shops.find(s=>s.id===i.fromShop);
+  const toShop = STATE.shops.find(s=>s.id===i.toShop);
+  if (!fromShop || !toShop) { toast('Shop not found','error'); return; }
+  const avail = repayMode==='GPay' ? shopSpendableOnline(i.toShop) : shopSpendableHomeCash(i.toShop);
+  if (avail < i.amount) { toast(`${toShop.name} ka spendable ${repayMode==='GPay'?'GPay':'Home Cash'} sirf ${fmt(avail)} hai (40% savings reserve minus ho chuka hai)`, 'error'); return; }
+  i.repayMode = repayMode;
+  i.status = 'Settled';
+  applyRepayMovement(i);
+  auditLog('INTERSHOP',`Settled: ${shopName(i.fromShop)} → ${shopName(i.toShop)} ${fmt(i.amount)} via ${repayMode}`);
+  saveStateLocal(); renderIntershop(); updateBadges(); renderDashboard();
+  closeModal('modal-settle-intershop');
+  toast(`InterShop settled — ${fmt(i.amount)} via ${repayMode}`);
 }
 
 // ─── Loans ───────────────────────────────────────────────────────
@@ -4256,7 +4462,7 @@ function renderLoans() {
     const pending=g.amount-g.repaid;
     const pct=Math.min(100,Math.round(g.repaid/Math.max(1,g.amount)*100));
     const allRepaid = g.entries.every(e => e.status === 'Repaid');
-    return `<div class="loan-card${allRepaid?' repaid':''}" style="cursor:pointer;" onclick="openPersonHistory('loan','${g.from}','${g.shopId}')">
+    return `<div class="loan-card${allRepaid?' repaid':''}" style="cursor:pointer;" onclick="openPersonHistory('loan','${escJsAttr(g.from)}','${g.shopId}')">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <div style="flex:1;">
           <div style="font-size:14px;font-weight:700;">${escHtml(g.from)}</div>
@@ -4287,7 +4493,7 @@ function renderLoans() {
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
         <span class="meta-info" style="font-size:11px;color:var(--muted);"><i class="fa-solid fa-clock"></i> ${g.entries.length} transaction${g.entries.length===1?'':'s'}</span>
         <span class="meta-info" style="font-size:11px;color:var(--muted);"><i class="fa-solid fa-calendar"></i> ${fmtDate(g.entries[0].date)}</span>
-        ${!allRepaid?`<button class="btn btn-good btn-sm" onclick="event.stopPropagation();openRepayLoanGroup('${g.from}','${g.shopId}')">Repay</button>`:''}
+        ${!allRepaid?`<button class="btn btn-good btn-sm" onclick="event.stopPropagation();openRepayLoanGroup('${escJsAttr(g.from)}','${g.shopId}')">Repay</button>`:''}
       </div>
     </div>`;
   }).join(''):`<div class="empty" style="grid-column:1/-1;"><div class="empty-icon"><i class="fa-solid fa-piggy-bank"></i></div>No loans — all money is yours </div>`;
@@ -4380,6 +4586,8 @@ function saveRepayLoan() {
         if (avail < amt) { toast(`${sh.name} ka spendable GPay sirf ${fmt(avail)} hai (savings reserve minus ho chuka hai)`, 'error'); return; }
         sh.online = (sh.online||0) - amt;
       } else {
+        const avail = shopSpendableHomeCash(sh.id);
+        if (avail < amt) { toast(`${sh.name} ka spendable Home Cash sirf ${fmt(avail)} hai (40% savings reserve minus ho chuka hai)`, 'error'); return; }
         sh.homeTransfer = (sh.homeTransfer||0) + amt; // Add to homeTransfer to decrease home cash
       }
     }
@@ -4393,13 +4601,14 @@ function saveRepayLoan() {
     const toApply = Math.min(remaining, pendingForEntry);
     entry.repaid += toApply;
     if(!entry.repayments) entry.repayments=[];
-    entry.repayments.push({date:repayDate,amount:toApply});
+    entry.repayments.push({date:repayDate,amount:toApply,mode});
     if(entry.repaid>=entry.amount) entry.status='Repaid';
     remaining -= toApply;
   });
   
   auditLog('REPAY_LOAN',`${fmt(amt)} repaid to ${l.from} on ${fmtDate(repayDate)} across ${allEntries.length} entries`);
   saveStateLocal(); renderLoans(); updateBadges(); renderDashboard();
+  if (l.shopId !== 'GENERAL') renderDcCashReminder(l.shopId);
   closeModal('modal-repay-loan');
   toast(`${fmt(amt)} repaid to ${l.from}${remaining===0?' — fully repaid':''}`);
 }
@@ -4431,16 +4640,28 @@ function saveEditLoan() {
   const mode=chipValue('al-mode')||'Cash';
   if(!from||!amt||!date){ toast('Name, amount, and date are required','error'); return; }
   
-  // Reverse old fund effect
+  // Reverse old fund effect (respect the original loan mode)
   if (l.shopId !== 'GENERAL') {
     const oldSh = STATE.shops.find(s=>s.id===l.shopId);
-    if (oldSh) oldSh.homeTransfer = (oldSh.homeTransfer||0) + l.amount;
+    if (oldSh) {
+      if (l.mode === 'GPay') {
+        oldSh.online = (oldSh.online||0) - l.amount; // Undo GPay addition
+      } else {
+        oldSh.homeTransfer = (oldSh.homeTransfer||0) + l.amount; // Undo homeTransfer subtraction
+      }
+    }
   }
   
-  // Apply new fund effect
+  // Apply new fund effect (respect the new loan mode)
   if (shop !== 'GENERAL') {
     const sh = STATE.shops.find(s=>s.id===shop);
-    if (sh) sh.homeTransfer = (sh.homeTransfer||0) - amt;
+    if (sh) {
+      if (mode === 'GPay') {
+        sh.online = (sh.online||0) + amt; // Add to GPay
+      } else {
+        sh.homeTransfer = (sh.homeTransfer||0) - amt; // Subtract from homeTransfer
+      }
+    }
   }
   
   l.from = from;
@@ -4449,6 +4670,10 @@ function saveEditLoan() {
   l.purpose = purpose;
   l.date = date;
   l.mode = mode;
+  // Bug 5 fix: recalculate loan status based on new amount vs repaid
+  const totalRepaidEdit = (l.repayments||[]).reduce((s,r)=>s+(r.amount||0),0);
+  l.repaid = totalRepaidEdit;
+  l.status = totalRepaidEdit >= amt ? 'Repaid' : 'Pending';
   
   auditLog('EDIT_LOAN',`Loan updated: ${from} — ${fmt(amt)}`);
   saveStateLocal(); renderLoans(); updateBadges(); renderDashboard();
@@ -4466,33 +4691,57 @@ function saveEditLoan() {
 function deleteLoan(lid) {
   const l = STATE.loans.find(x => x.id === lid);
   if (!l) return;
-  showConfirm({
-    title: 'Delete Loan?',
-    msg: `Delete loan from <strong>${l.from}</strong> — ${fmt(l.amount)}?<br>This will reverse the fund effect.`,
-    icon: '!',
-    yesText: 'Delete',
-    yesCls: 'btn-bad',
-    onYes: () => {
-      // Reverse fund effect
-      if (l.shopId !== 'GENERAL') {
-        const sh = STATE.shops.find(s=>s.id===l.shopId);
-        if (sh) {
-          sh.homeTransfer = (sh.homeTransfer||0) + l.amount;
-          // Also reverse repayments
+  const totalRepaid = (l.repayments||[]).reduce((s,r)=>s+(r.amount||0),0);
+
+  const doDelete = (reverse) => {
+    if (l.shopId !== 'GENERAL') {
+      const sh = STATE.shops.find(s=>s.id===l.shopId);
+      if (sh) {
+        if (reverse) {
+          // Reverse the loan-in based on the loan's mode
+          if (l.mode === 'GPay') {
+            sh.online = (sh.online||0) - l.amount; // Undo GPay addition
+          } else {
+            sh.homeTransfer = (sh.homeTransfer||0) + l.amount; // Undo homeTransfer subtraction
+          }
+          // Reverse each repayment based on its own mode
           if (l.repayments) {
             l.repayments.forEach(r => {
-              sh.homeTransfer = (sh.homeTransfer||0) - r.amount;
+              if (r.mode === 'GPay') {
+                sh.online = (sh.online||0) + r.amount; // Undo GPay repayment deduction
+              } else {
+                sh.homeTransfer = (sh.homeTransfer||0) - r.amount; // Undo homeTransfer repayment addition
+              }
             });
           }
         }
+        // If not reversing: the loan-in and its repayments both genuinely happened,
+        // so balances are left exactly as-is — only the tracking record disappears.
       }
-      const idx = STATE.loans.findIndex(x => x.id === lid);
-      if (idx >= 0) STATE.loans.splice(idx, 1);
-      auditLog('DELETE_LOAN', `Deleted loan: ${l.from} — ${fmt(l.amount)}`);
-      saveStateLocal(); renderLoans(); updateBadges(); renderDashboard();
-      toast('Loan deleted', 'info');
     }
-  });
+    const idx = STATE.loans.findIndex(x => x.id === lid);
+    if (idx >= 0) STATE.loans.splice(idx, 1);
+    auditLog('DELETE_LOAN', `Deleted loan: ${l.from} — ${fmt(l.amount)}${reverse?' (balance reversed)':' (balance kept as-is)'}`);
+    saveStateLocal(); renderLoans(); updateBadges(); renderDashboard();
+    toast('Loan deleted', 'info');
+  };
+
+  if (totalRepaid > 0) {
+    showConfirm({
+      title:'Delete Loan?',
+      msg:`Loan from <strong>${l.from}</strong> — ${fmt(l.amount)}, ${fmt(totalRepaid)} already repaid.<br><br>Ye poori entry <strong>galti se</strong> bani thi (loan + repayment dono wapas chahiye), ya ye <strong>sahi</strong> thi aur sirf record clean karna hai (paisa jaisa hai waisa hi rahega)?`,
+      icon:'!', yesText:'Galti thi — Reverse karo', yesCls:'btn-bad',
+      extraText:'Sahi thi — Sirf record hatao', onExtra:()=>doDelete(false),
+      onYes:()=>doDelete(true)
+    });
+  } else {
+    showConfirm({
+      title: 'Delete Loan?',
+      msg: `Delete loan from <strong>${l.from}</strong> — ${fmt(l.amount)}?<br>This will reverse the fund effect.`,
+      icon: '!', yesText:'Delete', yesCls: 'btn-bad',
+      onYes: ()=>doDelete(true)
+    });
+  }
 }
 
 function openPersonHistory(type, personName, shopId) {
@@ -4500,12 +4749,17 @@ function openPersonHistory(type, personName, shopId) {
   const existingModal = $('modal-person-history');
   if (existingModal) existingModal.remove();
   
+  // Bug 11 fix: escape personName for safe HTML insertion (prevent XSS)
+  const safeName = escHtml(personName);
+  // For onclick attributes, also escape single quotes
+  const safeAttr = personName.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  
   let entries = [], title = '', totalGiven = 0, totalReceived = 0, firstEntryId = null;
   
   if (type === 'loan') {
     const loans = STATE.loans.filter(l => l.from && l.from.toLowerCase() === personName.toLowerCase() && l.shopId === shopId);
     if (!loans.length) return;
-    title = `Loan History — ${personName} (${shopName(shopId)})`;
+    title = `Loan History — ${safeName} (${shopName(shopId)})`;
     firstEntryId = loans[0].id;
     
     // Build entries from all loans
@@ -4537,7 +4791,7 @@ function openPersonHistory(type, personName, shopId) {
   } else if (type === 'udhaari') {
     const udhaaris = STATE.udhaari.filter(u => u.customer && u.customer.toLowerCase() === personName.toLowerCase() && u.shopId === shopId);
     if (!udhaaris.length) return;
-    title = `Credit History — ${personName} (${shopName(shopId)})`;
+    title = `Credit History — ${safeName} (${shopName(shopId)})`;
     firstEntryId = udhaaris[0].id;
     
     udhaaris.forEach(u => {
@@ -4566,7 +4820,7 @@ function openPersonHistory(type, personName, shopId) {
   } else if (type === 'outflow') {
     const outflows = STATE.outflows.filter(o => o.payee && o.payee.toLowerCase() === personName.toLowerCase() && o.shopId === shopId);
     if (!outflows.length) return;
-    title = `Outflow History — ${personName} (${shopName(shopId)})`;
+    title = `Outflow History — ${safeName} (${shopName(shopId)})`;
     firstEntryId = outflows[0].id;
     
     outflows.forEach(o => {
@@ -4609,12 +4863,15 @@ function openPersonHistory(type, personName, shopId) {
   
   // Determine action button based on type
   let actionButton = '';
+  // Map type to edit/delete function names for row-level actions
+  const editFn = type === 'loan' ? 'openEditLoan' : type === 'udhaari' ? 'openEditUdhaari' : 'openEditOutflow';
+  const deleteFn = type === 'loan' ? 'deleteLoan' : type === 'udhaari' ? 'deleteUdhaari' : 'deleteOutflow';
   if (type === 'loan' && !allSettled) {
-    actionButton = `<button class="btn btn-good" onclick="closeModal('modal-person-history');openRepayLoanGroup('${personName}','${shopId}')"><i class="fa-solid fa-money-bill-wave"></i> Repay Loan</button>`;
+    actionButton = `<button class="btn btn-good" onclick="closeModal('modal-person-history');openRepayLoanGroup('${safeAttr}','${shopId}')"><i class="fa-solid fa-money-bill-wave"></i> Repay Loan</button>`;
   } else if (type === 'udhaari' && !allSettled) {
-    actionButton = `<button class="btn btn-good" onclick="closeModal('modal-person-history');openCollectGroup('${personName}','${shopId}')"><i class="fa-solid fa-hand-holding-dollar"></i> Collect Payment</button>`;
+    actionButton = `<button class="btn btn-good" onclick="closeModal('modal-person-history');openCollectGroup('${safeAttr}','${shopId}')"><i class="fa-solid fa-hand-holding-dollar"></i> Collect Payment</button>`;
   } else if (type === 'outflow' && !allSettled) {
-    actionButton = `<button class="btn btn-warn" onclick="closeModal('modal-person-history');openPayOutflowGroup('${personName}','${shopId}')"><i class="fa-solid fa-money-check"></i> Pay Bill</button>`;
+    actionButton = `<button class="btn btn-warn" onclick="closeModal('modal-person-history');openPayOutflowGroup('${safeAttr}','${shopId}')"><i class="fa-solid fa-money-check"></i> Pay Bill</button>`;
   }
   
   // Create modal
@@ -4635,6 +4892,7 @@ function openPersonHistory(type, personName, shopId) {
               <th style="padding:10px;text-align:right;border-bottom:2px solid var(--line);">Amount</th>
               <th style="padding:10px;text-align:right;border-bottom:2px solid var(--line);">Balance</th>
               <th style="padding:10px;text-align:left;border-bottom:2px solid var(--line);">Note</th>
+              <th style="padding:10px;text-align:center;border-bottom:2px solid var(--line);">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -4644,7 +4902,11 @@ function openPersonHistory(type, personName, shopId) {
                 <td style="padding:10px;"><span class="badge ${e.amount>0?'badge-red':'badge-green'}">${e.type}</span></td>
                 <td style="padding:10px;text-align:right;color:${e.amount>0?'var(--good)':'var(--bad)'};">${fmt(Math.abs(e.amount))}</td>
                 <td style="padding:10px;text-align:right;font-weight:600;">${fmt(Math.abs(e.balance))}</td>
-                <td style="padding:10px;color:var(--muted);">${e.note}</td>
+                <td style="padding:10px;color:var(--muted);">${escHtml(e.note)}</td>
+                <td style="padding:10px;text-align:center;white-space:nowrap;">
+                  <button class="btn btn-ghost btn-xs" style="padding:3px 6px;" onclick="closeModal('modal-person-history');${editFn}('${e.id}')" title="Edit"><i class="fa-solid fa-pen" style="font-size:9px;"></i></button>
+                  <button class="btn btn-bad btn-xs" style="padding:3px 6px;" onclick="closeModal('modal-person-history');${deleteFn}('${e.id}')" title="Delete"><i class="fa-solid fa-trash" style="font-size:9px;"></i></button>
+                </td>
               </tr>
             `).join('')}
           </tbody>
@@ -4716,9 +4978,9 @@ function showPersonSuggestions(inputId, type) {
   }
   
   dropdown.innerHTML = suggestions.map(s => `
-    <div class="autocomplete-item" onclick="selectPersonSuggestion('${inputId}', '${s.name}', '${s.phone || ''}')">
-      <div class="name">${s.name}${s.phone ? ` <span style="color:var(--muted);font-size:10px;">(${s.phone})</span>` : ''}</div>
-      <div class="info">${s.info}</div>
+    <div class="autocomplete-item" onclick="selectPersonSuggestion('${inputId}', '${escJsAttr(s.name)}', '${escJsAttr(s.phone || '')}')">
+      <div class="name">${escHtml(s.name)}${s.phone ? ` <span style="color:var(--muted);font-size:10px;">(${escHtml(s.phone)})</span>` : ''}</div>
+      <div class="info">${escHtml(s.info)}</div>
     </div>
   `).join('');
   
@@ -4772,8 +5034,10 @@ function saveHomeExpense() {  const desc = $('he-desc').value.trim();
   const note = $('he-note').value.trim();
   if (!desc || !amt || !date) { toast('Description, amount, and date are required', 'error'); return; }
 
-  function _heFinish() {
+  function _heFinish(actualDeducted) {
     const entry = { id:newId('HE'), desc, category:cat, amount:amt, date, mode, paidFrom:from, note };
+    // Store actual amount deducted from shop balance (may differ from amt if balance was insufficient)
+    if (actualDeducted != null && from !== 'PERSONAL') entry.actualDeducted = actualDeducted;
     STATE.homeExpenses.unshift(entry);
     auditLog('HOME_EXPENSE', `${desc} (${cat}) — ${fmt(amt)} via ${mode} from ${from==='PERSONAL'?'Personal':shopName(from)}`);
     saveStateLocal(); renderHomeExpenses(); renderDashboard();
@@ -4794,9 +5058,16 @@ function saveHomeExpense() {  const desc = $('he-desc').value.trim();
         msg:`<strong>${escHtml(sh.name)}</strong> ka spendable <strong>${useGpay?'GPay':'Counter Cash'}</strong> sirf <strong>${fmt(available)}</strong> hai (40% savings reserve minus ho chuka hai). Log anyway?`,
         icon:'!',yesText:'Log Anyway',yesCls:'btn-bad',
         onYes:()=>{
-          if (useGpay) sh.online = Math.max(0, (sh.online||0) - amt);
-          else sh.galla = Math.max(0, (sh.galla||0) - amt);
-          _heFinish();
+          // Bug 3 fix: store actualDeducted so delete only reverses what was really deducted (not full amount)
+          if (useGpay) {
+            const actual = Math.min(sh.online||0, amt);
+            sh.online = (sh.online||0) - actual;
+            _heFinish(actual);
+          } else {
+            const actual = Math.min(sh.galla||0, amt);
+            sh.galla = (sh.galla||0) - actual;
+            _heFinish(actual);
+          }
         }
       }); return;
     }
@@ -4832,9 +5103,12 @@ function deleteHomeExpense(id) {
       if (r.paidFrom && r.paidFrom !== 'PERSONAL') {
         const sh = STATE.shops.find(s=>s.id===r.paidFrom);
         if (sh) {
+          // Bug 3 fix: use actualDeducted (what was really deducted) instead of full amount
+          // For old entries without actualDeducted, fall back to full amount (legacy behavior)
+          const reverseAmt = r.actualDeducted != null ? r.actualDeducted : (r.amount||0);
           const useGpay = (r.mode==='GPay' || r.mode==='Bank Transfer');
-          if (useGpay) sh.online = (sh.online||0) + (r.amount||0);
-          else sh.galla = (sh.galla||0) + (r.amount||0);
+          if (useGpay) sh.online = (sh.online||0) + reverseAmt;
+          else sh.galla = (sh.galla||0) + reverseAmt;
         }
       }
       STATE.homeExpenses.splice(idx,1);
@@ -4898,7 +5172,7 @@ function renderHomeExpenses() {
           <div class="he-row">
             <span class="he-cat-dot" style="background:${HE_CAT_COLORS[e.category]||'#8888a8'};"></span>
             <div style="flex:1;min-width:0;">
-              <div style="font-size:13px;font-weight:600;">${e.desc}</div>
+              <div style="font-size:13px;font-weight:600;">${escHtml(e.desc)}</div>
               <div style="font-size:10.5px;color:var(--muted);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap;">
                 <span><i class="fa-solid ${HE_MODE_ICONS[e.mode]||'fa-money-bill'}" style="margin-right:3px;"></i>${e.mode}</span>
                 <span><i class="fa-solid fa-calendar" style="margin-right:3px;"></i>${fmtDate(e.date)}</span>
@@ -4906,7 +5180,7 @@ function renderHomeExpenses() {
                 ${e.paidFrom && e.paidFrom!=='PERSONAL'
                   ? `<span class="badge" style="background:${shopColor(e.paidFrom)}22;color:${shopColor(e.paidFrom)};border:1px solid ${shopColor(e.paidFrom)}44;padding:1px 6px;"><i class="fa-solid fa-store" style="margin-right:3px;font-size:8px;"></i>${shopName(e.paidFrom)}</span>`
                   : `<span class="badge badge-gray" style="padding:1px 6px;">Personal</span>`}
-                ${e.note?`<span title="${e.note}"><i class="fa-solid fa-note-sticky"></i></span>`:''}
+                ${e.note?`<span title="${escHtml(e.note)}"><i class="fa-solid fa-note-sticky"></i></span>`:''}
               </div>
             </div>
             <div class="mono" style="font-size:14px;font-weight:700;color:var(--bad);flex-shrink:0;">${fmt(e.amount)}</div>
@@ -5252,8 +5526,9 @@ function exportPdfReport() {
   const totHc = STATE.shops.reduce((s,sh)=>s+shopHomeCash(sh.id), 0);
   const persDrain = personalWalletDrain();
   const personalWallet = Math.max(0, totHc - persDrain);
-  const netPos = personalWallet + totalOnlineGross + totalUd - totalLiab;
   const pendLoanAmt = STATE.loans.filter(l=>l.status==='Pending').reduce((s,l)=>s+(l.amount-l.repaid),0);
+  const confirmedSavings = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.desc && e.desc.startsWith('Savings (40%')).reduce((s, e) => s + (e.amount || 0), 0);
+  const netPos = personalWallet + totalOnlineGross + totalUd - totalLiab - pendLoanAmt + confirmedSavings;
 
   // Net Position highlight box
   doc.setFillColor(124, 92, 252);
@@ -5701,7 +5976,8 @@ function buildDailySummary() {
   const totHc = STATE.shops.reduce((s,sh)=>s+shopHomeCash(sh.id), 0);
   const persDrain = personalWalletDrain();
   const personalWallet = Math.max(0, totHc - persDrain);
-  const netPos = personalWallet + totalOnlineGross + totalUd - totalLiab;
+  const confirmedSavings = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.desc && e.desc.startsWith('Savings (40%')).reduce((s, e) => s + (e.amount || 0), 0);
+  const netPos = personalWallet + totalOnlineGross + totalUd - totalLiab - pendLoanAmt + confirmedSavings;
 
   const todayDCs = STATE.dayClose.filter(r => r.date===today && !r.deleted);
   const totalSale = todayDCs.reduce((s,r)=>s+(r.sale||0),0);
@@ -6137,7 +6413,7 @@ function deleteReminder(id) {
   const r = STATE.reminders[idx];
   showConfirm({
     title:'Delete Reminder?',
-    msg:`Reminder <strong>"${r.name}"</strong> will be deleted.`,
+    msg:`Reminder <strong>"${escHtml(r.name)}"</strong> will be deleted.`,
     icon:'!',yesText:'Delete',yesCls:'btn-bad',
     onYes:()=>{
       STATE.reminders.splice(idx,1);
@@ -6157,7 +6433,7 @@ function openPayReminderModal(id) {
   $('pay-rem-info').innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
       <div>
-        <div style="font-size:14px;font-weight:700;">${r.name}</div>
+        <div style="font-size:14px;font-weight:700;">${escHtml(r.name)}</div>
         <div style="font-size:11px;color:var(--muted);margin-top:3px;display:flex;gap:8px;">
           <span class="badge" style="background:${REM_CAT_COLORS[r.category]||'#8888a8'}22;color:${REM_CAT_COLORS[r.category]||'#8888a8'};border:1px solid ${REM_CAT_COLORS[r.category]||'#8888a8'}44;padding:1px 6px;">${r.category}</span>
           <span><i class="fa-solid fa-calendar"></i> ${fmtDate(r.dueDate)} <span style="color:${du<0?'var(--bad)':du<=3?'var(--warn)':'var(--muted)'};">(${dueLabel})</span></span>
@@ -6179,14 +6455,21 @@ function confirmReminderPaid() {
   if (amt<=0) { toast('Enter a valid amount', 'error'); return; }
 
   function _logPayment(sh, useGpay) {
+    let actualDeducted = amt;
     if (sh) {
-      if (useGpay) sh.online = Math.max(0, sh.online - amt);
-      else sh.galla = Math.max(0, sh.galla - amt);
+      // Bug 12 fix: calculate actual deducted (may be less than amt if balance insufficient)
+      const bal = useGpay ? (sh.online||0) : (sh.galla||0);
+      actualDeducted = Math.min(bal, amt);
+      if (useGpay) sh.online = (sh.online||0) - actualDeducted;
+      else sh.galla = (sh.galla||0) - actualDeducted;
     }
-    STATE.homeExpenses.unshift({
+    const heEntry = {
       id:newId('HE'), desc:r.name, category:r.category, amount:amt,
       date: todayStr(), mode, paidFrom:from, note:`Auto from reminder: ${r.name}`
-    });
+    };
+    // Store actual deducted so delete only reverses what was really taken
+    if (sh && from !== 'PERSONAL' && actualDeducted < amt) heEntry.actualDeducted = actualDeducted;
+    STATE.homeExpenses.unshift(heEntry);
     auditLog('HOME_EXPENSE', `[REMINDER PAID] ${r.name} — ${fmt(amt)} via ${mode} from ${from==='PERSONAL'?'Personal':shopName(from)}`);
     if (r.repeat && r.repeat !== 'none') {
       const d = new Date(r.dueDate);
@@ -6266,14 +6549,14 @@ function renderReminders() {
       <span style="width:9px;height:9px;border-radius:50%;background:${REM_CAT_COLORS[r.category]||'#8888a8'};flex-shrink:0;"></span>
       <div style="flex:1;min-width:0;">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span style="font-size:13px;font-weight:700;">${r.name}</span>
+          <span style="font-size:13px;font-weight:700;">${escHtml(r.name)}</span>
           <span class="badge" style="background:${REM_CAT_COLORS[r.category]||'#8888a8'}22;color:${REM_CAT_COLORS[r.category]||'#8888a8'};border:1px solid ${REM_CAT_COLORS[r.category]||'#8888a8'}44;padding:1px 6px;">${r.category}</span>
           ${r.repeat && r.repeat!=='none' ? `<span class="badge badge-purple" style="padding:1px 6px;"><i class="fa-solid fa-repeat" style="font-size:8px;margin-right:3px;"></i>${r.repeat}</span>` : ''}
         </div>
         <div style="font-size:10.5px;color:var(--muted);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
           <span><i class="fa-solid fa-calendar" style="margin-right:3px;"></i>${fmtDate(r.dueDate)}</span>
           <span class="rem-days-badge" ${badgeCls}>${badgeText}</span>
-          ${r.note?`<span title="${r.note}"><i class="fa-solid fa-note-sticky"></i> ${r.note.length>30?r.note.slice(0,30)+'…':r.note}</span>`:''}
+          ${r.note?`<span title="${escHtml(r.note)}"><i class="fa-solid fa-note-sticky"></i> ${escHtml(r.note.length>30?r.note.slice(0,30)+'…':r.note)}</span>`:''}
         </div>
       </div>
       <div class="mono" style="font-size:15px;font-weight:800;color:${du<=3?'var(--bad)':'var(--jtext)'};flex-shrink:0;text-align:right;min-width:80px;">${fmt(r.amount)}</div>
@@ -6416,6 +6699,8 @@ async function pullFromSheet() {
     const json=await res.json();
     if(json&&json.data){
       Object.assign(STATE,json.data);
+      // Bug 7 fix: run migration on pulled data to ensure all required fields exist
+      migrateState(STATE);
       if (INBUILT_SHEET_URL) STATE.sheetUrl = INBUILT_SHEET_URL; // preserve override
       markSyncedNow();
       localStorage.setItem('jmd_state',JSON.stringify(STATE));
@@ -6429,8 +6714,40 @@ function manualSync() {
   const icon=$('sync-icon');
   icon.style.animation='spin 0.8s linear infinite';
   if(!document.getElementById('_spin')){ const s=document.createElement('style'); s.id='_spin'; s.textContent='@keyframes spin{to{transform:rotate(360deg)}}'; document.head.appendChild(s); }
-  setTimeout(()=>{ icon.style.animation=''; toast('Synced!','info'); },1000);
-  pushToSheet();
+  
+  // Direct push without debounce to avoid race condition
+  const url = effectiveSheetUrl();
+  if(!url) {
+    icon.style.animation='';
+    toast('No sync URL configured', 'error');
+    return;
+  }
+  
+  (async () => {
+    const dot=$('sync-dot'), lbl=$('sync-label');
+    dot.className='sync-dot syncing'; lbl.textContent='Pushing...';
+    try {
+      STATE.lastSyncAt = new Date().toISOString();
+      await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'save',data:STATE}),mode:'no-cors'});
+      localStorage.setItem('jmd_state', JSON.stringify(STATE));
+      updateLastSyncUI();
+      dot.className='sync-dot'; dot.style.background='var(--good)';
+      lbl.textContent = INBUILT_SHEET_URL ? 'Team Synced' : 'Synced';
+      
+      // Only pull AFTER push is confirmed complete
+      lbl.textContent='Pulling...';
+      dot.className='sync-dot syncing';
+      await pullFromSheet();
+      
+      icon.style.animation='';
+      toast('Synced successfully!', 'info');
+    } catch(e) {
+      dot.className='sync-dot error'; 
+      lbl.textContent='Sync Error';
+      icon.style.animation='';
+      toast('Sync failed', 'error');
+    }
+  })();
 }
 
 // ─── Custom Confirm / Prompt ─────────────────────────────────────
@@ -6439,6 +6756,15 @@ function escHtml(s) {
   return String(s == null ? '' : s)
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+// Escape a value for safe insertion inside a single-quoted JS string literal within an
+// inline event-handler attribute, e.g. onclick="fn('VALUE')". NOTE: escHtml() alone does NOT
+// protect this context — the browser HTML-decodes the attribute BEFORE handing it to the JS
+// parser, so an HTML-entity-escaped quote (&#39;) turns back into a raw ' and can still break
+// out of the string. Backslash-escaping survives that HTML-decode step and is parsed by JS
+// as a literal escaped quote, so it's the correct escape for this specific context.
+function escJsAttr(s) {
+  return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
 // Close any open JMD modal on Escape
@@ -6449,9 +6775,10 @@ document.addEventListener('keydown', (e) => {
 });
 
 let _jmdConfirmCb = null;
+let _jmdConfirmExtraCb = null;
 function showConfirm(o) {
   if (typeof o === 'string') o = { msg: o };
-  const { icon='!', title='Confirm', msg='', yesText='Confirm', yesCls='btn-bad', noText='Cancel', onYes=null } = o;
+  const { icon='!', title='Confirm', msg='', yesText='Confirm', yesCls='btn-bad', noText='Cancel', onYes=null, extraText=null, onExtra=null } = o;
   document.getElementById('jmd-ci').textContent = icon;
   document.getElementById('jmd-ct').textContent = title;
   // msg may contain safe hardcoded HTML (<strong>, <br>); user data must be pre-escaped via escHtml()
@@ -6461,16 +6788,32 @@ function showConfirm(o) {
   yBtn.className   = `btn ${yesCls}`;
   yBtn.style.flex  = '2';
   document.getElementById('jmd-cn').textContent = noText;
+  const eBtn = document.getElementById('jmd-ce');
+  if (extraText && onExtra) {
+    eBtn.textContent = extraText;
+    eBtn.style.display = '';
+    _jmdConfirmExtraCb = onExtra;
+  } else {
+    eBtn.style.display = 'none';
+    _jmdConfirmExtraCb = null;
+  }
   _jmdConfirmCb = onYes;
   document.getElementById('jmd-confirm-modal').classList.add('open');
 }
 function _jmdYes() {
   document.getElementById('jmd-confirm-modal').classList.remove('open');
+  _jmdConfirmExtraCb = null;
   if (_jmdConfirmCb) { const f = _jmdConfirmCb; _jmdConfirmCb = null; f(); }
+}
+function _jmdExtra() {
+  document.getElementById('jmd-confirm-modal').classList.remove('open');
+  _jmdConfirmCb = null;
+  if (_jmdConfirmExtraCb) { const f = _jmdConfirmExtraCb; _jmdConfirmExtraCb = null; f(); }
 }
 function _jmdNo() {
   document.getElementById('jmd-confirm-modal').classList.remove('open');
   _jmdConfirmCb = null;
+  _jmdConfirmExtraCb = null;
 }
 
 let _jmdPromptCb = null;
@@ -6549,6 +6892,7 @@ function installPWA() {
   });
 }
 </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
