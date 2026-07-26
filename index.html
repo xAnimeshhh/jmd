@@ -1514,12 +1514,18 @@ html,body{overflow-x:hidden;max-width:100%;}
             <hr class="divider">
             <div style="font-size:11.5px;">Example: Took ₹2000 home, left ₹500 in counter, received ₹1000 GPay, spent ₹200 from counter, yesterday's counter was ₹800 →</div>
             <div style="font-family:&#39;JetBrains Mono&#39;,monospace;margin-top:6px;color:var(--jtext);">Sale = 2000 + 500 + 1000 + 200 − 800 = <strong style="color:var(--good);">₹2900</strong></div>
+            <hr class="divider">
+            <div><strong style="color:var(--accent);">Profit</strong> = 40% × (Cash Taken Home + GPay/Online)</div>
+            <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">Counter Cash and Expenses are NOT included in profit calculation.</div>
+            <div style="font-family:&#39;JetBrains Mono&#39;,monospace;margin-top:6px;color:var(--jtext);">Profit = 40% × (2000 + 1000) = <strong style="color:var(--accent);">₹1200</strong></div>
           </div>
         </div>
 
         <div class="settings-section">
           <h3><i class="fa-solid fa-trash"></i> Danger Zone</h3>
-          <button class="btn btn-bad btn-sm" onclick="showConfirm({title:'Reset All Data?',msg:'All data will be permanently deleted. This action cannot be undone.',icon:'!',yesText:'Reset Data',yesCls:'btn-bad',onYes:resetAll})">Reset All Data</button>
+          <button class="btn btn-ghost btn-sm" onclick="downloadBackup()" style="margin-right:8px;"><i class="fa-solid fa-download" style="margin-right:4px;"></i>Download JSON Backup</button>
+          <button class="btn btn-bad btn-sm" style="margin-right:8px;" onclick="showPrompt('Selective Reset','Type RESET DC to confirm. This will delete Day Close, Home Expenses, Daily Expenses, InterShop, Reminders, Audit Log — and reset shop balances (Galla/Online/Home Transfer) to 0. Market Credit, Outflows and Loans will NOT be touched.','Type RESET DC','',function(v){if(v==='RESET DC')selectiveReset();else toast('Reset cancelled — text did not match','error');})"><i class="fa-solid fa-rotate-left" style="margin-right:4px;"></i>Selective Reset (Keep Credit/Loans)</button>
+          <button class="btn btn-bad btn-sm" onclick="showPrompt('Reset All Data','Type RESET JMD to confirm. This will delete ALL data including the shared Google Sheet.','Type RESET JMD','',function(v){if(v==='RESET JMD')resetAll();else toast('Reset cancelled — text did not match','error');})">Reset All Data</button>
         </div>
       </div>
 
@@ -1685,7 +1691,7 @@ html,body{overflow-x:hidden;max-width:100%;}
         <button type="button" class="chip-tile" data-value="SHOP04" onclick="chipPick(&#39;po-vault&#39;,&#39;SHOP04&#39;,&#39;onPoVaultChange&#39;)"><span class="chip-dot" style="background:#f59e0b;"></span>Graphics</button>
       </div>
     </div>
-    <div id="po-counter-note" style="display:none;background:rgba(139,108,255,0.08);border:1px solid rgba(139,108,255,0.25);border-radius:7px;padding:9px 12px;font-size:11.5px;color:var(--accent);margin-bottom:12px;"><i class="fa-solid fa-circle-info" style="margin-right:5px;"></i>Counter se koi balance abhi minus nahi hoga — is date ka Day Close bharte waqt reminder dikhega</div>
+    <div id="po-counter-note" style="display:none;background:rgba(139,108,255,0.08);border:1px solid rgba(139,108,255,0.25);border-radius:7px;padding:9px 12px;font-size:11.5px;color:var(--accent);margin-bottom:12px;"><i class="fa-solid fa-circle-info" style="margin-right:5px;"></i>No balance will be deducted from Counter now — a reminder will appear when filling Day Close for this date</div>
     <div id="po-is-warn" style="display:none;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:7px;padding:9px 12px;font-size:11.5px;color:var(--warn);margin-bottom:12px;"><i class="fa-solid fa-triangle-exclamation" style="margin-right:5px;"></i>An InterShop obligation will be created</div>
     <div style="display:flex;gap:10px;margin-top:6px;"><button class="btn btn-ghost" style="flex:1;" onclick="closeModal(&#39;modal-pay-outflow&#39;)">Cancel</button><button class="btn btn-warn" style="flex:2;" onclick="savePayOutflow()">Pay Bill</button></div>
   </div>
@@ -1928,7 +1934,7 @@ html,body{overflow-x:hidden;max-width:100%;}
     </div>
     
     <div style="margin-top:8px;font-size:10px;color:var(--muted);text-align:center;">
-      <i class="fa-solid fa-circle-info"></i> Har shop ka alag message jaayega selected date ka
+      <i class="fa-solid fa-circle-info"></i> Each shop will send a separate message for the selected date
     </div>
   </div>
 </div>
@@ -1973,7 +1979,7 @@ html,body{overflow-x:hidden;max-width:100%;}
 // The Settings URL field will be hidden/locked automatically.
 //
 // Leave empty if each user should manually enter the URL in Settings.
-const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbzklt8smz6kuedAoD79k5HQVgtIRFPUQ9iotyneeRldJiFayFJQ0jrDGI2MCLBT_NiA/exec'
+const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwSaW1n4cJSGodcjznfOU4gTQqv0lpUsZiIZKmTk5S81ufmG6I08PFL3DJW9KgKzR5T/exec'
 // ═══════════════════════════════════════════════════════════════════
 
 // ─── Initial State ──────────────────────────────────────────────
@@ -1987,8 +1993,8 @@ const DEFAULT_SHOPS = [
 // ─── Utilities (must be before STATE init) ──────────────────────
 const $ = id => document.getElementById(id);
 const todayStr = () => new Date().toISOString().split('T')[0];
-let idCounter = Date.now();
-const newId = prefix => prefix + '-' + (++idCounter).toString(36);
+let idCounter = Math.floor(Math.random() * 100000);
+const newId = prefix => prefix + '-' + Date.now().toString(36) + '-' + (++idCounter).toString(36);
 
 const ACTION_COLORS = {
   ADD_UDHAARI:'#7c5cfc', EDIT_UDHAARI:'#06b6d4', DELETE_UDHAARI:'#ef4444', COLLECT_UDHAARI:'#22c55e', ADD_OUTFLOW:'#f59e0b', EDIT_OUTFLOW:'#06b6d4', DELETE_OUTFLOW:'#ef4444',
@@ -2557,7 +2563,7 @@ function renderProfitBox() {
   let total = 0, html = '';
   STATE.shops.forEach(sh => {
     const recs = activeDC.filter(r => r.shopId === sh.id);
-    const shopProfit = recs.reduce((s, r) => s + (r.profit != null ? r.profit : Math.round((r.sale || 0) * (sh.profitPct || 40) / 100)), 0);
+    const shopProfit = recs.reduce((s, r) => s + (r.profit != null ? r.profit : Math.round(((r.cashHome || 0) + (r.gpay || 0)) * (sh.profitPct || 40) / 100)), 0);
     total += shopProfit;
     html += `<div class="card2" style="padding:9px 10px;">
       <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px;">
@@ -2665,7 +2671,7 @@ function confirmSavingsDone(dcId, type) {
   renderMonthlySummary();
   renderDashboard();
   updateBadges();
-  toast(`Savings confirm ho gaya — ${fmt(amt)} side ho gaya`, 'success');
+  toast(`Savings confirmed — ${fmt(amt)} set aside`, 'success');
 }
 
 function renderSavingsPendingBanner() {
@@ -2678,18 +2684,18 @@ function renderSavingsPendingBanner() {
     <div class="card" style="padding:14px 16px;border-left:3px solid var(--warn);margin-bottom:14px;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
         <i class="fa-solid fa-piggy-bank" style="color:var(--warn);"></i>
-        <div style="font-size:13px;font-weight:700;">Savings Pending — ${pend.length} confirm karna baaki hai</div>
+        <div style="font-size:13px;font-weight:700;">Savings Pending — ${pend.length} confirmations pending</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:7px;">
         ${pend.map(p => `
           <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;">
             <div style="font-size:12px;">
               <span style="font-weight:700;">${escHtml(fmtDate(p.date))}</span>
-              <span style="color:var(--muted);"> — ${escHtml(shopName(p.shopId))} · ${p.type === 'cash' ? 'Cash' : 'GPay'} side karna tha</span>
+              <span style="color:var(--muted);"> — ${escHtml(shopName(p.shopId))} · ${p.type === 'cash' ? 'Cash' : 'GPay'} to be set aside</span>
             </div>
             <div style="display:flex;align-items:center;gap:10px;">
               <span class="mono" style="font-weight:700;color:${p.type === 'cash' ? 'var(--warn)' : 'var(--accent2)'};">${fmt(p.amount)}</span>
-              <button class="btn btn-good btn-xs" onclick="confirmSavingsDone('${p.dcId}','${p.type}')"><i class="fa-solid fa-check"></i> Ho Gaya</button>
+              <button class="btn btn-good btn-xs" onclick="confirmSavingsDone('${p.dcId}','${p.type}')"><i class="fa-solid fa-check"></i> Done</button>
             </div>
           </div>`).join('')}
       </div>
@@ -2837,7 +2843,7 @@ function renderSalesChart() {
     return shopsToShow.reduce((sum, sh) => {
       const rec = activeDC.find(r=>r.date===d&&r.shopId===sh.id);
       if (!rec) return sum;
-      const p = rec.profit != null ? rec.profit : Math.round(rec.sale * (sh.profitPct||40)/100);
+      const p = rec.profit != null ? rec.profit : Math.round(((rec.cashHome||0) + (rec.gpay||0)) * (sh.profitPct||40)/100);
       return sum + p;
     }, 0);
   });
@@ -2890,9 +2896,9 @@ function renderSalesChart() {
 function requestTransfer() {
   const amt = parseFloat($('tr-amt')?.value) || 0;
   if (!amt) { toast('Enter an amount first', 'error'); return; }
-  showPrompt('Transfer PIN', 'PIN daalo transfer approve karne ke liye:', 'Enter PIN', '', (pin) => {
+  showPrompt('Transfer PIN', 'Enter PIN to approve transfer:', 'Enter PIN', '', (pin) => {
     if (pin !== (STATE.pin || '1234')) {
-      toast('PIN galat hai — transfer cancelled', 'error');
+      toast('Wrong PIN — transfer cancelled', 'error');
       auditLog('TRANSFER', `FAILED — wrong PIN attempt`);
       saveStateLocal();
       return;
@@ -2919,7 +2925,7 @@ function executeTransfer() {
     desc = `${sh.name}: ${fmt(amt)} ATM/Bank → Counter Cash`;
   } else if (type === 'g2c') {
     const avail = shopSpendableOnline(sh.id);
-    if (avail < amt) { toast(`${sh.name} ka spendable GPay sirf ${fmt(avail)} hai (savings reserve minus ho chuka hai)`, 'error'); return; }
+    if (avail < amt) { toast(`${sh.name} spendable GPay is only ${fmt(avail)} (40% savings reserve already deducted)`, 'error'); return; }
     sh.online -= amt;
     sh.galla  += amt;
     desc = `${sh.name}: ${fmt(amt)} GPay → Counter Cash`;
@@ -2930,24 +2936,18 @@ function executeTransfer() {
     desc = `${sh.name}: ${fmt(amt)} Counter → GPay`;
   } else if (type === 'h2c') {
     const homeAvail = shopSpendableHomeCash(sh.id);
-    if (homeAvail < amt) { toast(`${sh.name} ka spendable Home Cash sirf ${fmt(homeAvail)} hai (40% savings reserve minus ho chuka hai)`, 'error'); return; }
+    if (homeAvail < amt) { toast(`${sh.name} spendable Home Cash is only ${fmt(homeAvail)} (40% savings reserve already deducted)`, 'error'); return; }
     sh.homeTransfer = (sh.homeTransfer||0) + amt;
-    sh.galla += amt;
-    desc = `${sh.name}: ${fmt(amt)} Home → Counter Cash`;
-  } else if (type === 'c2h') {
-    if (sh.galla < amt) { toast(`${sh.name} has only ${fmt(sh.galla)} counter cash`, 'error'); return; }
-    sh.galla -= amt;
-    sh.homeTransfer = (sh.homeTransfer||0) - amt;
-    desc = `${sh.name}: ${fmt(amt)} Counter → Home`;
-  } else if (type === 'h2g') {
-    const homeAvail = shopSpendableHomeCash(sh.id);
-    if (homeAvail < amt) { toast(`${sh.name} ka spendable Home Cash sirf ${fmt(homeAvail)} hai (40% savings reserve minus ho chuka hai)`, 'error'); return; }
+    sh.galla       -= amt;
+    desc = `${sh.name}: ${fmt(amt)} Counter Cash → Home`;
+  } else if (type === 'h2c') {
+    if (homeAvail < amt) { toast(`${sh.name} spendable Home Cash is only ${fmt(homeAvail)} (40% savings reserve already deducted)`, 'error'); return; }
     sh.homeTransfer = (sh.homeTransfer||0) + amt;
     sh.online += amt;
     desc = `${sh.name}: ${fmt(amt)} Home → GPay`;
   } else if (type === 'g2h') {
     const avail = shopSpendableOnline(sh.id);
-    if (avail < amt) { toast(`${sh.name} ka spendable GPay sirf ${fmt(avail)} hai (savings reserve minus ho chuka hai)`, 'error'); return; }
+    if (avail < amt) { toast(`${sh.name} spendable GPay is only ${fmt(avail)} (40% savings reserve already deducted)`, 'error'); return; }
     sh.online -= amt;
     sh.homeTransfer = (sh.homeTransfer||0) - amt;
     desc = `${sh.name}: ${fmt(amt)} GPay → Home`;
@@ -3037,7 +3037,7 @@ function renderPerfTracker() {
     const recs = allDC.filter(r=>r.shopId===sh.id);
     const totalSale = recs.reduce((s,r)=>s+(r.sale||0),0);
     const totalExp  = recs.reduce((s,r)=>s+(r.expense||0),0);
-    const totalProfit = recs.reduce((s,r)=>s+(r.profit!=null?r.profit:Math.round((r.sale||0)*sh.profitPct/100)),0);
+    const totalProfit = recs.reduce((s,r)=>s+(r.profit!=null?r.profit:Math.round(((r.cashHome||0)+(r.gpay||0))*sh.profitPct/100)),0);
     const loanPend = STATE.loans.filter(l=>l.shopId===sh.id&&l.status==='Pending').reduce((s,l)=>s+(l.amount-l.repaid),0);
     const salePct = Math.round(totalSale/maxSale*100);
     const expPct  = Math.round(totalExp/maxExp*100);
@@ -3113,26 +3113,26 @@ function initDcForms() {
         <!-- Form Content -->
         <div style="padding:14px 16px;">
         <div class="fg" style="margin-bottom:10px;">
-          <div class="lbl">Date <span style="color:var(--accent2);text-transform:none;letter-spacing:0;font-weight:400;">(kis din ki entry?)</span></div>
+          <div class="lbl">Date <span style="color:var(--accent2);text-transform:none;letter-spacing:0;font-weight:400;">(Which date is this for?)</span></div>
           <input class="inp" id="dc-date-${sh.id}" type="date" value="${pf.date || today}" max="${today}" onchange="onDcDateChange('${sh.id}')" style="max-width:200px;padding:7px 10px;font-size:12px;" />
         </div>
         <div id="dc-cash-reminder-${sh.id}" style="margin-bottom:10px;"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
           <div class="fg" style="margin-bottom:0;">
             <div class="lbl"><i class="fa-solid fa-house" style="color:var(--good);margin-right:3px;font-size:8px;"></i>Home Cash (₹)</div>
-            <input class="inp" id="dc-home-${sh.id}" type="number" value="${pf.cashHome||''}" placeholder="₹" oninput="updateDcCalc('${sh.id}')" onfocus="clearIfZero(this)" style="padding:7px 10px;font-size:12px;" />
+            <input class="inp" id="dc-home-${sh.id}" type="number" inputmode="numeric" value="${pf.cashHome||''}" placeholder="₹" oninput="updateDcCalc('${sh.id}')" onfocus="clearIfZero(this)" style="padding:7px 10px;font-size:12px;" />
           </div>
           <div class="fg" style="margin-bottom:0;">
             <div class="lbl"><i class="fa-solid fa-cash-register" style="color:var(--warn);margin-right:3px;font-size:8px;"></i>Counter (₹)</div>
-            <input class="inp" id="dc-counter-${sh.id}" type="number" value="${pf.counterCash||''}" placeholder="₹" oninput="updateDcCalc('${sh.id}')" onfocus="clearIfZero(this)" style="padding:7px 10px;font-size:12px;" />
+            <input class="inp" id="dc-counter-${sh.id}" type="number" inputmode="numeric" value="${pf.counterCash||''}" placeholder="₹" oninput="updateDcCalc('${sh.id}')" onfocus="clearIfZero(this)" style="padding:7px 10px;font-size:12px;" />
           </div>
           <div class="fg" style="margin-bottom:0;">
             <div class="lbl"><i class="fa-solid fa-mobile-screen" style="color:var(--accent2);margin-right:3px;font-size:8px;"></i>GPay (₹)</div>
-            <input class="inp" id="dc-gpay-${sh.id}" type="number" value="${pf.gpay||''}" placeholder="₹" oninput="updateDcCalc('${sh.id}')" onfocus="clearIfZero(this)" style="padding:7px 10px;font-size:12px;" />
+            <input class="inp" id="dc-gpay-${sh.id}" type="number" inputmode="numeric" value="${pf.gpay||''}" placeholder="₹" oninput="updateDcCalc('${sh.id}')" onfocus="clearIfZero(this)" style="padding:7px 10px;font-size:12px;" />
           </div>
           <div class="fg" style="margin-bottom:0;">
             <div class="lbl"><i class="fa-solid fa-receipt" style="color:var(--bad);margin-right:3px;font-size:8px;"></i>Expenses (₹) <span style="color:var(--accent2);font-weight:400;text-transform:none;letter-spacing:0;font-size:8px;">auto</span></div>
-            <input class="inp" id="dc-exp-${sh.id}" type="number" value="${pf.expense||''}" placeholder="₹" oninput="updateDcCalc('${sh.id}')" onfocus="clearIfZero(this)" style="padding:7px 10px;font-size:12px;" />
+            <input class="inp" id="dc-exp-${sh.id}" type="number" inputmode="numeric" value="${pf.expense||''}" placeholder="₹" oninput="updateDcCalc('${sh.id}')" onfocus="clearIfZero(this)" style="padding:7px 10px;font-size:12px;" />
           </div>
         </div>
 
@@ -3143,8 +3143,8 @@ function initDcForms() {
             <div style="font-size:9px;color:var(--muted);font-weight:500;">Counter / Home / GP</div>
           </div>
           <div style="display:flex;gap:6px;margin-bottom:8px;">
-            <input class="inp" id="de-desc-${sh.id}" placeholder="Kya khareeda?" style="flex:2;padding:7px 10px;font-size:12px;" />
-            <input class="inp no-titlecase" id="de-amt-${sh.id}" type="number" placeholder="₹" style="flex:1;padding:7px 10px;font-size:12px;" onkeydown="if(event.key==='Enter'){event.preventDefault();addDailyExpense('${sh.id}');}" />
+            <input class="inp" id="de-desc-${sh.id}" placeholder="What was purchased?" style="flex:2;padding:7px 10px;font-size:12px;" />
+            <input class="inp no-titlecase" id="de-amt-${sh.id}" type="number" inputmode="numeric" placeholder="₹" style="flex:1;padding:7px 10px;font-size:12px;" onkeydown="if(event.key==='Enter'){event.preventDefault();addDailyExpense('${sh.id}');}" />
             <button class="btn btn-primary" style="padding:0 12px;height:34px;font-size:11px;" onclick="addDailyExpense('${sh.id}')"><i class="fa-solid fa-plus"></i></button>
           </div>
           ${sh.id === 'SHOP01' ? `<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">
@@ -3162,7 +3162,7 @@ function initDcForms() {
 
         <div class="fg" style="margin-bottom:10px;">
           <div class="lbl"><i class="fa-solid fa-clock-rotate-left" style="color:var(--muted);margin-right:3px;font-size:8px;"></i>Prev Counter (₹) <span style="color:var(--accent2);font-weight:400;text-transform:none;letter-spacing:0;font-size:8px;">${prevInfo.label}</span></div>
-          <input class="inp" id="dc-prev-${sh.id}" type="number" value="${todaysDc? (pf.prevCounter||0) : prevInfo.val}" placeholder="₹" oninput="updateDcCalc('${sh.id}')" onfocus="clearIfZero(this)" style="padding:7px 10px;font-size:12px;max-width:180px;" />
+          <input class="inp" id="dc-prev-${sh.id}" type="number" value="${todaysDc? (pf.prevCounter||0) : prevInfo.val}" placeholder="₹" readonly style="padding:7px 10px;font-size:12px;max-width:180px;opacity:0.7;cursor:not-allowed;" />
         </div>
         <div class="formula-box" style="margin:10px 0;padding:10px 12px;border-left:3px solid ${shopColor(sh.id)};">
           <div class="formula-line" style="font-size:11px;margin-bottom:3px;"><span class="fl-label">+ Home</span><span class="fl-val" style="color:var(--good);" id="dc-f-home-${sh.id}">₹0</span></div>
@@ -3221,7 +3221,7 @@ function addDailyExpense(shopId) {
   const amt    = parseFloat(amtEl?.value) || 0;
   const source = chipValue(`de-source-${shopId}`) || 'COUNTER';
   if (!desc) { toast('Enter an expense description first', 'error'); return; }
-  if (!amt || amt <= 0) { toast('Amount daalo', 'error'); return; }
+  if (!amt || amt <= 0) { toast('Enter amount', 'error'); return; }
 
   const entryDate = $(`dc-date-${shopId}`)?.value || todayStr();
 
@@ -3251,7 +3251,7 @@ function addDailyExpense(shopId) {
       if (available < amt) {
         showConfirm({
           title:'Low GPay Balance!',
-          msg:`<strong>${escHtml(sh.name)}</strong> ka spendable GPay sirf <strong>${fmt(available)}</strong> hai. Expense ${fmt(amt)} add karne se GPay negative ho jayega. Continue?`,
+          msg:`<strong>${escHtml(sh.name)}</strong> spendable GPay is only <strong>${fmt(available)}</strong>. Adding expense of ${fmt(amt)} will make GPay negative. Continue?`,
           icon:'!',yesText:'Add Anyway',yesCls:'btn-bad',
           onYes:()=>{ _finishDailyExpense(); }
         });
@@ -3266,15 +3266,22 @@ function removeDailyExpense(id) {
   const idx = STATE.dailyExpenses.findIndex(x=>x.id===id);
   if (idx === -1) return;
   const e = STATE.dailyExpenses[idx];
-  if (e.source === 'GP') {
-    const sh = STATE.shops.find(s=>s.id===e.shopId);
-    if (sh) sh.online = (sh.online||0) + e.amount;
-  }
-  STATE.dailyExpenses.splice(idx, 1);
-  renderDailyExpenses(e.shopId);
-  syncDcExpenseFromItems(e.shopId);
-  renderDashboard();
-  saveStateLocal();
+  showConfirm({
+    title:'Delete Expense?',
+    msg:`Delete <strong>${escHtml(e.desc)}</strong> — ₹${fmtNum(e.amount)}?`,
+    icon:'!',yesText:'Delete',yesCls:'btn-bad',
+    onYes:()=>{
+      if (e.source === 'GP') {
+        const sh = STATE.shops.find(s=>s.id===e.shopId);
+        if (sh) sh.online = (sh.online||0) + e.amount;
+      }
+      STATE.dailyExpenses.splice(idx, 1);
+      renderDailyExpenses(e.shopId);
+      syncDcExpenseFromItems(e.shopId);
+      renderDashboard();
+      saveStateLocal();
+    }
+  });
 }
 
 // Sum selected date's COUNTER-source items for a shop and push into the Counter Expenses field
@@ -3298,7 +3305,7 @@ function renderDailyExpenses(shopId) {
       <div style="flex:1;font-size:12px;">${escHtml(e.desc)} <span style="color:${DE_SOURCE_COLOR[e.source]};font-weight:600;">(${DE_SOURCE_LABEL[e.source]})</span></div>
       <div class="mono" style="font-size:12px;font-weight:700;">₹${fmtNum(e.amount)}</div>
       <button type="button" onclick="removeDailyExpense('${e.id}')" style="background:none;border:none;color:var(--bad);cursor:pointer;font-size:13px;padding:2px 4px;"><i class="fa-solid fa-xmark"></i></button>
-    </div>`).join('') || `<div style="font-size:11px;color:var(--muted);">${fmtDate(entryDate)} ko koi expense add nahi hua</div>`;
+    </div>`).join('') || `<div style="font-size:11px;color:var(--muted);">No expenses added on ${fmtDate(entryDate)}</div>`;
 
   const bySource = { COUNTER:0, HOME:0, GP:0 };
   items.forEach(e => bySource[e.source] = (bySource[e.source]||0) + (e.amount||0));
@@ -3326,7 +3333,7 @@ function updateDcCalc(shopId) {
 
   // Live profit — auto = sale × profitPct, editable if user overrides
   const sh = STATE.shops.find(s=>s.id===shopId);
-  const autoProfit = Math.round(sale * (sh?.profitPct||40)/100);
+  const autoProfit = Math.round((home + gpay) * (sh?.profitPct||40)/100);
   set(`dc-autoprof-${shopId}`, autoProfit);
   const pInp = $(`dc-profit-${shopId}`);
   if (pInp && !pInp.dataset.userEdited) {
@@ -3359,7 +3366,7 @@ function submitDayClose(shopId) {
   const prev    = g(`dc-prev-${shopId}`);
   const sale = home + counter + gpay + exp - prev;
   const sh = STATE.shops.find(s=>s.id===shopId);
-  const autoProfit = Math.round(sale * (sh?.profitPct||40)/100);
+  const autoProfit = Math.round((home + gpay) * (sh?.profitPct||40)/100);
   const profitVal  = $(`dc-profit-${shopId}`)?.value;
   const profit     = (profitVal!=='' && profitVal!=null && !isNaN(parseFloat(profitVal))) ? parseFloat(profitVal) : autoProfit;
   const note = $(`dc-note-${shopId}`)?.value?.trim() || '';
@@ -3454,9 +3461,9 @@ function submitDayClose(shopId) {
     renderDashboard();
     renderSavingsPendingBanner();
     if (deltaBits.length) {
-      toast(`${shopName(shopId)} Day Close update ho gaya — sirf farak apply hua: ${deltaBits.join(', ')}`, 'success');
+      toast(`${shopName(shopId)} Day Close updated — only the difference applied: ${deltaBits.join(', ')}`, 'success');
     } else {
-      toast(`${shopName(shopId)} Day Close mein koi badlaav nahi tha — kuch bhi update nahi hua`, 'success');
+      toast(`${shopName(shopId)} Day Close — no changes, nothing updated`, 'success');
     }
     return;
   }
@@ -3496,19 +3503,19 @@ function submitDayClose(shopId) {
   renderDcHistory();
   renderDashboard();
   renderSavingsPendingBanner();
-  toast(`${shopName(shopId)} Day Close done (${fmtDate(entryDate)}) — Sale ${fmt(sale)} · Profit ${fmt(profit)}`, 'success');
+  toast(`${shopName(shopId)} Day Close saved (${fmtDate(entryDate)}) — Sale ${fmt(sale)} · Profit ${fmt(profit)}`, 'success');
 
   // Post-submit confirmation: form neeche already editable ban chuka hai (initDcForms ne
   // "Update Day Close" mode mein prefill kar diya). Ye modal sirf ek visual confirm-cum-nudge hai —
   // "Edit Karu" click karne par modal bas hat jata hai aur user seedha editable form pe aa jata hai;
   // "Sab Sahi Hai" click karne par bhi modal hat jata hai, kyunki data already save ho chuka hai.
   showConfirm({
-    icon: '✅',
-    title: 'Submit Ho Gaya!',
-    msg: `<strong>${escHtml(shopName(shopId))}</strong> — Home ${fmt(home)} · Counter ${fmt(counter)} · GPay ${fmt(gpay)}<br>Sale ${fmt(sale)} · Profit ${fmt(profit)}<br><br>Kuch edit karna hai?`,
-    yesText: 'Sab Sahi Hai',
+    icon: '!',
+    title: 'Submitted Successfully!',
+    msg: `<strong>${escHtml(shopName(shopId))}</strong> — Home ${fmt(home)} · Counter ${fmt(counter)} · GPay ${fmt(gpay)}<br>Sale ${fmt(sale)} · Profit ${fmt(profit)}<br><br>Need to edit anything?`,
+    yesText: 'All Correct',
     yesCls: 'btn-primary',
-    noText: 'Edit Karu',
+    noText: 'Let Me Edit',
     onYes: null
   });
 }
@@ -3551,7 +3558,7 @@ function renderDcCashReminder(shopId) {
       <div style="font-size:11px;font-weight:700;color:var(--warn);">Cash Movement Reminder — ${fmtDate(entryDate)}</div>
     </div>`;
   counterPays.forEach(p => {
-    html += `<div style="font-size:11px;color:var(--muted);margin-bottom:3px;"><i class="fa-solid fa-cash-register" style="margin-right:5px;color:var(--warn);width:12px;"></i>${fmt(p.amount)} paid to <strong style="color:var(--jtext);">${escHtml(p.payee || 'Payee')}</strong> from Counter — is date ka Counter Cash usko minus karke bharo</div>`;
+    html += `<div style="font-size:11px;color:var(--muted);margin-bottom:3px;"><i class="fa-solid fa-cash-register" style="margin-right:5px;color:var(--warn);width:12px;"></i>${fmt(p.amount)} paid to <strong style="color:var(--jtext);">${escHtml(p.payee || 'Payee')}</strong> from Counter — subtract this from Counter Cash for this date</div>`;
   });
   loanRepays.forEach(r => {
     const modeLabel = r.mode === 'GPay' ? 'GPay' : 'Home Cash';
@@ -3641,7 +3648,7 @@ function renderDcHistory() {
   el.style.display = 'block';
   el.innerHTML = visible.map(r => {
     const sh = STATE.shops.find(s=>s.id===r.shopId);
-    const profit = r.profit != null ? r.profit : Math.round((r.sale||0) * (sh?.profitPct||40)/100);
+    const profit = r.profit != null ? r.profit : Math.round(((r.cashHome||0)+(r.gpay||0)) * (sh?.profitPct||40)/100);
     const del = !!r.deleted;
     const sc = shopColor(r.shopId);
     return `<div class="dc-row-card ${del?'dc-deleted':''}" style="border-left-color:${del?'transparent':sc};" onclick="openDcDetail('${r.id}')">
@@ -3732,7 +3739,7 @@ function renderDcEntriesTable() {
   if (q) visible = visible.filter(r => (r.shopName || shopName(r.shopId) || '').toLowerCase().includes(q) || (r.date || '').includes(q));
 
   if (!visible.length) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--muted);font-family:inherit;">Is mahine mein koi Day Close entry nahi</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--muted);font-family:inherit;">No Day Close entries this month</td></tr>`;
     return;
   }
 
@@ -3786,7 +3793,7 @@ function shareDcDayReport(id) {
   const r = STATE.dayClose.find(x => x.id === id); if (!r) return;
   const sh = STATE.shops.find(s => s.id === r.shopId);
   const nf = n => { const v = parseFloat(n)||0; return (v<0?'-':'') + 'Rs ' + Math.abs(v).toLocaleString('en-IN'); };
-  const profit = r.profit != null ? r.profit : Math.round((r.sale||0)*((sh?.profitPct)||40)/100);
+  const profit = r.profit != null ? r.profit : Math.round(((r.cashHome||0)+(r.gpay||0))*((sh?.profitPct)||40)/100);
   
   let msg = `*${r.shopName || shopName(r.shopId)}* — ${fmtDate(r.date)}\n`;
   msg += `━━━━━━━━━━━━━━━\n`;
@@ -3809,7 +3816,7 @@ function shareDcMonthReport() {
   const q = ($('dce-search')?.value || '').trim().toLowerCase();
   let visible = STATE.dayClose.filter(r => !r.hidden && !r.deleted && (r.date || '').slice(0, 7) === dcEntriesMonth);
   if (q) visible = visible.filter(r => (r.shopName || shopName(r.shopId) || '').toLowerCase().includes(q) || (r.date || '').includes(q));
-  if (!visible.length) { toast('Is mahine mein koi entry nahi hai', 'error'); return; }
+  if (!visible.length) { toast('No entries this month', 'error'); return; }
 
   const totals = visible.reduce((acc, r) => {
     const s = computeDcEntryStats(r);
@@ -3832,7 +3839,7 @@ function shareDcMonthReport() {
 function openDcDetail(id) {
   const r = STATE.dayClose.find(x=>x.id===id); if(!r) return;
   const sh = STATE.shops.find(s=>s.id===r.shopId);
-  const profit = r.profit != null ? r.profit : Math.round(r.sale * (sh?.profitPct||40)/100);
+  const profit = r.profit != null ? r.profit : Math.round(((r.cashHome||0)+(r.gpay||0)) * (sh?.profitPct||40)/100);
   $('dc-detail-body').innerHTML = `
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
       <span style="width:10px;height:10px;border-radius:50%;background:${shopColor(r.shopId)};"></span>
@@ -4438,9 +4445,9 @@ function deleteOutflow(oid) {
     // should NOT reappear in the balance.
     showConfirm({
       title:'Delete Outflow?',
-      msg:`<strong>${escHtml(o.payee || 'Payee')}</strong> — ${fmt(o.paid)} already paid out of ${fmt(o.amount)}.<br><br>Ye entry <strong>galti se</strong> bani thi (payment bhi wapas chahiye), ya ye <strong>sahi/settled</strong> thi aur sirf record clean karna hai (paisa jaisa hai waisa hi rahega)?`,
-      icon:'!', yesText:'Galti thi — Reverse karo', yesCls:'btn-bad',
-      extraText:'Sahi thi — Sirf record hatao', onExtra:()=>doDelete(false),
+      msg:`<strong>${escHtml(o.payee || 'Payee')}</strong> — ${fmt(o.paid)} already paid out of ${fmt(o.amount)}.<br><br>This entry was <strong>by mistake</strong> (payment should also be reversed), or this was <strong>correct/settled</strong> and you just need to clean the record (balances will remain as-is)?`,
+      icon:'!', yesText:'Mistake — Reverse it', yesCls:'btn-bad',
+      extraText:'Correct — Only remove record', onExtra:()=>doDelete(false),
       onYes:()=>doDelete(true)
     });
   } else {
@@ -4570,7 +4577,7 @@ function savePayOutflow() {
   const vsh0 = STATE.shops.find(s=>s.id===vault);
   if (vsh0 && mode !== 'Counter') {
     const avail = mode==='GPay' ? shopSpendableOnline(vsh0.id) : shopSpendableHomeCash(vsh0.id);
-    if (avail < amt) { toast(`${vsh0.name} ka spendable ${mode==='GPay'?'GPay':'Home Cash'} sirf ${fmt(avail)} hai (40% savings reserve minus ho chuka hai)`, 'error'); return; }
+    if (avail < amt) { toast(`${vsh0.name} spendable ${mode==='GPay'?'GPay':'Home Cash'} is only ${fmt(avail)} (40% savings reserve already deducted)`, 'error'); return; }
   }
   
   // Find all entries for this payee+shop
@@ -4760,7 +4767,7 @@ function saveIntershop() {
       // put old effect back before bailing, so state isn't left half-reversed
       applyLoanMovement(i);
       if (i.status === 'Settled') applyRepayMovement(i);
-      toast(`${fromShop.name} ka spendable ${mode==='GPay'?'GPay':'Home Cash'} sirf ${fmt(avail)} hai (40% savings reserve minus ho chuka hai)`, 'error'); return;
+      toast(`${fromShop.name} spendable ${mode==='GPay'?'GPay':'Home Cash'} is only ${fmt(avail)} (40% savings reserve already deducted)`, 'error'); return;
     }
     i.fromShop = from; i.toShop = to; i.amount = amt; i.date = date; i.reason = reason; i.mode = mode; i.kind = 'loan';
     applyLoanMovement(i);
@@ -4769,7 +4776,7 @@ function saveIntershop() {
     toast(`Transfer updated — ${shopName(from)} → ${shopName(to)} ${fmt(amt)}`);
   } else {
     const avail = mode==='GPay' ? shopSpendableOnline(from) : shopSpendableHomeCash(from);
-    if (avail < amt) { toast(`${fromShop.name} ka spendable ${mode==='GPay'?'GPay':'Home Cash'} sirf ${fmt(avail)} hai (40% savings reserve minus ho chuka hai)`, 'error'); return; }
+    if (avail < amt) { toast(`${fromShop.name} spendable ${mode==='GPay'?'GPay':'Home Cash'} is only ${fmt(avail)} (40% savings reserve already deducted)`, 'error'); return; }
     const entry = {id:newId('IS'), fromShop:from, toShop:to, date, amount:amt, reason, mode, status:'Open', kind:'loan'};
     applyLoanMovement(entry);
     STATE.intershop.unshift(entry);
@@ -4833,7 +4840,7 @@ function saveSettleIntershop() {
   const toShop = STATE.shops.find(s=>s.id===i.toShop);
   if (!fromShop || !toShop) { toast('Shop not found','error'); return; }
   const avail = repayMode==='GPay' ? shopSpendableOnline(i.toShop) : shopSpendableHomeCash(i.toShop);
-  if (avail < i.amount) { toast(`${toShop.name} ka spendable ${repayMode==='GPay'?'GPay':'Home Cash'} sirf ${fmt(avail)} hai (40% savings reserve minus ho chuka hai)`, 'error'); return; }
+  if (avail < i.amount) { toast(`${toShop.name} spendable ${repayMode==='GPay'?'GPay':'Home Cash'} is only ${fmt(avail)} (40% savings reserve already deducted)`, 'error'); return; }
   i.repayMode = repayMode;
   i.status = 'Settled';
   applyRepayMovement(i);
@@ -5006,11 +5013,11 @@ function saveRepayLoan() {
     if (sh) {
       if (mode === 'GPay') {
         const avail = shopSpendableOnline(sh.id);
-        if (avail < amt) { toast(`${sh.name} ka spendable GPay sirf ${fmt(avail)} hai (savings reserve minus ho chuka hai)`, 'error'); return; }
+        if (avail < amt) { toast(`${sh.name} spendable GPay is only ${fmt(avail)} (40% savings reserve already deducted)`, 'error'); return; }
         sh.online = (sh.online||0) - amt;
       } else {
         const avail = shopSpendableHomeCash(sh.id);
-        if (avail < amt) { toast(`${sh.name} ka spendable Home Cash sirf ${fmt(avail)} hai (40% savings reserve minus ho chuka hai)`, 'error'); return; }
+        if (avail < amt) { toast(`${sh.name} spendable Home Cash is only ${fmt(avail)} (40% savings reserve already deducted)`, 'error'); return; }
         sh.homeTransfer = (sh.homeTransfer||0) + amt; // Add to homeTransfer to decrease home cash
       }
     }
@@ -5152,9 +5159,9 @@ function deleteLoan(lid) {
   if (totalRepaid > 0) {
     showConfirm({
       title:'Delete Loan?',
-      msg:`Loan from <strong>${l.from}</strong> — ${fmt(l.amount)}, ${fmt(totalRepaid)} already repaid.<br><br>Ye poori entry <strong>galti se</strong> bani thi (loan + repayment dono wapas chahiye), ya ye <strong>sahi</strong> thi aur sirf record clean karna hai (paisa jaisa hai waisa hi rahega)?`,
-      icon:'!', yesText:'Galti thi — Reverse karo', yesCls:'btn-bad',
-      extraText:'Sahi thi — Sirf record hatao', onExtra:()=>doDelete(false),
+      msg:`Loan from <strong>${l.from}</strong> — ${fmt(l.amount)}, ${fmt(totalRepaid)} already repaid.<br><br>This entire entry was <strong>by mistake</strong> (both loan + repayment should be reversed), or this was <strong>correct</strong> and you just need to clean the record (balances will stay as they are)?`,
+      icon:'!', yesText:'Mistake — Reverse it', yesCls:'btn-bad',
+      extraText:'Correct — Only remove record', onExtra:()=>doDelete(false),
       onYes:()=>doDelete(true)
     });
   } else {
@@ -5560,7 +5567,7 @@ function saveHomeExpense() {  const desc = $('he-desc').value.trim();
     if (available < amt) {
       showConfirm({
         title:'Low Balance!',
-        msg:`<strong>${escHtml(sh.name)}</strong> ka spendable <strong>${useGpay?'GPay':'Counter Cash'}</strong> sirf <strong>${fmt(available)}</strong> hai (40% savings reserve minus ho chuka hai). Log anyway?`,
+        msg:`<strong>${escHtml(sh.name)}</strong> spendable <strong>${useGpay?'GPay':'Counter Cash'}</strong> is only <strong>${fmt(available)}</strong> (40% savings reserve already deducted). Log anyway?`,
         icon:'!',yesText:'Log Anyway',yesCls:'btn-bad',
         onYes:()=>{
           // Bug 3 fix: store actualDeducted so delete only reverses what was really deducted (not full amount)
@@ -5714,7 +5721,7 @@ function reportPeriod() {
 function inPeriodDate(date, rp) { return !!date && date >= rp.start && date <= rp.end; }
 function profitForRecord(r) {
   const sh = STATE.shops.find(s => s.id === r.shopId);
-  return r.profit != null ? (parseFloat(r.profit) || 0) : Math.round((r.sale || 0) * ((sh && sh.profitPct) || 40) / 100);
+  return r.profit != null ? (parseFloat(r.profit) || 0) : Math.round(((r.cashHome || 0) + (r.gpay || 0)) * ((sh && sh.profitPct) || 40) / 100);
 }
 function buildReportData() {
   const rp = reportPeriod();
@@ -6502,7 +6509,7 @@ function buildDailySummary() {
       msg += `- Counter cash kept: ${nf(dc.counterCash)}\n`;
       msg += `- GPay / Online: ${nf(dc.gpay)}\n`;
       msg += `- Counter expenses: ${nf(dc.expense)}\n`;
-      const profit = dc.profit != null ? dc.profit : Math.round((dc.sale||0)*(sh.profitPct||40)/100);
+      const profit = dc.profit != null ? dc.profit : Math.round(((dc.cashHome||0)+(dc.gpay||0))*(sh.profitPct||40)/100);
       msg += `- Sale: ${nf(dc.sale)}   ||   Profit: ${nf(profit)}\n`;
     } else {
       msg += `_No Entries_\n`;
@@ -6544,7 +6551,7 @@ function buildShopDailySummary(shopId, dateStr) {
   if (dc) {
     m += `*Day Close*\n`;
     m += `Sale : ${nf(dc.sale)}\n`;
-    m += `Profit : ${nf(dc.profit != null ? dc.profit : Math.round((dc.sale||0)*(sh.profitPct||40)/100))}\n\n`;
+    m += `Profit : ${nf(dc.profit != null ? dc.profit : Math.round(((dc.cashHome||0)+(dc.gpay||0))*(sh.profitPct||40)/100))}\n\n`;
     m += `Cash Home : ${nf(dc.cashHome)}\n`;
     m += `Counter : ${nf(dc.counterCash)}\n`;
     m += `GPay : ${nf(dc.gpay)}\n\n`;
@@ -6562,7 +6569,7 @@ function buildShopDailySummary(shopId, dateStr) {
   }
 
   if (udhaariNew.length) {
-    details += `\n*Nayi Udhaari*\n`;
+    details += `\n*New Credit*\n`;
     udhaariNew.forEach(u => details += `• ${u.customer}: ${nf(u.totalBill)}\n`);
   }
 
@@ -6914,7 +6921,7 @@ function confirmReminderPaid() {
       if (available < amt) {
         showConfirm({
           title:'Low Balance!',
-          msg:`<strong>${sh.name}</strong> ka spendable <strong>${useGpay?'GPay':'Cash'}</strong> sirf <strong>${fmt(available)}</strong> hai (40% savings reserve minus ho chuka hai). Log anyway?`,
+          msg:`<strong>${sh.name}</strong> spendable <strong>${useGpay?'GPay':'Cash'}</strong> is only <strong>${fmt(available)}</strong> (40% savings reserve already deducted). Log anyway?`,
           icon:'!',yesText:'Log Anyway',yesCls:'btn-bad',
           onYes:()=>_logPayment(sh, useGpay)
         }); return;
@@ -7054,18 +7061,46 @@ function changePin() {
 async function resetAll() {
   STATE = defaultState();
   localStorage.setItem('jmd_state', JSON.stringify(STATE));
-  const url = effectiveSheetUrl();
-  if (url) {
-    try {
-      await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action: 'save', data: STATE }),
-        mode: 'no-cors'
-      });
-    } catch (e) { /* ignore — reload happens regardless */ }
-  }
   location.reload();
+}
+
+// Selective Reset: clears Day Close, Home/Daily Expenses, InterShop, Reminders, Audit
+// and zeroes out shop balances (galla/online/homeTransfer) — but KEEPS Market Udhaari
+// (credit), Outflows and Loans untouched, since those need to carry forward.
+async function selectiveReset() {
+  STATE.dayClose = [];
+  STATE.homeExpenses = [];
+  STATE.dailyExpenses = [];
+  STATE.intershop = [];
+  STATE.reminders = [];
+  STATE.audit = [];
+  (STATE.shops || []).forEach(sh => { sh.galla = 0; sh.online = 0; sh.homeTransfer = 0; });
+  // udhaari, outflows, loans are deliberately left untouched
+  localStorage.setItem('jmd_state', JSON.stringify(STATE));
+  toast('Selective reset done — Credit/Outflows/Loans preserved', 'success');
+  try { await pushToSheetNow(); } catch(e) {}
+  location.reload();
+}
+
+// Immediate (non-debounced) push used right after a reset, so the sheet
+// reflects the cleared state right away instead of waiting for the debounce timer.
+async function pushToSheetNow() {
+  const url = effectiveSheetUrl();
+  if (!url) return;
+  STATE.lastSyncAt = new Date().toISOString();
+  await fetch(url, {method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'save', data: STATE})});
+  localStorage.setItem('jmd_state', JSON.stringify(STATE));
+}
+
+function downloadBackup() {
+  const blob = new Blob([JSON.stringify(STATE, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `JMD_backup_${todayStr()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Backup downloaded', 'success');
 }
 
 // ─── Google Sheet Sync ───────────────────────────────────────────
@@ -7101,7 +7136,7 @@ function pushToSheet() {
     dot.className='sync-dot syncing'; lbl.textContent='Syncing...';
     try {
       STATE.lastSyncAt = new Date().toISOString();
-      await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'save',data:STATE}),mode:'no-cors'});
+      await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'save',data:STATE})});
       localStorage.setItem('jmd_state', JSON.stringify(STATE));
       updateLastSyncUI();
       dot.className='sync-dot'; dot.style.background='var(--good)';
@@ -7146,7 +7181,7 @@ function manualSync() {
     dot.className='sync-dot syncing'; lbl.textContent='Pushing...';
     try {
       STATE.lastSyncAt = new Date().toISOString();
-      await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'save',data:STATE}),mode:'no-cors'});
+      await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'save',data:STATE})});
       localStorage.setItem('jmd_state', JSON.stringify(STATE));
       updateLastSyncUI();
       dot.className='sync-dot'; dot.style.background='var(--good)';
@@ -7315,5 +7350,6 @@ function installPWA() {
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
 </body>
 </html>
