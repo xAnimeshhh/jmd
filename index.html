@@ -756,9 +756,6 @@ select.csel-native { position: absolute; width: 1px; height: 1px; padding: 0; ma
 .loan-card.repaid { opacity: 0.5; }
 
 /* ── Day close history card ── */
-.dc-hist-card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 13px 15px; }
-.dc-calc-row { display: flex; align-items: center; justify-content: space-between; font-size: 11.5px; padding: 2px 0; color: var(--muted); }
-.dc-calc-row .dc-v { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--jtext); font-weight: 600; }
 
 /* ── Day Close Shop Tabs ── */
 .dc-shop-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
@@ -791,8 +788,29 @@ select.csel-native { position: absolute; width: 1px; height: 1px; padding: 0; ma
   transition: box-shadow 0.2s;
 }
 .dc-shop-tab.active .tab-dot { box-shadow: 0 0 10px var(--shop-color, var(--accent)); }
+.dc-tab-done { width:15px; height:15px; border-radius:50%; background:var(--good); color:#fff; font-size:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 0 8px rgba(52,211,153,.5); }
 .dc-form-panel { display: none; }
 .dc-form-panel.active { display: block; }
+.dc-common-date-bar {
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  background:linear-gradient(135deg, rgba(124,92,252,0.1), rgba(124,92,252,0.03));
+  border:1px solid rgba(124,92,252,0.25); border-radius:13px; padding:12px 16px; margin-bottom:16px;
+}
+.dc-common-date-bar .lbl-main { font-size:12.5px; font-weight:700; color:var(--jtext); display:flex; align-items:center; gap:7px; }
+.dc-common-date-bar .lbl-main i { color:var(--accent); }
+.dc-common-date-bar input[type=date] { max-width:170px; padding:7px 10px; font-size:12.5px; font-weight:600; }
+.dc-common-date-bar .dc-progress { margin-left:auto; font-size:11.5px; color:var(--muted); font-weight:600; display:flex; align-items:center; gap:8px; }
+.dc-progress-dots { display:flex; gap:5px; }
+.dc-progress-dot { width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,0.12); border:1px solid var(--line); }
+.dc-progress-dot.done { background:var(--good); border-color:var(--good); box-shadow:0 0 6px rgba(52,211,153,.5); }
+.dc-input-card { border-radius: 11px; padding: 10px 12px; transition: transform 0.15s; }
+.dc-input-card:focus-within { transform: translateY(-1px); }
+.dc-input-card-hd { display:flex; align-items:center; gap:7px; font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px; }
+.dc-input-icn { width:20px; height:20px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:10px; flex-shrink:0; }
+.dc-input-row { display:flex; align-items:baseline; gap:4px; }
+.dc-rs { font-size:15px; font-weight:700; }
+.dc-input-field { flex:1; min-width:0; background:transparent; border:none; outline:none; font-size:19px; font-weight:800; font-family:'JetBrains Mono', monospace; padding:0; }
+.dc-input-field::placeholder { color: rgba(255,255,255,0.18); font-weight:700; }
 
 /* ── Rec card compact ── */
 .rec-card {
@@ -828,23 +846,6 @@ hr.divider { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
 .arrow-shops { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; }
 .arrow-shops .arrow { color: var(--muted); font-size: 16px; }
 
-/* ── Compact DC History row card ── */
-.dc-row-card {
-  background: var(--panel); border: 1px solid var(--line); border-left: 3px solid transparent;
-  border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 10px;
-  cursor: pointer; transition: all 0.2s; margin-bottom: 7px;
-}
-.dc-row-card:hover { border-color: rgba(139,108,255,0.35); transform: translateX(2px); }
-.dc-row-card.dc-deleted { opacity: 0.35; }
-
-/* ── Day Close: History/Entries sub-tab toggle ── */
-.dc-subtabs { display: flex; gap: 6px; margin-bottom: 12px; }
-.dc-subtab-btn {
-  background: var(--panel2); border: 1px solid var(--line); color: var(--muted);
-  font-size: 11.5px; font-weight: 700; padding: 6px 14px; border-radius: 7px; cursor: pointer; transition: all 0.15s;
-}
-.dc-subtab-btn.on { background: rgba(139,108,255,0.14); border-color: var(--accent); color: var(--accent); }
-
 /* ── Day Close: Entries toolbar (search, month nav, share) ── */
 .dce-toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
 .dce-toolbar .inp { flex: 1 1 160px; min-width: 140px; }
@@ -868,7 +869,7 @@ hr.divider { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
 .dce-sub { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: var(--muted); font-weight: 600; margin-top: 2px; }
 
 /* ── Paid stamp ── */
-.paid-stamp { font-size: 9px; font-weight: 800; letter-spacing: 0.12em; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(34,197,94,0.4); background: rgba(34,197,94,0.1); color: var(--good); text-transform: uppercase; }
+.paid-stamp { font-size: 9px; font-weight: 800; letter-spacing: 0.12em; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(52,211,153,0.4); background: rgba(52,211,153,0.1); color: var(--good); text-transform: uppercase; }
 
 /* ── Transfer panel ── */
 .transfer-panel {
@@ -912,7 +913,7 @@ hr.divider { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
 .rem-card:hover { border-color: rgba(251,191,36,0.35); transform: translateX(2px); }
 .rem-card.due-soon { border-left-color: var(--warn); background: linear-gradient(90deg, rgba(251,191,36,0.06), transparent 40%); }
 .rem-card.due-today { border-left-color: var(--bad); background: linear-gradient(90deg, rgba(248,113,113,0.08), transparent 40%); }
-.rem-card.overdue { border-left-color: var(--bad); background: linear-gradient(90deg, rgba(239,68,68,0.12), transparent 45%); }
+.rem-card.overdue { border-left-color: var(--bad); background: linear-gradient(90deg, rgba(248,113,113,0.12), transparent 45%); }
 .rem-days-badge { font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.04em; text-transform: uppercase; }
 
 /* ── Responsive Overflow Fixes ──────────────────────────────────── */
@@ -1210,6 +1211,15 @@ html,body{overflow-x:hidden;max-width:100%;}
 
       <!-- ═══ DAY CLOSE ═══ -->
       <div class="tab-section" id="tab-dayclose">
+        <!-- Common date — applies to whichever shop you're filling -->
+        <div class="dc-common-date-bar">
+          <div class="lbl-main"><i class="fa-solid fa-calendar-days"></i>Date (for all shops)</div>
+          <input class="inp" id="dc-common-date" type="date" onchange="onDcCommonDateChange()" />
+          <div class="dc-progress" id="dc-progress-label">
+            <div class="dc-progress-dots" id="dc-progress-dots"></div>
+            <span id="dc-progress-text"></span>
+          </div>
+        </div>
         <!-- Shop tabs -->
         <div class="dc-shop-tabs" id="dc-shop-tabs"></div>
         <!-- Active shop form -->
@@ -1218,22 +1228,18 @@ html,body{overflow-x:hidden;max-width:100%;}
         <div style="margin-top:24px;">
           <div class="section-hd">
             <h2>Day Close Records</h2>
-            <div class="dc-subtabs">
-              <button class="dc-subtab-btn on" id="dc-sub-history" onclick="switchDcSubView('history')">History</button>
-              <button class="dc-subtab-btn" id="dc-sub-entries" onclick="switchDcSubView('entries')">Entries</button>
-            </div>
           </div>
-          <div id="dc-history-view">
-            <div id="dc-history"></div>
-          </div>
-          <div id="dc-entries-view" style="display:none;">
+          <div id="dc-entries-view">
             <div class="dce-toolbar">
-              <input class="inp" id="dce-search" placeholder="Search..." oninput="renderDcEntriesTable()">
+              <input class="inp" id="dce-search" placeholder="Search..." oninput="renderDcHistory()">
               <div class="dce-month-nav">
                 <button onclick="shiftDcEntriesMonth(-1)" title="Previous month"><i class="fa-solid fa-caret-left"></i></button>
                 <span id="dce-month-label">—</span>
                 <button onclick="shiftDcEntriesMonth(1)" title="Next month"><i class="fa-solid fa-caret-right"></i></button>
               </div>
+              <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);cursor:pointer;user-select:none;white-space:nowrap;">
+                <input type="checkbox" id="dce-show-deleted" onchange="renderDcHistory()" style="cursor:pointer;"> Show deleted
+              </label>
               <button class="btn btn-good btn-sm dce-send-btn" onclick="shareDcMonthReport()" title="Share this month's report"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
             <div class="dc-entries-wrap">
@@ -1253,7 +1259,6 @@ html,body{overflow-x:hidden;max-width:100%;}
                 <tbody id="dc-entries-tbody"></tbody>
               </table>
             </div>
-          </div>
           </div>
         </div>
       </div>
@@ -1452,7 +1457,7 @@ html,body{overflow-x:hidden;max-width:100%;}
 
           <!-- Managed / Locked view (when INBUILT_SHEET_URL is set in code) -->
           <div id="settings-managed" style="display:none;">
-            <div style="background:linear-gradient(135deg, rgba(34,197,94,0.08), rgba(6,182,212,0.05));border:1px solid rgba(34,197,94,0.28);border-radius:9px;padding:14px 16px;">
+            <div style="background:linear-gradient(135deg, rgba(52,211,153,0.08), rgba(34,211,238,0.05));border:1px solid rgba(52,211,153,0.28);border-radius:9px;padding:14px 16px;">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
                 <i class="fa-solid fa-shield-halved" style="color:var(--good);font-size:16px;"></i>
                 <span style="font-size:13px;font-weight:700;color:var(--good);">Team Sync Active — Auto Managed</span>
@@ -1692,7 +1697,7 @@ html,body{overflow-x:hidden;max-width:100%;}
       </div>
     </div>
     <div id="po-counter-note" style="display:none;background:rgba(139,108,255,0.08);border:1px solid rgba(139,108,255,0.25);border-radius:7px;padding:9px 12px;font-size:11.5px;color:var(--accent);margin-bottom:12px;"><i class="fa-solid fa-circle-info" style="margin-right:5px;"></i>No balance will be deducted from Counter now — a reminder will appear when filling Day Close for this date</div>
-    <div id="po-is-warn" style="display:none;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:7px;padding:9px 12px;font-size:11.5px;color:var(--warn);margin-bottom:12px;"><i class="fa-solid fa-triangle-exclamation" style="margin-right:5px;"></i>An InterShop obligation will be created</div>
+    <div id="po-is-warn" style="display:none;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:7px;padding:9px 12px;font-size:11.5px;color:var(--warn);margin-bottom:12px;"><i class="fa-solid fa-triangle-exclamation" style="margin-right:5px;"></i>An InterShop obligation will be created</div>
     <div style="display:flex;gap:10px;margin-top:6px;"><button class="btn btn-ghost" style="flex:1;" onclick="closeModal(&#39;modal-pay-outflow&#39;)">Cancel</button><button class="btn btn-warn" style="flex:2;" onclick="savePayOutflow()">Pay Bill</button></div>
   </div>
 </div>
@@ -1728,7 +1733,7 @@ html,body{overflow-x:hidden;max-width:100%;}
       </div>
     </div>
     <div class="fg"><div class="lbl">Reason</div><input class="inp" id="is-reason" placeholder="Reason"></div>
-    <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:7px;padding:9px 12px;font-size:11.5px;color:var(--warn);margin-bottom:6px;"><i class="fa-solid fa-triangle-exclamation" style="margin-right:5px;"></i>This will be recorded as an <strong>Open loan</strong> — settle it later from the InterShop tab.</div>
+    <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:7px;padding:9px 12px;font-size:11.5px;color:var(--warn);margin-bottom:6px;"><i class="fa-solid fa-triangle-exclamation" style="margin-right:5px;"></i>This will be recorded as an <strong>Open loan</strong> — settle it later from the InterShop tab.</div>
     <div style="display:flex;gap:10px;margin-top:6px;"><button class="btn btn-ghost" style="flex:1;" onclick="closeModal(&#39;modal-add-intershop&#39;)">Cancel</button><button class="btn btn-primary" id="is-save-btn" style="flex:2;" onclick="saveIntershop()">Add Transfer</button></div>
   </div>
 </div>
@@ -1979,7 +1984,7 @@ html,body{overflow-x:hidden;max-width:100%;}
 // The Settings URL field will be hidden/locked automatically.
 //
 // Leave empty if each user should manually enter the URL in Settings.
-const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwSaW1n4cJSGodcjznfOU4gTQqv0lpUsZiIZKmTk5S81ufmG6I08PFL3DJW9KgKzR5T/exec'
+const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbzklt8smz6kuedAoD79k5HQVgtIRFPUQ9iotyneeRldJiFayFJQ0jrDGI2MCLBT_NiA/exec'
 // ═══════════════════════════════════════════════════════════════════
 
 // ─── Initial State ──────────────────────────────────────────────
@@ -3073,29 +3078,43 @@ function updateProfitPct(shopId, val) {
 
 // ─── Day Close ───────────────────────────────────────────────────
 let activeDcShop = null;
+let dcCommonDate = null; // shared date box — applies to whichever shop panel you're filling
 
 function initDcForms() {
   const tabsEl = $('dc-shop-tabs');
   const formsEl = $('dc-forms');
   if (!tabsEl || !formsEl) return;
 
-  // Build tab buttons
-  tabsEl.innerHTML = STATE.shops.map((sh,i) => `
-    <button class="dc-shop-tab${i===0?' active':''}" id="dctab-${sh.id}" style="--shop-color:${shopColor(sh.id)};" onclick="switchDcShop('${sh.id}')">
+  // Keep the previously selected date/shop across rebuilds (e.g. after a submit)
+  if (!dcCommonDate) dcCommonDate = todayStr();
+  if (!activeDcShop || !STATE.shops.some(s=>s.id===activeDcShop)) activeDcShop = STATE.shops[0]?.id;
+
+  // Sync the common date input
+  const commonDateEl = $('dc-common-date');
+  if (commonDateEl) { commonDateEl.value = dcCommonDate; commonDateEl.max = todayStr(); }
+
+  // Build tab buttons — with a green "done" badge if that shop already has
+  // a Day Close entry for the currently selected common date
+  tabsEl.innerHTML = STATE.shops.map(sh => {
+    const doneForDate = STATE.dayClose.some(r=>!r.deleted && r.shopId===sh.id && r.date===dcCommonDate);
+    return `
+    <button class="dc-shop-tab${sh.id===activeDcShop?' active':''}" id="dctab-${sh.id}" style="--shop-color:${shopColor(sh.id)};" onclick="switchDcShop('${sh.id}')">
       <span class="tab-dot" style="background:${shopColor(sh.id)};"></span>
       ${sh.name}
-    </button>`).join('');
+      ${doneForDate?`<span class="dc-tab-done" title="Done for ${fmtDate(dcCommonDate)}"><i class="fa-solid fa-check"></i></span>`:''}
+    </button>`;
+  }).join('');
 
-  // Build one form panel per shop, all hidden except first
-  formsEl.innerHTML = STATE.shops.map((sh, i) => {
-    const prevInfo = getPrevCounterForShop(sh.id);
-    const today = todayStr();
+  // Build one form panel per shop, all hidden except the active one
+  formsEl.innerHTML = STATE.shops.map((sh) => {
+    const prevInfo = getPrevCounterForShop(sh.id, dcCommonDate);
+    const today = dcCommonDate;
     const todaysDc = STATE.dayClose.find(r=>r.shopId===sh.id && r.date===today && !r.deleted);
     const activeList = STATE.dayClose.filter(r=>r.shopId===sh.id && !r.deleted);
     const lastEntry = activeList[0];
-    // Prefill from today's DC (edit mode) if present
+    // Prefill from the selected date's DC (edit mode) if present
     const pf = todaysDc || {};
-    return `<div class="dc-form-panel${i===0?' active':''}" id="dcpanel-${sh.id}">
+    return `<div class="dc-form-panel${sh.id===activeDcShop?' active':''}" id="dcpanel-${sh.id}">
       <div class="card" style="padding:0;overflow:hidden;border-top:2px solid ${shopColor(sh.id)};">
         <!-- Shop Header with gradient -->
         <div style="padding:14px 16px;background:linear-gradient(135deg, ${shopColor(sh.id)}10, transparent 60%);border-bottom:1px solid var(--line);">
@@ -3112,27 +3131,24 @@ function initDcForms() {
         </div>
         <!-- Form Content -->
         <div style="padding:14px 16px;">
-        <div class="fg" style="margin-bottom:10px;">
-          <div class="lbl">Date <span style="color:var(--accent2);text-transform:none;letter-spacing:0;font-weight:400;">(Which date is this for?)</span></div>
-          <input class="inp" id="dc-date-${sh.id}" type="date" value="${pf.date || today}" max="${today}" onchange="onDcDateChange('${sh.id}')" style="max-width:200px;padding:7px 10px;font-size:12px;" />
-        </div>
+        <input type="hidden" id="dc-date-${sh.id}" value="${pf.date || today}" />
         <div id="dc-cash-reminder-${sh.id}" style="margin-bottom:10px;"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
-          <div class="fg" style="margin-bottom:0;">
-            <div class="lbl"><i class="fa-solid fa-house" style="color:var(--good);margin-right:3px;font-size:8px;"></i>Home Cash (₹)</div>
-            <input class="inp" id="dc-home-${sh.id}" type="number" inputmode="numeric" value="${pf.cashHome||''}" placeholder="₹" oninput="updateDcCalc('${sh.id}')" onfocus="clearIfZero(this)" style="padding:7px 10px;font-size:12px;" />
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div class="dc-input-card" style="background:rgba(52,211,153,0.07);border:1px solid rgba(52,211,153,0.2);">
+            <div class="dc-input-card-hd"><span class="dc-input-icn" style="background:rgba(52,211,153,0.16);"><i class="fa-solid fa-house" style="color:var(--good);"></i></span>Home Cash</div>
+            <div class="dc-input-row"><span class="dc-rs" style="color:var(--good);">₹</span><input class="dc-input-field" style="color:var(--good);" id="dc-home-${sh.id}" type="number" inputmode="numeric" value="${pf.cashHome||''}" placeholder="0" oninput="updateDcCalc('${sh.id}')" onfocus="clearIfZero(this)" /></div>
           </div>
-          <div class="fg" style="margin-bottom:0;">
-            <div class="lbl"><i class="fa-solid fa-cash-register" style="color:var(--warn);margin-right:3px;font-size:8px;"></i>Counter (₹)</div>
-            <input class="inp" id="dc-counter-${sh.id}" type="number" inputmode="numeric" value="${pf.counterCash||''}" placeholder="₹" oninput="updateDcCalc('${sh.id}')" onfocus="clearIfZero(this)" style="padding:7px 10px;font-size:12px;" />
+          <div class="dc-input-card" style="background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.2);">
+            <div class="dc-input-card-hd"><span class="dc-input-icn" style="background:rgba(251,191,36,0.16);"><i class="fa-solid fa-cash-register" style="color:var(--warn);"></i></span>Counter</div>
+            <div class="dc-input-row"><span class="dc-rs" style="color:var(--warn);">₹</span><input class="dc-input-field" style="color:var(--warn);" id="dc-counter-${sh.id}" type="number" inputmode="numeric" value="${pf.counterCash||''}" placeholder="0" oninput="updateDcCalc('${sh.id}')" onfocus="clearIfZero(this)" /></div>
           </div>
-          <div class="fg" style="margin-bottom:0;">
-            <div class="lbl"><i class="fa-solid fa-mobile-screen" style="color:var(--accent2);margin-right:3px;font-size:8px;"></i>GPay (₹)</div>
-            <input class="inp" id="dc-gpay-${sh.id}" type="number" inputmode="numeric" value="${pf.gpay||''}" placeholder="₹" oninput="updateDcCalc('${sh.id}')" onfocus="clearIfZero(this)" style="padding:7px 10px;font-size:12px;" />
+          <div class="dc-input-card" style="background:rgba(34,211,238,0.07);border:1px solid rgba(34,211,238,0.2);">
+            <div class="dc-input-card-hd"><span class="dc-input-icn" style="background:rgba(34,211,238,0.16);"><i class="fa-solid fa-mobile-screen" style="color:var(--accent2);"></i></span>GPay</div>
+            <div class="dc-input-row"><span class="dc-rs" style="color:var(--accent2);">₹</span><input class="dc-input-field" style="color:var(--accent2);" id="dc-gpay-${sh.id}" type="number" inputmode="numeric" value="${pf.gpay||''}" placeholder="0" oninput="updateDcCalc('${sh.id}')" onfocus="clearIfZero(this)" /></div>
           </div>
-          <div class="fg" style="margin-bottom:0;">
-            <div class="lbl"><i class="fa-solid fa-receipt" style="color:var(--bad);margin-right:3px;font-size:8px;"></i>Expenses (₹) <span style="color:var(--accent2);font-weight:400;text-transform:none;letter-spacing:0;font-size:8px;">auto</span></div>
-            <input class="inp" id="dc-exp-${sh.id}" type="number" inputmode="numeric" value="${pf.expense||''}" placeholder="₹" oninput="updateDcCalc('${sh.id}')" onfocus="clearIfZero(this)" style="padding:7px 10px;font-size:12px;" />
+          <div class="dc-input-card" style="background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.16);opacity:0.85;">
+            <div class="dc-input-card-hd"><span class="dc-input-icn" style="background:rgba(248,113,113,0.14);"><i class="fa-solid fa-receipt" style="color:var(--bad);"></i></span>Expenses <span style="font-weight:400;text-transform:none;font-size:8px;color:var(--muted);letter-spacing:0;">↓ below</span></div>
+            <div class="dc-input-row"><span class="dc-rs" style="color:var(--bad);">₹</span><input class="dc-input-field" style="color:var(--bad);cursor:not-allowed;" id="dc-exp-${sh.id}" type="number" inputmode="numeric" value="${pf.expense||''}" placeholder="0" readonly /></div>
           </div>
         </div>
 
@@ -3160,9 +3176,13 @@ function initDcForms() {
           <div id="de-summary-${sh.id}" style="font-size:10px;color:var(--muted);margin-top:6px;padding-top:6px;border-top:1px solid rgba(251,191,36,0.1);"></div>
         </div>
 
-        <div class="fg" style="margin-bottom:10px;">
-          <div class="lbl"><i class="fa-solid fa-clock-rotate-left" style="color:var(--muted);margin-right:3px;font-size:8px;"></i>Prev Counter (₹) <span style="color:var(--accent2);font-weight:400;text-transform:none;letter-spacing:0;font-size:8px;">${prevInfo.label}</span></div>
-          <input class="inp" id="dc-prev-${sh.id}" type="number" value="${todaysDc? (pf.prevCounter||0) : prevInfo.val}" placeholder="₹" readonly style="padding:7px 10px;font-size:12px;max-width:180px;opacity:0.7;cursor:not-allowed;" />
+        <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.02);border:1px solid var(--line);border-radius:9px;padding:9px 13px;margin-bottom:10px;">
+          <div style="display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted);">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span>Prev Counter Cash <span style="color:var(--accent2);">${prevInfo.label}</span></span>
+          </div>
+          <span class="mono" style="font-size:13.5px;font-weight:700;color:var(--jtext);" id="dc-prev-display-${sh.id}">₹${fmtNum(todaysDc? (pf.prevCounter||0) : prevInfo.val)}</span>
+          <input type="hidden" id="dc-prev-${sh.id}" value="${todaysDc? (pf.prevCounter||0) : prevInfo.val}" />
         </div>
         <div class="formula-box" style="margin:10px 0;padding:10px 12px;border-left:3px solid ${shopColor(sh.id)};">
           <div class="formula-line" style="font-size:11px;margin-bottom:3px;"><span class="fl-label">+ Home</span><span class="fl-val" style="color:var(--good);" id="dc-f-home-${sh.id}">₹0</span></div>
@@ -3181,15 +3201,15 @@ function initDcForms() {
         </div>
         <div class="fg" style="margin-top:10px;margin-bottom:8px;"><input class="inp" id="dc-note-${sh.id}" value="${(pf.note||'').replace(/"/g,'&quot;')}" placeholder="Note / Remark (optional)" style="padding:7px 10px;font-size:12px;" /></div>
         <button class="btn" style="width:100%;padding:9px;background:linear-gradient(135deg, ${shopColor(sh.id)}, ${shopColor(sh.id)}cc);color:#fff;box-shadow:0 3px 12px ${shopColor(sh.id)}33;font-size:12px;font-weight:700;" id="dc-submit-btn-${sh.id}" onclick="submitDayClose('${sh.id}')">
-          <i class="fa-solid ${todaysDc?'fa-pen-to-square':'fa-calendar-check'}"></i> ${todaysDc?"Update Day Close":"Submit Day Close"}
+          <i class="fa-solid ${todaysDc?'fa-pen-to-square':'fa-calendar-check'}"></i> ${todaysDc?`Update ${fmtDate(today)} Day Close`:`Submit Day Close (${fmtDate(today)})`}
         </button>
         </div><!-- /form content -->
       </div>
     </div>`;
   }).join('');
 
-  activeDcShop = STATE.shops[0]?.id;
-  STATE.shops.forEach(sh => { updateDcCalc(sh.id); renderDailyExpenses(sh.id); renderDcCashReminder(sh.id); });
+  STATE.shops.forEach(sh => { renderDailyExpenses(sh.id); syncDcExpenseFromItems(sh.id); renderDcCashReminder(sh.id); });
+  updateDcProgress();
 }
 
 function switchDcShop(shopId) {
@@ -3199,6 +3219,31 @@ function switchDcShop(shopId) {
     if (tab) tab.classList.toggle('active', sh.id===shopId);
     if (panel) panel.classList.toggle('active', sh.id===shopId);
   });
+}
+
+// Fires when the shared date box (above the shop tabs) changes — re-syncs every
+// shop panel's prev-counter, reminder banner, submit-button label and prefill
+// for the newly selected date, then keeps you on the same shop tab you were on.
+function onDcCommonDateChange() {
+  const val = $('dc-common-date')?.value || todayStr();
+  dcCommonDate = val;
+  const keepShop = activeDcShop;
+  initDcForms();
+  switchDcShop(keepShop || STATE.shops[0]?.id);
+}
+
+// Small "X/Y shops done" progress readout above the tabs, for the currently selected date
+function updateDcProgress() {
+  const dotsEl = $('dc-progress-dots'), textEl = $('dc-progress-text');
+  if (!dotsEl || !textEl) return;
+  const doneCount = STATE.shops.filter(sh => STATE.dayClose.some(r=>!r.deleted && r.shopId===sh.id && r.date===dcCommonDate)).length;
+  dotsEl.innerHTML = STATE.shops.map(sh => {
+    const done = STATE.dayClose.some(r=>!r.deleted && r.shopId===sh.id && r.date===dcCommonDate);
+    return `<span class="dc-progress-dot${done?' done':''}" title="${escHtml(sh.name)}"></span>`;
+  }).join('');
+  textEl.textContent = doneCount === STATE.shops.length
+    ? `All ${STATE.shops.length} shops done ✓`
+    : `${doneCount}/${STATE.shops.length} shops done`;
 }
 
 function clearIfZero(inp) {
@@ -3505,6 +3550,11 @@ function submitDayClose(shopId) {
   renderSavingsPendingBanner();
   toast(`${shopName(shopId)} Day Close saved (${fmtDate(entryDate)}) — Sale ${fmt(sale)} · Profit ${fmt(profit)}`, 'success');
 
+  // Auto-advance to the next shop that still doesn't have an entry for this date,
+  // so you can close all shops back-to-back without manually clicking tabs.
+  const nextPending = STATE.shops.find(s => s.id !== shopId && !STATE.dayClose.some(r => !r.deleted && r.shopId === s.id && r.date === entryDate));
+  if (nextPending) switchDcShop(nextPending.id);
+
   // Post-submit confirmation: form neeche already editable ban chuka hai (initDcForms ne
   // "Update Day Close" mode mein prefill kar diya). Ye modal sirf ek visual confirm-cum-nudge hai —
   // "Edit Karu" click karne par modal bas hat jata hai aur user seedha editable form pe aa jata hai;
@@ -3616,13 +3666,15 @@ function onDcDateChange(shopId) {
     const noteEl = $(`dc-note-${shopId}`);
     if (noteEl) noteEl.value = existing.note || '';
   } else {
-    [`dc-home-${shopId}`, `dc-counter-${shopId}`, `dc-gpay-${shopId}`, `dc-exp-${shopId}`].forEach(id => { const el = $(id); if (el) el.value = ''; });
+    [`dc-home-${shopId}`, `dc-counter-${shopId}`, `dc-gpay-${shopId}`].forEach(id => { const el = $(id); if (el) el.value = ''; });
     const pInp = $(`dc-profit-${shopId}`); if (pInp) { pInp.value = ''; delete pInp.dataset.userEdited; }
     const noteEl = $(`dc-note-${shopId}`); if (noteEl) noteEl.value = '';
   }
 
   renderDailyExpenses(shopId);
-  updateDcCalc(shopId);
+  // Expenses field is read-only and driven entirely by Daily Expense items for
+  // whichever date is now selected — recompute it here instead of leaving a stale value.
+  syncDcExpenseFromItems(shopId);
 }
 
 // Date-aware previous counter — finds the entry just before the given date
@@ -3635,60 +3687,15 @@ function getPrevCounterForShop(shopId, refDate) {
   return { val: '', label: 'No prior entry' };
 }
 
+// ─── Day Close: single merged Records table (one row per shop-day record) ───
+// Previously this section had two separate views ("History" cards + "Entries" table)
+// showing the exact same data in two formats — confusing, and double the render work
+// for no real benefit. Now there's just ONE table. Deleted entries are hidden by
+// default (cleaner day-to-day view) and can be revealed with the "Show deleted"
+// checkbox, where they get Restore / Permanently-delete actions instead of Edit/Delete.
 function renderDcHistory() {
-  const hist = STATE.dayClose;
-  const el = $('dc-history');
-  if (!el) return;
-  const visible = hist.filter(r=>!r.hidden);
-  if (!visible.length) {
-    el.style.display = '';
-    el.innerHTML = '<div class="empty"><div class="empty-icon"><i class="fa-solid fa-calendar-xmark"></i></div>No history yet — submit a Day Close entry first</div>';
-    return;
-  }
-  el.style.display = 'block';
-  el.innerHTML = visible.map(r => {
-    const sh = STATE.shops.find(s=>s.id===r.shopId);
-    const profit = r.profit != null ? r.profit : Math.round(((r.cashHome||0)+(r.gpay||0)) * (sh?.profitPct||40)/100);
-    const del = !!r.deleted;
-    const sc = shopColor(r.shopId);
-    return `<div class="dc-row-card ${del?'dc-deleted':''}" style="border-left-color:${del?'transparent':sc};" onclick="openDcDetail('${r.id}')">
-      <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,${sc},${sc}88);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px ${sc}33;">
-        <i class="fa-solid fa-store" style="color:#fff;font-size:11px;"></i>
-      </div>
-      <div style="flex:1;min-width:0;">
-        <span style="font-size:13px;font-weight:700;${del?'text-decoration:line-through;':''}">${r.shopName||shopName(r.shopId)}</span>
-        <span style="font-size:11px;color:var(--muted);margin-left:8px;">${fmtDate(r.date)}</span>
-        ${del?`<span class="badge badge-red" style="margin-left:6px;">DELETED</span>`:''}
-      </div>
-      <div style="display:flex;align-items:center;gap:14px;flex-shrink:0;">
-        <div style="text-align:right;">
-          <div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">Sale</div>
-          <div class="mono" style="font-size:13px;font-weight:700;color:${(r.sale||0)>=0?'var(--good)':'var(--bad)'};${del?'text-decoration:line-through;':''}">${fmt(r.sale)}</div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">Profit</div>
-          <div class="mono" style="font-size:13px;font-weight:700;color:${sc};${del?'text-decoration:line-through;':''}">${fmt(profit)}</div>
-        </div>
-        ${del
-          ? `<button class="btn btn-good btn-xs" style="flex-shrink:0;" onclick="event.stopPropagation();restoreDayClose('${r.id}')"><i class="fa-solid fa-rotate-left"></i> Undo</button>
-             <button class="btn btn-bad btn-xs" style="flex-shrink:0;" onclick="event.stopPropagation();hardDeleteDayClose('${r.id}')"><i class="fa-solid fa-xmark"></i></button>`
-          : `<button class="btn btn-bad btn-xs" style="flex-shrink:0;" onclick="event.stopPropagation();deleteDayClose('${r.id}')"><i class="fa-solid fa-trash"></i></button>`}
-      </div>
-    </div>`;
-  }).join('');
   renderDcEntriesTable();
 }
-
-// ─── Day Close: History / Entries sub-tab toggle ───
-function switchDcSubView(view) {
-  $('dc-sub-history').classList.toggle('on', view === 'history');
-  $('dc-sub-entries').classList.toggle('on', view === 'entries');
-  $('dc-history-view').style.display = view === 'history' ? '' : 'none';
-  $('dc-entries-view').style.display = view === 'entries' ? '' : 'none';
-  if (view === 'entries') renderDcEntriesTable();
-}
-
-// ─── Day Close: Entries table (one row per shop-day record) ───
 let dcEntriesSort = { key: 'date', dir: 'desc' };
 let dcEntriesMonth = todayStr().slice(0, 7); // YYYY-MM
 const DCE_MONTH_NAMES = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
@@ -3734,12 +3741,13 @@ function renderDcEntriesTable() {
     if (arrow) arrow.textContent = dcEntriesSort.key === k ? (dcEntriesSort.dir === 'desc' ? '▼' : '▲') : '';
   });
 
+  const showDeleted = !!$('dce-show-deleted')?.checked;
   const q = ($('dce-search')?.value || '').trim().toLowerCase();
-  let visible = STATE.dayClose.filter(r => !r.hidden && !r.deleted && (r.date || '').slice(0, 7) === dcEntriesMonth);
+  let visible = STATE.dayClose.filter(r => (showDeleted ? r.deleted : !r.deleted) && (r.date || '').slice(0, 7) === dcEntriesMonth);
   if (q) visible = visible.filter(r => (r.shopName || shopName(r.shopId) || '').toLowerCase().includes(q) || (r.date || '').includes(q));
 
   if (!visible.length) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--muted);font-family:inherit;">No Day Close entries this month</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--muted);font-family:inherit;">${showDeleted ? 'No deleted entries this month' : 'No Day Close entries this month'}</td></tr>`;
     return;
   }
 
@@ -3759,7 +3767,8 @@ function renderDcEntriesTable() {
   });
 
   tbody.innerHTML = rows.map(({ r, s }) => {
-    return `<tr onclick="openDcDetail('${r.id}')">
+    const del = !!r.deleted;
+    return `<tr class="${del?'dc-deleted':''}" onclick="${del?'':`openDcDetail('${r.id}')`}">
       <td onclick="event.stopPropagation();"><button class="btn btn-good btn-xs" style="border-radius:50%;width:26px;height:26px;padding:0;" onclick="shareDcDayReport('${r.id}')" title="Share on WhatsApp"><i class="fa-brands fa-whatsapp"></i></button></td>
       <td style="font-weight:700;">${fmtDateShort(r.date)}</td>
       <td style="color:${(r.sale||0)>=0?'var(--good)':'var(--bad)'};font-weight:700;">${fmt(r.sale)}</td>
@@ -3781,8 +3790,11 @@ function renderDcEntriesTable() {
         <div style="color:var(--bad);">Out: ${fmt(s.outTotal)}</div>
       </td>
       <td onclick="event.stopPropagation();">
-        <button class="btn btn-ghost btn-xs" style="padding:4px 6px;" onclick="openDcDetail('${r.id}')" title="Edit"><i class="fa-solid fa-pen" style="font-size:10px;"></i></button>
-        <button class="btn btn-bad btn-xs" style="padding:4px 6px;" onclick="deleteDayClose('${r.id}')" title="Delete"><i class="fa-solid fa-xmark"></i></button>
+        ${del
+          ? `<button class="btn btn-good btn-xs" style="padding:4px 6px;" onclick="restoreDayClose('${r.id}')" title="Restore"><i class="fa-solid fa-rotate-left" style="font-size:10px;"></i></button>
+             <button class="btn btn-bad btn-xs" style="padding:4px 6px;" onclick="hardDeleteDayClose('${r.id}')" title="Permanently delete"><i class="fa-solid fa-xmark" style="font-size:10px;"></i></button>`
+          : `<button class="btn btn-ghost btn-xs" style="padding:4px 6px;" onclick="openDcDetail('${r.id}')" title="Edit"><i class="fa-solid fa-pen" style="font-size:10px;"></i></button>
+             <button class="btn btn-bad btn-xs" style="padding:4px 6px;" onclick="deleteDayClose('${r.id}')" title="Delete"><i class="fa-solid fa-xmark" style="font-size:10px;"></i></button>`}
       </td>
     </tr>`;
   }).join('');
@@ -3794,16 +3806,20 @@ function shareDcDayReport(id) {
   const sh = STATE.shops.find(s => s.id === r.shopId);
   const nf = n => { const v = parseFloat(n)||0; return (v<0?'-':'') + 'Rs ' + Math.abs(v).toLocaleString('en-IN'); };
   const profit = r.profit != null ? r.profit : Math.round(((r.cashHome||0)+(r.gpay||0))*((sh?.profitPct)||40)/100);
+  const s = computeDcEntryStats(r);
   
   let msg = `*${r.shopName || shopName(r.shopId)}* — ${fmtDate(r.date)}\n`;
   msg += `━━━━━━━━━━━━━━━\n`;
   msg += `*Day Close*\n`;
   msg += `Sale : ${nf(r.sale)}\n`;
-  msg += `Profit : ${nf(profit)}\n\n`;
+  msg += `Profit (${sh?.profitPct||40}%) : ${nf(profit)}\n\n`;
   msg += `Cash Home : ${nf(r.cashHome)}\n`;
   msg += `Counter : ${nf(r.counterCash)}\n`;
   msg += `GPay : ${nf(r.gpay)}\n\n`;
-  msg += `Expenses: ${nf(r.expense)}\n`;
+  msg += `*Savings (40%)*\n`;
+  msg += `Cash Savings : ${nf(s.cashSavings)}\n`;
+  msg += `Bank Savings : ${nf(s.bankSavings)}\n\n`;
+  msg += `Expenses : ${nf(s.expTotal)}\n`;
   if (r.note) msg += `Note: ${r.note}\n`;
   msg += `━━━━━━━━━━━━━\n`;
   msg += `_Sent from JMD Traders Software_`;
@@ -3814,7 +3830,7 @@ function shareDcDayReport(id) {
 // ─── WhatsApp share: whole month currently in view (respects search filter) ───
 function shareDcMonthReport() {
   const q = ($('dce-search')?.value || '').trim().toLowerCase();
-  let visible = STATE.dayClose.filter(r => !r.hidden && !r.deleted && (r.date || '').slice(0, 7) === dcEntriesMonth);
+  let visible = STATE.dayClose.filter(r => !r.deleted && (r.date || '').slice(0, 7) === dcEntriesMonth);
   if (q) visible = visible.filter(r => (r.shopName || shopName(r.shopId) || '').toLowerCase().includes(q) || (r.date || '').includes(q));
   if (!visible.length) { toast('No entries this month', 'error'); return; }
 
@@ -3840,6 +3856,7 @@ function openDcDetail(id) {
   const r = STATE.dayClose.find(x=>x.id===id); if(!r) return;
   const sh = STATE.shops.find(s=>s.id===r.shopId);
   const profit = r.profit != null ? r.profit : Math.round(((r.cashHome||0)+(r.gpay||0)) * (sh?.profitPct||40)/100);
+  const s = computeDcEntryStats(r);
   $('dc-detail-body').innerHTML = `
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
       <span style="width:10px;height:10px;border-radius:50%;background:${shopColor(r.shopId)};"></span>
@@ -3860,7 +3877,24 @@ function openDcDetail(id) {
         <div class="mono" style="font-size:18px;font-weight:800;color:var(--accent);">${fmt(profit)}</div>
       </div>
       ${r.note?`<div style="font-size:12px;color:var(--muted);max-width:200px;text-align:right;"><i class="fa-solid fa-note-sticky" style="margin-right:4px;"></i>${escHtml(r.note)}</div>`:''}
-    </div>`;
+    </div>
+    <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:9px;padding:10px 12px;">
+        <div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Cash Savings (40%)</div>
+        <div class="mono" style="font-size:15px;font-weight:800;color:var(--good);">${fmt(s.cashSavings)}</div>
+      </div>
+      <div style="background:rgba(34,211,238,0.08);border:1px solid rgba(34,211,238,0.2);border-radius:9px;padding:10px 12px;">
+        <div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Bank Savings (40%)</div>
+        <div class="mono" style="font-size:15px;font-weight:800;color:var(--accent2);">${fmt(s.bankSavings)}</div>
+      </div>
+    </div>
+    <div style="margin-top:10px;font-size:11.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 14px;padding:0 2px;">
+      <span>Exp (Home): <b style="color:var(--jtext);">${fmt(s.homeExp)}</b></span>
+      <span>Exp (GPay): <b style="color:var(--jtext);">${fmt(s.gpExp)}</b></span>
+      <span>Outflows today: <b style="color:var(--jtext);">${fmt(s.outTotal)}</b></span>
+      <span>Total Exp: <b style="color:var(--bad);">${fmt(s.expTotal)}</b></span>
+    </div>
+    <button class="btn btn-good" style="width:100%;margin-top:16px;" onclick="shareDcDayReport('${r.id}')"><i class="fa-brands fa-whatsapp"></i> Share on WhatsApp</button>`;
   openModal('modal-dc-detail');
 }
 
@@ -6964,11 +6998,11 @@ function renderReminders() {
   cont.innerHTML = list.map(r => {
     const du = daysUntil(r.dueDate);
     const cls = du < 0 ? 'overdue' : du === 0 ? 'due-today' : du <= 7 ? 'due-soon' : '';
-    const badgeCls = du < 0 ? 'style="background:rgba(239,68,68,0.18);color:var(--bad);"' :
-                     du === 0 ? 'style="background:rgba(239,68,68,0.18);color:var(--bad);"' :
-                     du <= 3 ? 'style="background:rgba(245,158,11,0.18);color:var(--warn);"' :
-                     du <= 7 ? 'style="background:rgba(245,158,11,0.12);color:var(--warn);"' :
-                     'style="background:rgba(136,136,168,0.15);color:var(--muted);"';
+    const badgeCls = du < 0 ? 'style="background:rgba(248,113,113,0.18);color:var(--bad);"' :
+                     du === 0 ? 'style="background:rgba(248,113,113,0.18);color:var(--bad);"' :
+                     du <= 3 ? 'style="background:rgba(251,191,36,0.18);color:var(--warn);"' :
+                     du <= 7 ? 'style="background:rgba(251,191,36,0.12);color:var(--warn);"' :
+                     'style="background:rgba(122,122,158,0.15);color:var(--muted);"';
     const badgeText = du < 0 ? `${Math.abs(du)}d overdue` : du === 0 ? 'DUE TODAY' : `in ${du}d`;
     return `<div class="rem-card ${cls}">
       <span style="width:9px;height:9px;border-radius:50%;background:${REM_CAT_COLORS[r.category]||'#8888a8'};flex-shrink:0;"></span>
