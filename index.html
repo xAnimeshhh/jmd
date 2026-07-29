@@ -803,9 +803,22 @@ select.csel-native { position: absolute; width: 1px; height: 1px; padding: 0; ma
 .dc-progress-dots { display:flex; gap:5px; }
 .dc-progress-dot { width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,0.12); border:1px solid var(--line); }
 .dc-progress-dot.done { background:var(--good); border-color:var(--good); box-shadow:0 0 6px rgba(52,211,153,.5); }
+@media(max-width:640px){
+  .dc-common-date-bar { flex-direction: column; align-items: stretch; gap: 10px; padding: 12px 14px; }
+  .dc-common-date-bar input[type=date] { max-width: 100%; width: 100%; }
+  .dc-common-date-bar .dc-progress { margin-left: 0; justify-content: space-between; }
+  .dc-input-card-hd { font-size: 9px; }
+  .dc-input-field { font-size: 17px; }
+}
+@media(max-width:420px){
+  #dc-forms .dc-daily-expense-row { flex-direction: column; }
+  #dc-forms .dc-daily-expense-row input { width: 100% !important; flex: none !important; }
+  #dc-forms .dc-daily-expense-row button { width: 100% !important; height: 38px !important; }
+}
 .dc-input-card { border-radius: 11px; padding: 10px 12px; transition: transform 0.15s; }
 .dc-input-card:focus-within { transform: translateY(-1px); }
-.dc-input-card-hd { display:flex; align-items:center; gap:7px; font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px; }
+.dc-input-card-hd { display:flex; align-items:center; gap:7px; font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px; min-width:0; }
+.dc-input-card-hd > span:last-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
 .dc-input-icn { width:20px; height:20px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:10px; flex-shrink:0; }
 .dc-input-row { display:flex; align-items:baseline; gap:4px; }
 .dc-rs { font-size:15px; font-weight:700; }
@@ -895,26 +908,55 @@ hr.divider { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
 }
 
 /* ── Home Expense ── */
+.he-hero {
+  background: linear-gradient(135deg, rgba(139,108,255,0.1), rgba(34,211,238,0.04));
+  border: 1px solid rgba(139,108,255,0.22);
+  border-radius: 11px;
+  padding: 11px 14px; margin-bottom: 10px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.he-hero-label { font-size: 9.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px; font-weight: 700; }
+.he-hero-label i { margin-right: 4px; }
+.he-hero-val { font-size: 21px; font-weight: 800; letter-spacing: -0.02em; color: var(--jtext); }
+.he-cat-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.he-cat-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--panel2); border: 1px solid var(--line); border-radius: 20px;
+  padding: 5px 10px 5px 8px; font-size: 11px;
+}
+.he-cat-pill-name { color: var(--muted); }
+.he-cat-pill-amt { font-weight: 700; font-size: 11.5px; }
 .he-row {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 8px;
   background: var(--panel2); border: 1px solid var(--line);
-  border-radius: 9px; padding: 9px 13px; margin-bottom: 7px;
+  border-radius: 8px; padding: 7px 10px; margin-bottom: 5px;
   transition: all 0.15s;
 }
 .he-row:hover { border-color: var(--line-hover); }
-.he-cat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.he-cat-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.he-row .he-row-desc { font-size: 12.5px; font-weight: 600; }
+.he-row .he-row-meta { font-size: 10px; color: var(--muted); margin-top: 2px; display: flex; gap: 7px; flex-wrap: wrap; }
+.he-row .he-row-amt { font-size: 13px; font-weight: 700; color: var(--bad); flex-shrink: 0; }
 
 /* ── Reminder card ── */
+.stat-tile .st-val-sub { display: block; font-size: 10px; font-weight: 700; color: var(--muted); margin-top: 2px; letter-spacing: 0; }
 .rem-card {
   background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--muted);
-  border-radius: 11px; padding: 11px 14px; display: flex; align-items: center; gap: 12px;
-  margin-bottom: 8px; transition: all 0.2s;
+  border-radius: 9px; padding: 8px 11px; display: flex; align-items: center; gap: 9px;
+  margin-bottom: 6px; transition: all 0.2s;
 }
 .rem-card:hover { border-color: rgba(251,191,36,0.35); transform: translateX(2px); }
 .rem-card.due-soon { border-left-color: var(--warn); background: linear-gradient(90deg, rgba(251,191,36,0.06), transparent 40%); }
 .rem-card.due-today { border-left-color: var(--bad); background: linear-gradient(90deg, rgba(248,113,113,0.08), transparent 40%); }
 .rem-card.overdue { border-left-color: var(--bad); background: linear-gradient(90deg, rgba(248,113,113,0.12), transparent 45%); }
-.rem-days-badge { font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.04em; text-transform: uppercase; }
+.rem-days-badge { font-size: 9.5px; font-weight: 800; padding: 2px 7px; border-radius: 6px; letter-spacing: 0.04em; text-transform: uppercase; }
+@media(max-width:480px){
+  .he-hero-val{font-size:18px;}
+  .he-row .he-row-desc{font-size:12px;}
+  .he-row .he-row-amt{font-size:12px;}
+  .rem-card{flex-wrap:wrap;padding:8px 10px;}
+  .rem-card>div:first-of-type{width:100%;}
+}
 
 /* ── Responsive Overflow Fixes ──────────────────────────────────── */
 html,body{overflow-x:hidden;max-width:100%;}
@@ -1024,6 +1066,7 @@ html,body{overflow-x:hidden;max-width:100%;}
       <div class="tab-section active" id="tab-dashboard">
         <!-- Savings Pending Reminder -->
         <div id="savings-pending-banner" style="display:none;"></div>
+        <div id="dashboard-alerts-banner" style="display:none;"></div>
         <!-- Net Worth Hero -->
         <div class="nw-hero">
           <div class="nw-label">Total Net Position</div>
@@ -1117,6 +1160,7 @@ html,body{overflow-x:hidden;max-width:100%;}
             </div>
           </div>
           <div class="ms-card-body">
+            <div id="ms-negative-banner" style="display:none;"></div>
             <div class="ms-hero">
               <div>
                 <div class="ms-hero-label" id="ms-sale-label">Monthly Sale — All Shops</div>
@@ -1370,7 +1414,7 @@ html,body{overflow-x:hidden;max-width:100%;}
           <button class="btn btn-primary btn-sm" onclick="openHomeExpModal()"><i class="fa-solid fa-plus"></i> Add Expense</button>
         </div>
         <!-- Monthly summary -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;" id="he-summary"></div>
+        <div style="margin-bottom:14px;" id="he-summary"></div>
         <!-- Category donut chart -->
         <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:14px;margin-bottom:18px;" id="he-chart-wrap">
           <div class="chart-card" style="margin:0;">
@@ -1821,8 +1865,8 @@ html,body{overflow-x:hidden;max-width:100%;}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       <div class="fg"><div class="lbl">Category</div>
         <select class="inp" id="he-cat">
-          <option>EMI</option><option>Grocery</option><option>Electricity</option>
-          <option>Maintenance</option><option>Medical</option><option>Education</option>
+          <option>EMI</option><option>Rent</option><option>Grocery</option><option>Electricity</option>
+          <option>Maintenance</option><option>Subscription</option><option>Medical</option><option>Education</option>
           <option>Fuel</option><option>Entertainment</option><option>Misc</option>
         </select>
       </div>
@@ -1984,7 +2028,7 @@ html,body{overflow-x:hidden;max-width:100%;}
 // The Settings URL field will be hidden/locked automatically.
 //
 // Leave empty if each user should manually enter the URL in Settings.
-const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbzklt8smz6kuedAoD79k5HQVgtIRFPUQ9iotyneeRldJiFayFJQ0jrDGI2MCLBT_NiA/exec'
+const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwSaW1n4cJSGodcjznfOU4gTQqv0lpUsZiIZKmTk5S81ufmG6I08PFL3DJW9KgKzR5T/exec'
 // ═══════════════════════════════════════════════════════════════════
 
 // ─── Initial State ──────────────────────────────────────────────
@@ -2411,6 +2455,39 @@ function shopHomeCash(shopId) {
   const homeXfer = (STATE.shops.find(s=>s.id===shopId)||{}).homeTransfer||0;
   return brought - spent - homeXfer;
 }
+// ─── Historical balance snapshot (as of a given Day Close date) ──────────
+// Used by the Day Close detail modal + Monthly Summary to show what the Home
+// Cash / GPay balance was BEFORE a given day's entry, and to flag days where
+// that day's expenses pushed the balance below zero. Best-effort: reconstructs
+// from Day Close + Daily Expenses records only (the same ledger shopHomeCash()
+// uses), since Loans/Outflows/Inter-shop moves aren't reliably date-stamped
+// against a specific shop wallet the way Day Close entries are.
+function shopHomeCashAsOf(shopId, beforeDate) {
+  const brought = STATE.dayClose.filter(r => r.shopId === shopId && !r.deleted && r.date < beforeDate).reduce((s, r) => s + (r.cashHome || 0), 0);
+  const spent   = (STATE.dailyExpenses || []).filter(e => e.shopId === shopId && e.source === 'HOME' && !e.deleted && e.date < beforeDate).reduce((s, e) => s + (e.amount || 0), 0);
+  const homeXfer = (STATE.shops.find(s => s.id === shopId) || {}).homeTransfer || 0;
+  return brought - spent - homeXfer;
+}
+function shopOnlineAsOf(shopId, beforeDate) {
+  const added = STATE.dayClose.filter(r => r.shopId === shopId && !r.deleted && r.date < beforeDate).reduce((s, r) => s + (r.gpay || 0), 0);
+  const spent = (STATE.dailyExpenses || []).filter(e => e.shopId === shopId && e.source === 'GP' && !e.deleted && e.date < beforeDate).reduce((s, e) => s + (e.amount || 0), 0);
+  const bankSaved = STATE.dayClose.filter(r => r.shopId === shopId && !r.deleted && r.date < beforeDate && r.bankSaveDone).reduce((s, r) => s + (r.bankSaveTarget || 0), 0);
+  return added - spent - bankSaved;
+}
+// Full before/after picture for one Day Close record — what the wallets looked
+// like just before this entry, and where they landed after this day's cashHome/
+// gpay came in and this day's Home/GP-sourced expenses went out.
+function computeDcBalanceStory(r) {
+  const s = computeDcEntryStats(r);
+  const prevHome = shopHomeCashAsOf(r.shopId, r.date);
+  const afterHome = prevHome + (r.cashHome || 0) - s.homeExp;
+  const prevOnline = shopOnlineAsOf(r.shopId, r.date);
+  const afterOnline = prevOnline + (r.gpay || 0) - s.gpExp - (r.bankSaveDone ? (r.bankSaveTarget || 0) : 0);
+  return {
+    prevHome, afterHome, homeNegative: afterHome < 0,
+    prevOnline, afterOnline, onlineNegative: afterOnline < 0
+  };
+}
 function personalWalletDrain() {
   // Personal wallet expenses (paidFrom=PERSONAL) reduce the total home-cash pool
   return (STATE.homeExpenses||[]).filter(e => (e.paidFrom||'PERSONAL')==='PERSONAL').reduce((s,e)=>s+(e.amount||0), 0);
@@ -2497,7 +2574,7 @@ function renderDashboard() {
       <td><span class="mono" style="color:var(--warn);">${fmt(shopUd(sh.id))}</span></td>
       <td><span class="mono" style="color:var(--bad);">${fmt(shopLiab(sh.id))}</span></td>
       <td><span class="mono" style="color:var(--bad);font-size:10px;" title="Borrowed: ${fmt(loanBorrowed)}, Repaid: ${fmt(loanRepaid)}">${fmt(loanBorrowed)} / ${fmt(loanRepaid)}</span></td>
-      <td><span class="mono" style="color:${net>=0?'var(--good)':'var(--bad)'};font-weight:800;">${fmt(net)}</span></td>
+      <td><span class="mono" style="color:${net>=0?'var(--good)':'var(--bad)'};font-weight:800;">${fmtSigned(net)}</span></td>
     </tr>`;
   });
   const totHc   = STATE.shops.reduce((s,sh)=>s+shopHomeCash(sh.id),0);          // gross — for Net Worth math
@@ -2515,7 +2592,7 @@ function renderDashboard() {
     <td class="mono" style="color:var(--warn);">${fmt(totUd)}</td>
     <td class="mono" style="color:var(--bad);">${fmt(totLiab2)}</td>
     <td class="mono" style="color:var(--bad);font-size:10px;">${fmt(totLoanBorrowed)} / ${fmt(totLoanRepaid)}</td>
-    <td class="mono" style="color:${totNet>=0?'var(--good)':'var(--bad)'};font-weight:800;">${fmt(totNet)}</td>
+    <td class="mono" style="color:${totNet>=0?'var(--good)':'var(--bad)'};font-weight:800;">${fmtSigned(totNet)}</td>
   </tr>`;
   $('shop-tbody').innerHTML = tbody;
 
@@ -2532,6 +2609,7 @@ function renderDashboard() {
   try { renderSalesChart(); } catch (e) { console.error('renderSalesChart failed', e); }
   renderProfitBox();
   renderMonthlySummary();
+  renderDashboardAlerts();
 }
 
 // ─── Overall Profit Box (Daily/Weekly/Monthly/Yearly) ──────────────
@@ -2707,6 +2785,77 @@ function renderSavingsPendingBanner() {
     </div>`;
 }
 
+// ─── Unified Dashboard Alerts ──────────────────────────────────────
+// Pulls together everything across the app that YOU need to PAY and act on —
+// overdue/due-soon Outflows (bills) and Fixed Payment Reminders — into one
+// glanceable list on the Dashboard, sorted most-urgent first. Market Credit
+// (Udhaari) is deliberately excluded — that's money owed TO the shop by
+// customers, not something the shop owes, so it doesn't belong in a "pay this" list.
+function renderDashboardAlerts() {
+  const wrap = $('dashboard-alerts-banner');
+  if (!wrap) return;
+  const items = [];
+
+  // Outflows (bills) — overdue or due within 3 days
+  (STATE.outflows || []).filter(o => o.status === 'Pending' && o.dueDate).forEach(o => {
+    const du = daysUntil(o.dueDate);
+    if (du === null || du > 3) return;
+    items.push({
+      kind: 'Bill', icon: 'fa-file-invoice', color: 'var(--warn)', tab: 'outflows', du,
+      title: o.payee || 'Outflow', sub: shopName(o.shopId),
+      amount: (o.amount || 0) + (o.lateFee || 0) - (o.paid || 0), date: o.dueDate
+    });
+  });
+
+  // Fixed Payment Reminders — overdue or due within 3 days
+  (STATE.reminders || []).forEach(r => {
+    const du = daysUntil(r.dueDate);
+    if (du === null || du > 3) return;
+    items.push({
+      kind: 'Reminder', icon: 'fa-bell', color: 'var(--accent)', tab: 'homeexp', du,
+      title: r.name || 'Payment', sub: r.category || '',
+      amount: r.amount || 0, date: r.dueDate
+    });
+  });
+
+  // Loans — overdue is not date-based here, so surface anything still Pending as a soft nudge
+  // only when it's been outstanding a while; keeping this list focused on DATE-based urgency,
+  // Loans intentionally excluded (no due date field on a loan) to avoid noise.
+
+  if (!items.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+  items.sort((a, b) => a.du - b.du);
+  const overdueCount = items.filter(i => i.du < 0).length;
+
+  wrap.style.display = 'block';
+  wrap.innerHTML = `
+    <div class="card" style="padding:14px 16px;border-left:3px solid ${overdueCount ? 'var(--bad)' : 'var(--warn)'};margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <i class="fa-solid fa-triangle-exclamation" style="color:${overdueCount ? 'var(--bad)' : 'var(--warn)'};"></i>
+        <div style="font-size:13px;font-weight:700;">To Pay — ${items.length} item${items.length > 1 ? 's' : ''}${overdueCount ? ` (${overdueCount} overdue)` : ''}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        ${items.map(i => {
+          const badgeTxt = i.du < 0 ? `${Math.abs(i.du)}d overdue` : i.du === 0 ? 'DUE TODAY' : `in ${i.du}d`;
+          const badgeColor = i.du < 0 ? 'var(--bad)' : i.du <= 1 ? 'var(--warn)' : 'var(--muted)';
+          return `
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel2);border:1px solid var(--line);border-left:3px solid ${i.color};border-radius:8px;padding:8px 12px;cursor:pointer;" onclick="switchTab('${i.tab}')">
+            <div style="display:flex;align-items:center;gap:9px;min-width:0;">
+              <i class="fa-solid ${i.icon}" style="color:${i.color};width:14px;flex-shrink:0;"></i>
+              <div style="font-size:12px;min-width:0;">
+                <span style="font-weight:700;">${escHtml(i.title)}</span>
+                <span style="color:var(--muted);"> — ${escHtml(i.kind)}${i.sub ? ' · ' + escHtml(i.sub) : ''}</span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+              <span class="mono" style="font-weight:700;font-size:12px;">${fmt(i.amount)}</span>
+              <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;background:${badgeColor}22;color:${badgeColor};white-space:nowrap;">${badgeTxt}</span>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
 function renderMonthlySummary() {
   const saleEl = $('ms-sale-val'); if (!saleEl) return;
   renderMsShopTabs();
@@ -2794,6 +2943,51 @@ function renderMonthlySummary() {
   const loanRepaidEl = $('ms-loan-repaid-val');
   if (loanBorrowedEl) loanBorrowedEl.textContent = fmt(loanBorrowed);
   if (loanRepaidEl) loanRepaidEl.textContent = fmt(loanRepaid);
+
+  // Adjustment tile: make it clear what this number actually means, rather than a bare figure.
+  const adjEl = $('ms-adj-val');
+  if (adjEl && adjEl.parentElement) {
+    adjEl.parentElement.title = 'Home Cash target (40% of Cash Sale) minus what was actually brought home this month — a shortfall here means less was taken home than the savings target, and it carries forward against your accumulated Home balance.';
+  }
+
+  // Negative-balance days this month: for each Day Close entry, check if that day's Home/GP
+  // expenses pushed the wallet below zero (same check as the Day Close detail modal).
+  const banner = $('ms-negative-banner');
+  if (banner) {
+    const negDays = recs.map(r => ({ r, bal: computeDcBalanceStory(r) }))
+      .filter(x => x.bal.homeNegative || x.bal.onlineNegative)
+      .sort((a, b) => (a.r.date || '').localeCompare(b.r.date || ''));
+    if (negDays.length) {
+      banner.style.display = 'block';
+      banner.innerHTML = `
+        <div style="margin-bottom:14px;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.35);border-radius:9px;padding:12px 14px;">
+          <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;color:var(--bad);margin-bottom:8px;">
+            <i class="fa-solid fa-triangle-exclamation"></i> ${negDays.length} day${negDays.length>1?'s':''} this month went balance-minus
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            ${negDays.map(({r, bal}) => `
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11.5px;cursor:pointer;" onclick="msJumpToDcDetail('${r.id}','${r.date}')">
+                <span style="font-weight:700;">${fmtDateShort(r.date)} — ${r.shopName||shopName(r.shopId)}</span>
+                <span>
+                  ${bal.homeNegative?`<span style="color:var(--bad);">Home ${fmt(bal.afterHome)}</span>`:''}
+                  ${bal.homeNegative && bal.onlineNegative?' · ':''}
+                  ${bal.onlineNegative?`<span style="color:var(--bad);">GPay ${fmt(bal.afterOnline)}</span>`:''}
+                </span>
+              </div>`).join('')}
+          </div>
+        </div>`;
+    } else {
+      banner.style.display = 'none';
+      banner.innerHTML = '';
+    }
+  }
+}
+
+// Jump from a Monthly Summary negative-balance row straight to that day's Day Close detail modal.
+function msJumpToDcDetail(id, date) {
+  switchTab('dayclose');
+  if (date) { dcEntriesMonth = (date || '').slice(0, 7); renderDcEntriesTable(); }
+  setTimeout(() => openDcDetail(id), 60);
 }
 
 
@@ -3133,7 +3327,7 @@ function initDcForms() {
         <div style="padding:14px 16px;">
         <input type="hidden" id="dc-date-${sh.id}" value="${pf.date || today}" />
         <div id="dc-cash-reminder-${sh.id}" style="margin-bottom:10px;"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-bottom:12px;">
           <div class="dc-input-card" style="background:rgba(52,211,153,0.07);border:1px solid rgba(52,211,153,0.2);">
             <div class="dc-input-card-hd"><span class="dc-input-icn" style="background:rgba(52,211,153,0.16);"><i class="fa-solid fa-house" style="color:var(--good);"></i></span>Home Cash</div>
             <div class="dc-input-row"><span class="dc-rs" style="color:var(--good);">₹</span><input class="dc-input-field" style="color:var(--good);" id="dc-home-${sh.id}" type="number" inputmode="numeric" value="${pf.cashHome||''}" placeholder="0" oninput="updateDcCalc('${sh.id}')" onfocus="clearIfZero(this)" /></div>
@@ -3158,7 +3352,7 @@ function initDcForms() {
             <div class="lbl" style="margin:0;"><i class="fa-solid fa-receipt" style="margin-right:5px;color:var(--warn);"></i>Daily Expense</div>
             <div style="font-size:9px;color:var(--muted);font-weight:500;">Counter / Home / GP</div>
           </div>
-          <div style="display:flex;gap:6px;margin-bottom:8px;">
+          <div class="dc-daily-expense-row" style="display:flex;gap:6px;margin-bottom:8px;">
             <input class="inp" id="de-desc-${sh.id}" placeholder="What was purchased?" style="flex:2;padding:7px 10px;font-size:12px;" />
             <input class="inp no-titlecase" id="de-amt-${sh.id}" type="number" inputmode="numeric" placeholder="₹" style="flex:1;padding:7px 10px;font-size:12px;" onkeydown="if(event.key==='Enter'){event.preventDefault();addDailyExpense('${sh.id}');}" />
             <button class="btn btn-primary" style="padding:0 12px;height:34px;font-size:11px;" onclick="addDailyExpense('${sh.id}')"><i class="fa-solid fa-plus"></i></button>
@@ -3374,7 +3568,7 @@ function updateDcCalc(shopId) {
   set(`dc-f-exp-${shopId}`, exp);
   set(`dc-f-prev-${shopId}`, prev);
   const saleEl = $(`dc-f-sale-${shopId}`);
-  if (saleEl) { saleEl.textContent=fmt(sale); saleEl.style.color=sale>=0?'var(--good)':'var(--bad)'; }
+  if (saleEl) { saleEl.textContent=fmtSigned(sale); saleEl.style.color=sale>=0?'var(--good)':'var(--bad)'; }
 
   // Live profit — auto = sale × profitPct, editable if user overrides
   const sh = STATE.shops.find(s=>s.id===shopId);
@@ -3769,9 +3963,9 @@ function renderDcEntriesTable() {
   tbody.innerHTML = rows.map(({ r, s }) => {
     const del = !!r.deleted;
     return `<tr class="${del?'dc-deleted':''}" onclick="${del?'':`openDcDetail('${r.id}')`}">
-      <td onclick="event.stopPropagation();"><button class="btn btn-good btn-xs" style="border-radius:50%;width:26px;height:26px;padding:0;" onclick="shareDcDayReport('${r.id}')" title="Share on WhatsApp"><i class="fa-brands fa-whatsapp"></i></button></td>
+      <td onclick="event.stopPropagation();"><button class="btn btn-good btn-xs" style="border-radius:50%;width:26px;height:26px;padding:0;justify-content:center;" onclick="shareDcDayReport('${r.id}')" title="Share on WhatsApp"><i class="fa-brands fa-whatsapp"></i></button></td>
       <td style="font-weight:700;">${fmtDateShort(r.date)}</td>
-      <td style="color:${(r.sale||0)>=0?'var(--good)':'var(--bad)'};font-weight:700;">${fmt(r.sale)}</td>
+      <td style="color:${(r.sale||0)>=0?'var(--good)':'var(--bad)'};font-weight:700;">${fmtSigned(r.sale)}</td>
       <td>
         <div style="color:var(--good);">C: ${fmt(s.cashSavings)}</div>
         <div style="color:var(--accent2);">B: ${fmt(s.bankSavings)}</div>
@@ -3857,11 +4051,33 @@ function openDcDetail(id) {
   const sh = STATE.shops.find(s=>s.id===r.shopId);
   const profit = r.profit != null ? r.profit : Math.round(((r.cashHome||0)+(r.gpay||0)) * (sh?.profitPct||40)/100);
   const s = computeDcEntryStats(r);
+  const bal = computeDcBalanceStory(r);
+  const anyNegative = bal.homeNegative || bal.onlineNegative;
   $('dc-detail-body').innerHTML = `
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
       <span style="width:10px;height:10px;border-radius:50%;background:${shopColor(r.shopId)};"></span>
       <span style="font-size:15px;font-weight:700;">${r.shopName||shopName(r.shopId)}</span>
       <span class="badge badge-gray" style="margin-left:auto;">${fmtDate(r.date)}</span>
+    </div>
+    ${anyNegative ? `
+    <div style="margin-bottom:14px;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.35);border-radius:9px;padding:12px 14px;">
+      <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;color:var(--bad);margin-bottom:6px;">
+        <i class="fa-solid fa-triangle-exclamation"></i> Balance went minus on this day!
+      </div>
+      <div style="font-size:11.5px;color:var(--jtext);line-height:1.6;">
+        ${bal.homeNegative ? `Home Cash: expenses that day were more than what was in hand — ended at <b style="color:var(--bad);">${fmt(bal.afterHome)}</b> (was ${fmt(bal.prevHome)} before, ${fmt(r.cashHome)} came in, ${fmt(s.homeExp)} spent from Home).<br>` : ''}
+        ${bal.onlineNegative ? `GPay/Bank: expenses that day were more than what was in GPay — ended at <b style="color:var(--bad);">${fmt(bal.afterOnline)}</b> (was ${fmt(bal.prevOnline)} before, ${fmt(r.gpay)} came in, ${fmt(s.gpExp)} spent from GPay${r.bankSaveDone?` + ${fmt(r.bankSaveTarget||0)} bank savings`:''}).` : ''}
+      </div>
+    </div>` : ''}
+    <div style="margin-bottom:14px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;">
+      <div style="background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;">
+        <div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Home Cash: Before → After</div>
+        <div class="mono" style="font-size:13.5px;font-weight:700;">${fmt(bal.prevHome)} <i class="fa-solid fa-arrow-right" style="font-size:9px;color:var(--muted);margin:0 3px;"></i> <span style="color:${bal.homeNegative?'var(--bad)':'var(--warn)'};">${fmt(bal.afterHome)}</span></div>
+      </div>
+      <div style="background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;">
+        <div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">GPay/Bank: Before → After</div>
+        <div class="mono" style="font-size:13.5px;font-weight:700;">${fmt(bal.prevOnline)} <i class="fa-solid fa-arrow-right" style="font-size:9px;color:var(--muted);margin:0 3px;"></i> <span style="color:${bal.onlineNegative?'var(--bad)':'var(--accent2)'};">${fmt(bal.afterOnline)}</span></div>
+      </div>
     </div>
     <div class="formula-box">
       <div class="formula-line"><span class="fl-label">+ Cash Taken Home</span><span class="fl-val" style="color:var(--good);">${fmt(r.cashHome)}</span></div>
@@ -3878,7 +4094,7 @@ function openDcDetail(id) {
       </div>
       ${r.note?`<div style="font-size:12px;color:var(--muted);max-width:200px;text-align:right;"><i class="fa-solid fa-note-sticky" style="margin-right:4px;"></i>${escHtml(r.note)}</div>`:''}
     </div>
-    <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <div style="margin-top:10px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;">
       <div style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:9px;padding:10px 12px;">
         <div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Cash Savings (40%)</div>
         <div class="mono" style="font-size:15px;font-weight:800;color:var(--good);">${fmt(s.cashSavings)}</div>
@@ -5554,8 +5770,8 @@ document.addEventListener('click', (e) => {
 
 // ─── Home / Personal Expenses ──────────────────────────────────
 const HE_CAT_COLORS = {
-  EMI:'#7c5cfc', Grocery:'#22c55e', Electricity:'#f59e0b', Maintenance:'#06b6d4',
-  Medical:'#ef4444', Education:'#3b82f6', Fuel:'#f472b6', Entertainment:'#eab308', Misc:'#8888a8'
+  EMI:'#7c5cfc', Rent:'#f97316', Grocery:'#22c55e', Electricity:'#f59e0b', Maintenance:'#06b6d4',
+  Subscription:'#a855f7', Medical:'#ef4444', Education:'#3b82f6', Fuel:'#f472b6', Entertainment:'#eab308', Misc:'#8888a8'
 };
 const HE_MODE_ICONS = {
   Cash:'fa-money-bill-wave', GPay:'fa-mobile-screen',
@@ -5671,17 +5887,32 @@ function renderHomeExpenses() {
   const ym = now.toISOString().slice(0,7); // YYYY-MM
   const thisMonth = list.filter(e => (e.date||'').startsWith(ym));
   const monthTotal = thisMonth.reduce((s,e)=>s+(e.amount||0),0);
-  const emiTotal   = thisMonth.filter(e=>e.category==='EMI').reduce((s,e)=>s+(e.amount||0),0);
-  const utilTotal  = thisMonth.filter(e=>['Electricity','Maintenance','Fuel'].includes(e.category)).reduce((s,e)=>s+(e.amount||0),0);
-  const otherTotal = monthTotal - emiTotal - utilTotal;
+
+  // Dynamic per-category breakdown — only categories actually spent this month show up,
+  // as compact pills (EMI: X, Subscription: Y, Utilities: Z, ...), sorted biggest-first.
+  const catTotals = {};
+  thisMonth.forEach(e => { catTotals[e.category] = (catTotals[e.category]||0) + (e.amount||0); });
+  const catList = Object.entries(catTotals).sort((a,b) => b[1]-a[1]);
 
   const sum = $('he-summary');
   if (sum) {
     sum.innerHTML = `
-      <div class="stat-tile"><div class="st-label"><i class="fa-solid fa-calendar-days" style="color:var(--accent);"></i>This Month</div><div class="st-val">${fmt(monthTotal)}</div></div>
-      <div class="stat-tile"><div class="st-label"><i class="fa-solid fa-building" style="color:${HE_CAT_COLORS.EMI};"></i>EMI</div><div class="st-val" style="color:${HE_CAT_COLORS.EMI};">${fmt(emiTotal)}</div></div>
-      <div class="stat-tile"><div class="st-label"><i class="fa-solid fa-bolt" style="color:${HE_CAT_COLORS.Electricity};"></i>Utilities</div><div class="st-val" style="color:${HE_CAT_COLORS.Electricity};">${fmt(utilTotal)}</div></div>
-      <div class="stat-tile"><div class="st-label"><i class="fa-solid fa-basket-shopping" style="color:var(--good);"></i>Other</div><div class="st-val" style="color:var(--good);">${fmt(otherTotal)}</div></div>`;
+      <div class="he-hero">
+        <div>
+          <div class="he-hero-label"><i class="fa-solid fa-calendar-days"></i> This Month — Home Expenses</div>
+          <div class="he-hero-val mono">${fmt(monthTotal)}</div>
+        </div>
+        <i class="fa-solid fa-house-chimney" style="font-size:22px;color:rgba(124,92,252,0.3);"></i>
+      </div>
+      ${catList.length ? `
+      <div class="he-cat-pills">
+        ${catList.map(([cat, amt]) => `
+          <div class="he-cat-pill">
+            <span class="he-cat-dot" style="background:${HE_CAT_COLORS[cat]||'#8888a8'};"></span>
+            <span class="he-cat-pill-name">${escHtml(cat)}</span>
+            <span class="mono he-cat-pill-amt">${fmt(amt)}</span>
+          </div>`).join('')}
+      </div>` : ''}`;
   }
 
   const cont = $('homeexp-list');
@@ -5718,23 +5949,24 @@ function renderHomeExpenses() {
           <div class="he-row">
             <span class="he-cat-dot" style="background:${HE_CAT_COLORS[e.category]||'#8888a8'};"></span>
             <div style="flex:1;min-width:0;">
-              <div style="font-size:13px;font-weight:600;">${escHtml(e.desc)}</div>
-              <div style="font-size:10.5px;color:var(--muted);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap;">
-                <span><i class="fa-solid ${HE_MODE_ICONS[e.mode]||'fa-money-bill'}" style="margin-right:3px;"></i>${e.mode}</span>
-                <span><i class="fa-solid fa-calendar" style="margin-right:3px;"></i>${fmtDate(e.date)}</span>
-                <span class="badge" style="background:${HE_CAT_COLORS[e.category]||'#8888a8'}22;color:${HE_CAT_COLORS[e.category]||'#8888a8'};border:1px solid ${HE_CAT_COLORS[e.category]||'#8888a8'}44;padding:1px 6px;">${e.category}</span>
+              <div class="he-row-desc">${escHtml(e.desc)}</div>
+              <div class="he-row-meta">
+                <span>${e.category}</span>
+                <span><i class="fa-solid ${HE_MODE_ICONS[e.mode]||'fa-money-bill'}" style="margin-right:2px;"></i>${e.mode}</span>
+                <span>${fmtDateShort(e.date)}</span>
                 ${e.paidFrom && e.paidFrom!=='PERSONAL'
-                  ? `<span class="badge" style="background:${shopColor(e.paidFrom)}22;color:${shopColor(e.paidFrom)};border:1px solid ${shopColor(e.paidFrom)}44;padding:1px 6px;"><i class="fa-solid fa-store" style="margin-right:3px;font-size:8px;"></i>${shopName(e.paidFrom)}</span>`
-                  : `<span class="badge badge-gray" style="padding:1px 6px;">Personal</span>`}
+                  ? `<span style="color:${shopColor(e.paidFrom)};">${shopName(e.paidFrom)}</span>`
+                  : ''}
                 ${e.note?`<span title="${escHtml(e.note)}"><i class="fa-solid fa-note-sticky"></i></span>`:''}
               </div>
             </div>
-            <div class="mono" style="font-size:14px;font-weight:700;color:var(--bad);flex-shrink:0;">${fmt(e.amount)}</div>
-            <button class="btn btn-bad btn-xs" style="flex-shrink:0;" onclick="deleteHomeExpense('${e.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
+            <div class="mono he-row-amt">${fmt(e.amount)}</div>
+            <button class="btn btn-bad btn-xs" style="flex-shrink:0;padding:3px 6px;" onclick="deleteHomeExpense('${e.id}')" title="Delete"><i class="fa-solid fa-trash" style="font-size:10px;"></i></button>
           </div>`).join('')}
       </div>`;
   }).join('');
 }
+
 
 
 // ─── Reports & Export ────────────────────────────────────────────
@@ -6968,24 +7200,29 @@ function confirmReminderPaid() {
 
 function renderReminders() {
   const list = (STATE.reminders||[]).slice().sort((a,b)=>(a.dueDate||'').localeCompare(b.dueDate||''));
-  // Summary tiles: due today, this week, monthly total
-  const dueToday = list.filter(r => daysUntil(r.dueDate) <= 0).length;
-  const dueSoon  = list.filter(r => { const d = daysUntil(r.dueDate); return d > 0 && d <= 7; }).length;
+  // Summary tiles: due today, this week, monthly total — count AND amount for each
+  const dueTodayItems = list.filter(r => daysUntil(r.dueDate) <= 0);
+  const dueSoonItems  = list.filter(r => { const d = daysUntil(r.dueDate); return d > 0 && d <= 7; });
+  const dueToday = dueTodayItems.length;
+  const dueTodayAmt = dueTodayItems.reduce((s,r)=>s+(r.amount||0),0);
+  const dueSoon = dueSoonItems.length;
+  const dueSoonAmt = dueSoonItems.reduce((s,r)=>s+(r.amount||0),0);
   const monthlyCommitment = list.filter(r=>r.repeat==='monthly').reduce((s,r)=>s+(r.amount||0),0);
+  const monthlyCount = list.filter(r=>r.repeat==='monthly').length;
   const summary = $('reminder-summary');
   if (summary) {
     summary.innerHTML = `
       <div class="stat-tile" style="border-left:3px solid var(--bad);">
         <div class="st-label"><i class="fa-solid fa-triangle-exclamation" style="color:var(--bad);"></i>Due Today/Overdue</div>
-        <div class="st-val" style="color:var(--bad);">${dueToday}</div>
+        <div class="st-val" style="color:var(--bad);">${dueToday}<span class="st-val-sub">${fmt(dueTodayAmt)}</span></div>
       </div>
       <div class="stat-tile" style="border-left:3px solid var(--warn);">
         <div class="st-label"><i class="fa-solid fa-clock" style="color:var(--warn);"></i>Next 7 Days</div>
-        <div class="st-val" style="color:var(--warn);">${dueSoon}</div>
+        <div class="st-val" style="color:var(--warn);">${dueSoon}<span class="st-val-sub">${fmt(dueSoonAmt)}</span></div>
       </div>
       <div class="stat-tile" style="border-left:3px solid var(--accent);">
         <div class="st-label"><i class="fa-solid fa-repeat" style="color:var(--accent);"></i>Monthly Commitment</div>
-        <div class="st-val" style="color:var(--accent);">${fmt(monthlyCommitment)}</div>
+        <div class="st-val" style="color:var(--accent);">${fmt(monthlyCommitment)}<span class="st-val-sub">${monthlyCount} item${monthlyCount!==1?'s':''}</span></div>
       </div>`;
   }
 
@@ -7005,24 +7242,24 @@ function renderReminders() {
                      'style="background:rgba(122,122,158,0.15);color:var(--muted);"';
     const badgeText = du < 0 ? `${Math.abs(du)}d overdue` : du === 0 ? 'DUE TODAY' : `in ${du}d`;
     return `<div class="rem-card ${cls}">
-      <span style="width:9px;height:9px;border-radius:50%;background:${REM_CAT_COLORS[r.category]||'#8888a8'};flex-shrink:0;"></span>
+      <span style="width:8px;height:8px;border-radius:50%;background:${REM_CAT_COLORS[r.category]||'#8888a8'};flex-shrink:0;"></span>
       <div style="flex:1;min-width:0;">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span style="font-size:13px;font-weight:700;">${escHtml(r.name)}</span>
-          <span class="badge" style="background:${REM_CAT_COLORS[r.category]||'#8888a8'}22;color:${REM_CAT_COLORS[r.category]||'#8888a8'};border:1px solid ${REM_CAT_COLORS[r.category]||'#8888a8'}44;padding:1px 6px;">${r.category}</span>
-          ${r.repeat && r.repeat!=='none' ? `<span class="badge badge-purple" style="padding:1px 6px;"><i class="fa-solid fa-repeat" style="font-size:8px;margin-right:3px;"></i>${r.repeat}</span>` : ''}
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <span style="font-size:12.5px;font-weight:700;">${escHtml(r.name)}</span>
+          <span style="font-size:10px;color:var(--muted);">${r.category}</span>
+          ${r.repeat && r.repeat!=='none' ? `<span style="font-size:9.5px;color:var(--accent);"><i class="fa-solid fa-repeat" style="font-size:8px;margin-right:2px;"></i>${r.repeat}</span>` : ''}
         </div>
-        <div style="font-size:10.5px;color:var(--muted);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-          <span><i class="fa-solid fa-calendar" style="margin-right:3px;"></i>${fmtDate(r.dueDate)}</span>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;display:flex;gap:7px;flex-wrap:wrap;align-items:center;">
+          <span>${fmtDateShort(r.dueDate)}</span>
           <span class="rem-days-badge" ${badgeCls}>${badgeText}</span>
-          ${r.note?`<span title="${escHtml(r.note)}"><i class="fa-solid fa-note-sticky"></i> ${escHtml(r.note.length>30?r.note.slice(0,30)+'…':r.note)}</span>`:''}
+          ${r.note?`<span title="${escHtml(r.note)}"><i class="fa-solid fa-note-sticky"></i></span>`:''}
         </div>
       </div>
-      <div class="mono" style="font-size:15px;font-weight:800;color:${du<=3?'var(--bad)':'var(--jtext)'};flex-shrink:0;text-align:right;min-width:80px;">${fmt(r.amount)}</div>
-      <div style="display:flex;gap:5px;flex-shrink:0;">
-        <button class="btn btn-good btn-xs" onclick="openPayReminderModal('${r.id}')" title="Mark as paid"><i class="fa-solid fa-check"></i> Paid</button>
-        <button class="btn btn-ghost btn-xs" onclick="openAddReminderModal('${r.id}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
-        <button class="btn btn-bad btn-xs" onclick="deleteReminder('${r.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
+      <div class="mono" style="font-size:13.5px;font-weight:800;color:${du<=3?'var(--bad)':'var(--jtext)'};flex-shrink:0;text-align:right;min-width:70px;">${fmt(r.amount)}</div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+        <button class="btn btn-good btn-xs" style="padding:3px 7px;" onclick="openPayReminderModal('${r.id}')" title="Mark as paid"><i class="fa-solid fa-check"></i></button>
+        <button class="btn btn-ghost btn-xs" style="padding:3px 7px;" onclick="openAddReminderModal('${r.id}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
+        <button class="btn btn-bad btn-xs" style="padding:3px 7px;" onclick="deleteReminder('${r.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
       </div>
     </div>`;
   }).join('');
