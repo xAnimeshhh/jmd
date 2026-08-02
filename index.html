@@ -1027,6 +1027,7 @@ html,body{overflow-x:hidden;max-width:100%;}
       <div class="nav-item" id="nav-outflows" onclick="switchTab(&#39;outflows&#39;)"><i class="fa-solid fa-file-invoice" style="width:14px;"></i> Outflows <span class="nav-badge amber" id="badge-outflows"></span></div>
       <div class="nav-item" id="nav-intershop" onclick="switchTab(&#39;intershop&#39;)"><i class="fa-solid fa-right-left" style="width:14px;"></i> InterShop <span class="nav-badge amber" id="badge-intershop"></span></div>
       <div class="nav-item" id="nav-loans" onclick="switchTab(&#39;loans&#39;)"><i class="fa-solid fa-hand-holding-dollar" style="width:14px;"></i> Loans <span class="nav-badge red" id="badge-loans"></span></div>
+      <div class="nav-item" id="nav-investors" onclick="switchTab(&#39;investors&#39;)"><i class="fa-solid fa-coins" style="width:14px;"></i> Investors <span class="nav-badge amber" id="badge-investors"></span></div>
       <div class="nav-label">Records</div>
       <div class="nav-item" id="nav-homeexp" onclick="switchTab(&#39;homeexp&#39;)"><i class="fa-solid fa-house" style="width:14px;"></i> Home Expenses <span class="nav-badge amber" id="badge-homeexp"></span></div>
       <div class="nav-item" id="nav-reports" onclick="switchTab(&#39;reports&#39;)"><i class="fa-solid fa-chart-line" style="width:14px;"></i> Reports</div>
@@ -1064,6 +1065,8 @@ html,body{overflow-x:hidden;max-width:100%;}
 
       <!-- ═══ DASHBOARD ═══ -->
       <div class="tab-section active" id="tab-dashboard">
+        <!-- New Month Summary (first 5 days of a new month) -->
+        <div id="new-month-banner" style="display:none;"></div>
         <!-- Savings Pending Reminder -->
         <div id="savings-pending-banner" style="display:none;"></div>
         <div id="dashboard-alerts-banner" style="display:none;"></div>
@@ -1276,6 +1279,9 @@ html,body{overflow-x:hidden;max-width:100%;}
           <div id="dc-entries-view">
             <div class="dce-toolbar">
               <input class="inp" id="dce-search" placeholder="Search..." oninput="renderDcHistory()">
+              <select class="inp" id="dce-shop-filter" style="width:auto;padding:5px 10px;font-size:11.5px;" onchange="renderDcHistory()">
+                <option value="all">All Shops</option>
+              </select>
               <div class="dce-month-nav">
                 <button onclick="shiftDcEntriesMonth(-1)" title="Previous month"><i class="fa-solid fa-caret-left"></i></button>
                 <span id="dce-month-label">—</span>
@@ -1390,6 +1396,15 @@ html,body{overflow-x:hidden;max-width:100%;}
           <button class="btn btn-primary btn-sm" onclick="openModal(&#39;modal-add-loan&#39;)"><i class="fa-solid fa-plus"></i> Add Loan</button>
         </div>
         <div class="pc-list" id="loan-cards"></div>
+      </div>
+
+      <!-- ═══ INVESTORS ═══ -->
+      <div class="tab-section" id="tab-investors">
+        <div class="section-hd">
+          <div style="font-size:11.5px;color:var(--muted);">External investors — track what's owed at maturity, and how much you've already set aside.</div>
+          <button class="btn btn-primary btn-sm" onclick="openAddInvestorModal()"><i class="fa-solid fa-plus"></i> Add Investor</button>
+        </div>
+        <div class="pc-list" id="investor-cards"></div>
       </div>
 
       <!-- ═══ HOME EXPENSES ═══ -->
@@ -1830,6 +1845,50 @@ html,body{overflow-x:hidden;max-width:100%;}
   </div>
 </div>
 
+<!-- Add / Edit Investor -->
+<div class="modal-overlay" id="modal-add-investor" onclick="modalBgClose(event,'modal-add-investor')">
+  <div class="modal-box">
+    <div class="modal-title"><span id="ai-title">Add Investor</span> <button class="modal-close" onclick="closeModal('modal-add-investor')">×</button></div>
+    <input type="hidden" id="ai-id" />
+    <div class="fg"><div class="lbl">Investor Name</div><input class="inp" id="ai-name" placeholder="e.g. Ramesh"></div>
+    <div class="fg"><div class="lbl">Phone (optional)</div><input class="inp" id="ai-phone" placeholder="10-digit number"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="fg"><div class="lbl">Principal (₹)</div><input class="inp" id="ai-principal" type="number" placeholder="100000" oninput="updateInvestorPreview()"></div>
+      <div class="fg"><div class="lbl">Interest Rate (% / year)</div><input class="inp" id="ai-rate" type="number" placeholder="12" oninput="updateInvestorPreview()"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="fg"><div class="lbl">Start Date</div><input class="inp" id="ai-start" type="date" onchange="updateInvestorPreview()"></div>
+      <div class="fg"><div class="lbl">Tenure (months)</div><input class="inp" id="ai-tenure" type="number" placeholder="12" oninput="updateInvestorPreview()"></div>
+    </div>
+    <div class="fg"><div class="lbl">Note (optional)</div><input class="inp" id="ai-note" placeholder="Any remarks"></div>
+    <div class="formula-box" id="ai-preview" style="margin-top:2px;"></div>
+    <div style="display:flex;gap:10px;margin-top:10px;"><button class="btn btn-ghost" style="flex:1;" onclick="closeModal('modal-add-investor')">Cancel</button><button class="btn btn-primary" style="flex:2;" onclick="saveInvestor()">Save Investor</button></div>
+  </div>
+</div>
+
+<!-- Add Reserve toward an investor -->
+<div class="modal-overlay" id="modal-add-reserve" onclick="modalBgClose(event,'modal-add-reserve')">
+  <div class="modal-box">
+    <div class="modal-title">Add Reserve <button class="modal-close" onclick="closeModal('modal-add-reserve')">×</button></div>
+    <input type="hidden" id="ar-invid" />
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;" id="ar-context"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="fg"><div class="lbl">Amount (₹)</div><input class="inp" id="ar-amount" type="number" placeholder="0"></div>
+      <div class="fg"><div class="lbl">Date</div><input class="inp" id="ar-date" type="date"></div>
+    </div>
+    <div class="fg"><div class="lbl">Note (optional)</div><input class="inp" id="ar-note" placeholder="e.g. from today's profit"></div>
+    <div style="display:flex;gap:10px;margin-top:6px;"><button class="btn btn-ghost" style="flex:1;" onclick="closeModal('modal-add-reserve')">Cancel</button><button class="btn btn-primary" style="flex:2;" onclick="saveInvestorReserve()">Add Reserve</button></div>
+  </div>
+</div>
+
+<!-- Investor Detail (reserve history) -->
+<div class="modal-overlay" id="modal-investor-detail" onclick="modalBgClose(event,'modal-investor-detail')">
+  <div class="modal-box">
+    <div class="modal-title">Investor Detail <button class="modal-close" onclick="closeModal('modal-investor-detail')">×</button></div>
+    <div id="investor-detail-body"></div>
+  </div>
+</div>
+
 <!-- Repay Loan -->
 <div class="modal-overlay" id="modal-repay-loan" onclick="modalBgClose(event,&#39;modal-repay-loan&#39;)">
   <div class="modal-box">
@@ -2028,7 +2087,7 @@ html,body{overflow-x:hidden;max-width:100%;}
 // The Settings URL field will be hidden/locked automatically.
 //
 // Leave empty if each user should manually enter the URL in Settings.
-const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwSaW1n4cJSGodcjznfOU4gTQqv0lpUsZiIZKmTk5S81ufmG6I08PFL3DJW9KgKzR5T/exec'
+const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwD7uZf5epg_y374-NRkoxLR9z0eaF7685tkbYSzqcvhWFTek0XaqpdVTBGHJH-aXPH/exec'
 // ═══════════════════════════════════════════════════════════════════
 
 // ─── Initial State ──────────────────────────────────────────────
@@ -2065,7 +2124,7 @@ function defaultState() {
     pin: '1234',
     shops: JSON.parse(JSON.stringify(DEFAULT_SHOPS)),
     udhaari: [], outflows: [], intershop: [], dayClose: [], loans: [], audit: [],
-    homeExpenses: [], reminders: [], waContacts: [], dailyExpenses: [],
+    homeExpenses: [], reminders: [], waContacts: [], dailyExpenses: [], investors: [],
     sheetUrl: '', filters: {}, lockEnabled: false, lastSyncAt: ''
   };
 }
@@ -2088,6 +2147,8 @@ function migrateState(s) {
   if (!s.homeExpenses) s.homeExpenses = [];
   if (!s.dailyExpenses) s.dailyExpenses = [];
   if (!s.reminders) s.reminders = [];
+  if (!s.investors) s.investors = [];
+  (s.investors||[]).forEach(inv => { if (!inv.reserves) inv.reserves = []; if (!inv.status) inv.status = 'Active'; });
   if (!s.waContacts) s.waContacts = [];
   if (!s.pin) s.pin = '1234';
   if (s.lockEnabled !== true) s.lockEnabled = false;
@@ -2277,6 +2338,7 @@ function modalBgClose(e, id) { if (e.target===e.currentTarget) closeModal(id); }
 const TAB_TITLES = {
   dashboard:'Dashboard', dayclose:'Day Close', udhaari:'Market Credit',
   outflows:'Outflows', intershop:'InterShop Cross-Audit', loans:'Loans / Borrowed',
+  investors:'Investors',
   homeexp:'Home Expenses', reports:'Reports & Export', audit:'Audit Log', settings:'Settings'
 };
 function switchTab(tab) {
@@ -2416,8 +2478,8 @@ function updateHeaderDate() {
 // to load), the rest of the app still renders instead of the whole page freezing.
 function renderAll() {
   const steps = [renderDashboard, renderUdhaari, renderOutflows, renderIntershop,
-                 renderLoans, renderAudit, renderDcHistory, renderHomeExpenses,
-                 renderReminders, renderReportsTab, renderSavingsPendingBanner, updateBadges];
+                 renderLoans, renderInvestors, renderAudit, renderDcHistory, renderHomeExpenses,
+                 renderReminders, renderReportsTab, renderNewMonthBanner, renderSavingsPendingBanner, updateBadges];
   steps.forEach(fn => {
     try { fn(); } catch (e) { console.error(`renderAll: ${fn.name} failed`, e); }
   });
@@ -2434,6 +2496,8 @@ function updateBadges() {
   setbadge('badge-intershop', openIS, 'amber');
   const pendL = STATE.loans.filter(l=>l.status==='Pending').length;
   setbadge('badge-loans', pendL, 'red');
+  const dueInv = activeInvestors().filter(i => (investorDaysLeft(i)||0) <= 30).length;
+  setbadge('badge-investors', dueInv, 'amber');
   const dueRem = (STATE.reminders||[]).filter(r => daysUntil(r.dueDate) <= 3).length;
   setbadge('badge-homeexp', dueRem, 'amber');
   const pendSave = getPendingSavings().length;
@@ -2522,6 +2586,30 @@ function shopSpendableOnline(shopId) {
   if (!sh) return 0;
   return Math.max(0, (sh.online||0) - shopOnlineReserved(shopId));
 }
+
+// ─── Investors (external funding, simple interest) ─────────────────
+function addMonthsToDate(dateStr, months) {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setMonth(d.getMonth() + Number(months || 0));
+  return d.toISOString().split('T')[0];
+}
+function investorMaturityDate(inv) { return addMonthsToDate(inv.startDate, inv.tenureMonths); }
+// Simple interest: Maturity = Principal + Principal × Rate% × (Tenure in months / 12)
+function investorInterest(inv) {
+  return Math.round((inv.principal || 0) * (inv.ratePct || 0) / 100 * ((inv.tenureMonths || 0) / 12));
+}
+function investorMaturityAmount(inv) { return (inv.principal || 0) + investorInterest(inv); }
+function investorReserved(inv) { return (inv.reserves || []).reduce((s, r) => s + (r.amount || 0), 0); }
+function investorRemaining(inv) { return Math.max(0, investorMaturityAmount(inv) - investorReserved(inv)); }
+function investorDaysLeft(inv) { return daysUntil(investorMaturityDate(inv)); }
+// Suggested per-day reserve to comfortably fund the remaining gap by maturity, spread over
+// the days left. Used to nudge a reserve amount on a good-sale day in Day Close.
+function investorSuggestedDailyReserve(inv) {
+  const remaining = investorRemaining(inv);
+  const daysLeft = Math.max(1, investorDaysLeft(inv) || 1);
+  return Math.ceil(remaining / daysLeft);
+}
+function activeInvestors() { return (STATE.investors || []).filter(i => i.status === 'Active'); }
 
 function renderDashboard() {
   // Spendable = gross minus whatever's reserved for 40% savings (not yet actually removed from
@@ -2757,6 +2845,79 @@ function confirmSavingsDone(dcId, type) {
   toast(`Savings confirmed — ${fmt(amt)} set aside`, 'success');
 }
 
+// ─── New Month Summary Banner ────────────────────────────────────────
+// Shown only on the first 5 days of a new month — a quick "here's how last
+// month went" recap across all shops, so it feels like a small celebration
+// / checkpoint rather than a demand for action. Dismissible per-month.
+const FULL_MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function renderNewMonthBanner() {
+  const wrap = $('new-month-banner');
+  if (!wrap) return;
+  const today = new Date();
+  const dayOfMonth = today.getDate();
+  if (dayOfMonth > 5) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+
+  const curMonth = todayStr().slice(0, 7); // 'YYYY-MM'
+  const prevDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+  const prevMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
+  const prevPrevDate = new Date(today.getFullYear(), today.getMonth() - 2, 1);
+  const prevPrevMonth = `${prevPrevDate.getFullYear()}-${String(prevPrevDate.getMonth() + 1).padStart(2, '0')}`;
+
+  // Dismissed for this month already? Don't show again this session/month.
+  if (localStorage.getItem('jmd_new_month_banner_dismissed') === curMonth) {
+    wrap.style.display = 'none'; wrap.innerHTML = ''; return;
+  }
+
+  const prevRecs = STATE.dayClose.filter(r => !r.deleted && (r.date || '').slice(0, 7) === prevMonth);
+  if (!prevRecs.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+
+  const prevTotals = prevRecs.reduce((acc, r) => {
+    const s = computeDcEntryStats(r);
+    acc.sale += r.sale || 0; acc.cashSavings += s.cashSavings; acc.bankSavings += s.bankSavings;
+    return acc;
+  }, { sale: 0, cashSavings: 0, bankSavings: 0 });
+
+  const prevPrevRecs = STATE.dayClose.filter(r => !r.deleted && (r.date || '').slice(0, 7) === prevPrevMonth);
+  const prevPrevSale = prevPrevRecs.reduce((s, r) => s + (r.sale || 0), 0);
+  const growthPct = prevPrevSale > 0 ? Math.round(((prevTotals.sale - prevPrevSale) / prevPrevSale) * 100) : null;
+
+  // Per-shop breakdown, best shop first
+  const byShop = {};
+  prevRecs.forEach(r => { byShop[r.shopId] = (byShop[r.shopId] || 0) + (r.sale || 0); });
+  const bestShopId = Object.keys(byShop).sort((a, b) => byShop[b] - byShop[a])[0];
+
+  const monthLabel = `${FULL_MONTH_NAMES[parseInt(prevMonth.split('-')[1], 10) - 1]} ${prevMonth.split('-')[0]}`;
+  const growthLine = growthPct === null ? ''
+    : growthPct >= 0
+      ? `<span style="color:var(--good);"><i class="fa-solid fa-arrow-trend-up"></i> ${growthPct}% up from the month before</span>`
+      : `<span style="color:var(--bad);"><i class="fa-solid fa-arrow-trend-down"></i> ${Math.abs(growthPct)}% down from the month before</span>`;
+
+  wrap.style.display = 'block';
+  wrap.innerHTML = `
+    <div class="card" style="padding:16px 18px;border-left:3px solid var(--accent);margin-bottom:14px;background:linear-gradient(135deg, rgba(99,102,241,0.08), transparent);position:relative;">
+      <button class="btn btn-ghost btn-xs" style="position:absolute;top:10px;right:10px;padding:4px 8px;" onclick="dismissNewMonthBanner('${curMonth}')" title="Dismiss"><i class="fa-solid fa-xmark"></i></button>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <i class="fa-solid fa-champagne-glasses" style="color:var(--accent);"></i>
+        <div style="font-size:13.5px;font-weight:800;">New month, ${escHtml(monthLabel)} wrap-up! 🎉</div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Here's how all shops did together last month —</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:10px;">
+        <div class="rec-cell"><div class="k">Total Sale</div><div class="v" style="color:var(--accent);">${fmt(prevTotals.sale)}</div></div>
+        <div class="rec-cell"><div class="k">Cash Savings</div><div class="v" style="color:var(--warn);">${fmt(prevTotals.cashSavings)}</div></div>
+        <div class="rec-cell"><div class="k">Bank Savings</div><div class="v" style="color:var(--accent2);">${fmt(prevTotals.bankSavings)}</div></div>
+      </div>
+      <div style="font-size:11.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 14px;">
+        ${growthLine}
+        ${bestShopId ? `<span><i class="fa-solid fa-star" style="color:var(--warn);"></i> Top shop: <strong style="color:var(--jtext);">${escHtml(shopName(bestShopId))}</strong> (${fmt(byShop[bestShopId])})</span>` : ''}
+      </div>
+    </div>`;
+}
+function dismissNewMonthBanner(monthKey) {
+  localStorage.setItem('jmd_new_month_banner_dismissed', monthKey);
+  const wrap = $('new-month-banner');
+  if (wrap) { wrap.style.display = 'none'; wrap.innerHTML = ''; }
+}
+
 function renderSavingsPendingBanner() {
   const wrap = $('savings-pending-banner');
   if (!wrap) return;
@@ -2821,6 +2982,10 @@ function renderDashboardAlerts() {
   // Loans — overdue is not date-based here, so surface anything still Pending as a soft nudge
   // only when it's been outstanding a while; keeping this list focused on DATE-based urgency,
   // Loans intentionally excluded (no due date field on a loan) to avoid noise.
+
+  // NOTE: Investors reserve-nudges are intentionally NOT shown here — investment/wholesale
+  // is on hold for now. The Investors tab still exists for manual tracking, just no
+  // auto-suggested reserve reminders anywhere in the app.
 
   if (!items.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
   items.sort((a, b) => a.du - b.du);
@@ -3286,6 +3451,15 @@ function initDcForms() {
   // Sync the common date input
   const commonDateEl = $('dc-common-date');
   if (commonDateEl) { commonDateEl.value = dcCommonDate; commonDateEl.max = todayStr(); }
+
+  // Keep the Day Close Records shop filter dropdown in sync with the current shop list
+  const dceShopFilter = $('dce-shop-filter');
+  if (dceShopFilter) {
+    const prevVal = dceShopFilter.value || 'all';
+    dceShopFilter.innerHTML = `<option value="all">All Shops</option>` +
+      STATE.shops.map(sh => `<option value="${sh.id}">${sh.name}</option>`).join('');
+    dceShopFilter.value = STATE.shops.some(s=>s.id===prevVal) ? prevVal : 'all';
+  }
 
   // Build tab buttons — with a green "done" badge if that shop already has
   // a Day Close entry for the currently selected common date
@@ -3753,14 +3927,49 @@ function submitDayClose(shopId) {
   // "Update Day Close" mode mein prefill kar diya). Ye modal sirf ek visual confirm-cum-nudge hai —
   // "Edit Karu" click karne par modal bas hat jata hai aur user seedha editable form pe aa jata hai;
   // "Sab Sahi Hai" click karne par bhi modal hat jata hai, kyunki data already save ho chuka hai.
+  // On a day with decent Counter Cash, nudge toward chipping away at THIS SHOP's own pending
+  // loan (if any) — never another shop's loan, and never the 40% savings amount (that's a
+  // separate reminder on the dashboard). Suggest a partial amount so it clears gradually
+  // instead of arriving as one big lump sum later.
+  const shopLoanEntries = STATE.loans.filter(l => l.shopId === shopId && l.status !== 'Repaid');
+  const shopLoanPending = shopLoanEntries.reduce((s, l) => s + Math.max(0, (l.amount || 0) - (l.repaid || 0)), 0);
+  let suggestedLoanPay = 0;
+  if (shopLoanPending > 0 && counter > 0) {
+    suggestedLoanPay = Math.min(shopLoanPending, Math.round(counter * 0.3 / 100) * 100);
+  }
+  const willClearLoan = suggestedLoanPay > 0 && suggestedLoanPay >= shopLoanPending;
+  const loanLender = shopLoanEntries[0]?.from || 'lender';
+
   showConfirm({
     icon: '!',
     title: 'Submitted Successfully!',
-    msg: `<strong>${escHtml(shopName(shopId))}</strong> — Home ${fmt(home)} · Counter ${fmt(counter)} · GPay ${fmt(gpay)}<br>Sale ${fmt(sale)} · Profit ${fmt(profit)}<br><br>Need to edit anything?`,
+    msg: `<strong>${escHtml(shopName(shopId))}</strong> — Home ${fmt(home)} · Counter ${fmt(counter)} · GPay ${fmt(gpay)}<br>Sale ${fmt(sale)} · Profit ${fmt(profit)}<br><br>Need to edit anything?`
+      + (suggestedLoanPay > 0 ? `<br><br><span style="color:var(--accent);font-size:12px;"><i class="fa-solid fa-hand-holding-dollar"></i> ${escHtml(shopName(shopId))}'s loan (${escHtml(loanLender)}) has ${fmt(shopLoanPending)} pending — consider paying ${fmt(suggestedLoanPay)} from today's counter cash${willClearLoan ? ' — this will clear it fully!' : ' to chip away at it, instead of one big payment later.'}</span>` : ''),
     yesText: 'All Correct',
     yesCls: 'btn-primary',
     noText: 'Let Me Edit',
-    onYes: null
+    onYes: null,
+    extraText: suggestedLoanPay > 0 ? `Pay ${fmt(suggestedLoanPay)} toward loan` : null,
+    onExtra: suggestedLoanPay > 0 ? () => {
+      let remaining = suggestedLoanPay;
+      const entries = [...shopLoanEntries].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+      entries.forEach(entry => {
+        if (remaining <= 0) return;
+        const pendingForEntry = (entry.amount || 0) - (entry.repaid || 0);
+        const toApply = Math.min(remaining, pendingForEntry);
+        entry.repaid = (entry.repaid || 0) + toApply;
+        if (!entry.repayments) entry.repayments = [];
+        entry.repayments.push({ id: newId('RP'), date: entryDate, amount: toApply, mode: 'Cash' });
+        if (entry.repaid >= entry.amount) entry.status = 'Repaid';
+        remaining -= toApply;
+      });
+      auditLog('REPAY_LOAN', `${shopName(shopId)} — ${fmt(suggestedLoanPay)} repaid from today's counter cash (auto-suggested)`);
+      saveStateLocal();
+      renderLoans();
+      updateBadges();
+      renderDashboard();
+      toast(`₹${fmtNum(suggestedLoanPay)} paid toward ${shopName(shopId)}'s loan${willClearLoan ? ' — fully cleared!' : ''}`, 'success');
+    } : null
   });
 }
 
@@ -3937,7 +4146,9 @@ function renderDcEntriesTable() {
 
   const showDeleted = !!$('dce-show-deleted')?.checked;
   const q = ($('dce-search')?.value || '').trim().toLowerCase();
+  const shopFilter = $('dce-shop-filter')?.value || 'all';
   let visible = STATE.dayClose.filter(r => (showDeleted ? r.deleted : !r.deleted) && (r.date || '').slice(0, 7) === dcEntriesMonth);
+  if (shopFilter !== 'all') visible = visible.filter(r => r.shopId === shopFilter);
   if (q) visible = visible.filter(r => (r.shopName || shopName(r.shopId) || '').toLowerCase().includes(q) || (r.date || '').includes(q));
 
   if (!visible.length) {
@@ -3963,8 +4174,11 @@ function renderDcEntriesTable() {
   tbody.innerHTML = rows.map(({ r, s }) => {
     const del = !!r.deleted;
     return `<tr class="${del?'dc-deleted':''}" onclick="${del?'':`openDcDetail('${r.id}')`}">
-      <td onclick="event.stopPropagation();"><button class="btn btn-good btn-xs" style="border-radius:50%;width:26px;height:26px;padding:0;justify-content:center;" onclick="shareDcDayReport('${r.id}')" title="Share on WhatsApp"><i class="fa-brands fa-whatsapp"></i></button></td>
-      <td style="font-weight:700;">${fmtDateShort(r.date)}</td>
+      <td onclick="event.stopPropagation();"><button class="btn btn-good btn-xs" style="border-radius:50%;width:30px;height:30px;padding:0;justify-content:center;background:#25D366;border-color:#25D366;box-shadow:0 0 0 1px rgba(37,211,102,0.35);" onclick="shareDcDayReport('${r.id}')" title="Share on WhatsApp"><i class="fa-brands fa-whatsapp" style="font-size:14px;color:#fff;"></i></button></td>
+      <td>
+        <div style="font-weight:700;">${fmtDateShort(r.date)}</div>
+        <span style="display:inline-block;margin-top:4px;padding:2px 8px;border-radius:20px;font-size:9.5px;font-weight:700;letter-spacing:0.02em;white-space:nowrap;background:${shopColor(r.shopId)}22;color:${shopColor(r.shopId)};border:1px solid ${shopColor(r.shopId)}44;">${escHtml(r.shopName || shopName(r.shopId))}</span>
+      </td>
       <td style="color:${(r.sale||0)>=0?'var(--good)':'var(--bad)'};font-weight:700;">${fmtSigned(r.sale)}</td>
       <td>
         <div style="color:var(--good);">C: ${fmt(s.cashSavings)}</div>
@@ -3995,29 +4209,72 @@ function renderDcEntriesTable() {
 }
 
 // ─── WhatsApp share: single day row ───
+function ordinalSuffix(n) {
+  const j = n % 10, k = n % 100;
+  if (j === 1 && k !== 11) return 'st';
+  if (j === 2 && k !== 12) return 'nd';
+  if (j === 3 && k !== 13) return 'rd';
+  return 'th';
+}
+function fmtDateOrdinalFull(d) {
+  if (!d) return '—';
+  const parts = d.split('-');
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const day = parseInt(parts[2], 10);
+  return day + ordinalSuffix(day) + ' ' + months[parseInt(parts[1], 10) - 1] + ', ' + parts[0];
+}
+function shopShortCode(shopId) { return (shopId || '').replace(/^SHOP0*/, 'S'); }
+const DE_SOURCE_TAG = { COUNTER: 'C', HOME: 'H', GP: 'G' };
+
 function shareDcDayReport(id) {
   const r = STATE.dayClose.find(x => x.id === id); if (!r) return;
-  const sh = STATE.shops.find(s => s.id === r.shopId);
-  const nf = n => { const v = parseFloat(n)||0; return (v<0?'-':'') + 'Rs ' + Math.abs(v).toLocaleString('en-IN'); };
-  const profit = r.profit != null ? r.profit : Math.round(((r.cashHome||0)+(r.gpay||0))*((sh?.profitPct)||40)/100);
   const s = computeDcEntryStats(r);
-  
-  let msg = `*${r.shopName || shopName(r.shopId)}* — ${fmtDate(r.date)}\n`;
-  msg += `━━━━━━━━━━━━━━━\n`;
-  msg += `*Day Close*\n`;
-  msg += `Sale : ${nf(r.sale)}\n`;
-  msg += `Profit (${sh?.profitPct||40}%) : ${nf(profit)}\n\n`;
-  msg += `Cash Home : ${nf(r.cashHome)}\n`;
-  msg += `Counter : ${nf(r.counterCash)}\n`;
-  msg += `GPay : ${nf(r.gpay)}\n\n`;
-  msg += `*Savings (40%)*\n`;
-  msg += `Cash Savings : ${nf(s.cashSavings)}\n`;
-  msg += `Bank Savings : ${nf(s.bankSavings)}\n\n`;
-  msg += `Expenses : ${nf(s.expTotal)}\n`;
-  if (r.note) msg += `Note: ${r.note}\n`;
-  msg += `━━━━━━━━━━━━━\n`;
-  msg += `_Sent from JMD Traders Software_`;
-  
+  const shopDisplayName = r.shopName || shopName(r.shopId) || '';
+  const shopLabel = shopDisplayName.toUpperCase();
+  const DIVIDER = '──────────────────────';
+
+  const dayExps = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.shopId === r.shopId && e.date === r.date);
+
+  // Till-date running totals for this shop, as of this record's date
+  const priorRecords = STATE.dayClose.filter(x => !x.deleted && x.shopId === r.shopId && x.date <= r.date);
+  const totalCashSavings = priorRecords.reduce((sum, x) => sum + (x.cashSaveTarget || 0), 0);
+  const totalBankSavings = priorRecords.reduce((sum, x) => sum + (x.bankSaveTarget || 0), 0);
+  const broughtTillDate = priorRecords.reduce((sum, x) => sum + (x.cashHome || 0), 0);
+  const spentTillDate = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.shopId === r.shopId && e.source === 'HOME' && e.date <= r.date).reduce((sum, e) => sum + (e.amount || 0), 0);
+  const homeXfer = (STATE.shops.find(sh => sh.id === r.shopId) || {}).homeTransfer || 0;
+  const homeCashBalanceTillDate = broughtTillDate - spentTillDate - homeXfer;
+
+  let msg = `*${shopLabel} (${shopShortCode(r.shopId)})*\n`;
+  msg += `*Date: ${fmtDateOrdinalFull(r.date)}*\n`;
+  msg += `${DIVIDER}\n`;
+  msg += `*• Cash in Counter : ${fmt(r.counterCash)}*\n`;
+  msg += `*• To Home : ${fmt(r.cashHome)}*\n`;
+  msg += `*• GPay Sale : ${fmt(r.gpay)}*\n`;
+  msg += `> *• Today's Sale : ${fmt(r.sale)}*\n`;
+
+  if (dayExps.length) {
+    msg += `\n*EXPENSES*\n`;
+    msg += dayExps.map(e => `${e.desc} (${DE_SOURCE_TAG[e.source] || '?'}) : ${fmtNum(e.amount)} /-`).join('\n') + `\n`;
+  }
+
+  const hcParts = [];
+  if (s.homeExp > 0) hcParts.push(`Home Exp : ${fmt(s.homeExp)}`);
+  if ((r.expense || 0) > 0) hcParts.push(`Counter Exp : ${fmt(r.expense)}`);
+  if (hcParts.length || s.gpExp > 0) msg += `\n`;
+  if (hcParts.length) msg += `*• ${hcParts.join(' / ')}*\n`;
+  if (s.gpExp > 0) msg += `*• GPay Exp : ${fmt(s.gpExp)}*\n`;
+
+  msg += `\n*_Today's Savings_*\n`;
+  msg += `*_• Cash (40%) : ${fmt(s.cashSavings)}_*\n`;
+  msg += `*_• Bank (40%) : ${fmt(s.bankSavings)}_*\n`;
+
+  msg += `\n${DIVIDER}\n`;
+  msg += `*Till Date Summary (${shopDisplayName})*\n`;
+  msg += `> *• Total Cash Savings : ${fmt(totalCashSavings)}*\n`;
+  msg += `> *• Total Bank Savings : ${fmt(totalBankSavings)}*\n`;
+  msg += `> *• Home Cash Balance : ${fmt(homeCashBalanceTillDate)}*\n`;
+  msg += `${DIVIDER}`;
+
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
@@ -5166,6 +5423,232 @@ function renderLoans() {
       </div>
     </div>`;
   }).join(''):`<div class="empty"><div class="empty-icon"><i class="fa-solid fa-piggy-bank"></i></div>No loans — all money is yours </div>`;
+}
+
+// ─── Investors ───────────────────────────────────────────────────
+function renderInvestors() {
+  const wrap = $('investor-cards');
+  if (!wrap) return;
+  const list = [...(STATE.investors || [])].sort((a, b) => {
+    // Active (soonest maturity first) above Paid
+    if (a.status !== b.status) return a.status === 'Active' ? -1 : 1;
+    return investorMaturityDate(a) < investorMaturityDate(b) ? -1 : 1;
+  });
+
+  wrap.innerHTML = list.length ? list.map(inv => {
+    const maturity = investorMaturityAmount(inv);
+    const reserved = investorReserved(inv);
+    const remaining = investorRemaining(inv);
+    const pct = Math.min(100, Math.round(reserved / Math.max(1, maturity) * 100));
+    const daysLeft = investorDaysLeft(inv);
+    const isPaid = inv.status === 'Paid';
+    const overdue = !isPaid && daysLeft < 0;
+    const dueBadge = isPaid ? `<span class="badge badge-green">Paid</span>`
+      : overdue ? `<span class="badge badge-red">${Math.abs(daysLeft)}d overdue</span>`
+      : daysLeft <= 30 ? `<span class="badge badge-amber">${daysLeft}d left</span>`
+      : `<span class="badge badge-gray">${daysLeft}d left</span>`;
+    return `<div class="pc-row${isPaid ? ' pc-settled' : ''}" onclick="openInvestorDetail('${inv.id}')">
+      <div class="pc-avatar" style="background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 2px 8px rgba(139,108,255,0.3);">${pcInitials(inv.name)}</div>
+      <div class="pc-main">
+        <div class="pc-name">${escHtml(inv.name)}</div>
+        <div class="pc-badges">
+          <span class="badge badge-purple">${inv.ratePct}% / yr</span>
+          <span class="badge badge-gray">${inv.tenureMonths}mo · matures ${fmtDate(investorMaturityDate(inv))}</span>
+          ${dueBadge}
+        </div>
+      </div>
+      <div class="pc-stat"><div class="k">Principal</div><div class="v">${fmt(inv.principal)}</div></div>
+      <div class="pc-stat"><div class="k">To Pay</div><div class="v" style="color:${remaining>0?'var(--bad)':'var(--good)'};">${fmt(remaining)}</div></div>
+      <i class="fa-solid fa-chevron-down pc-chevron"></i>
+      <div class="pc-progress">
+        <div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:${remaining===0?'var(--good)':'var(--accent)'};"></div></div>
+        <span>${fmt(reserved)} of ${fmt(maturity)} reserved (${pct}%)</span>
+      </div>
+      <div class="pc-actions">
+        ${!isPaid ? `<button class="btn btn-good btn-sm" style="flex:2;" onclick="event.stopPropagation();openAddReserveModal('${inv.id}')">+ Reserve</button>` : ''}
+        <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="event.stopPropagation();openInvestorDetail('${inv.id}')" title="View history"><i class="fa-solid fa-list-ul" style="font-size:10px;margin-right:4px;"></i>View</button>
+        <button class="btn btn-ghost btn-sm" style="padding:4px 6px;flex:0 0 auto;" onclick="event.stopPropagation();openAddInvestorModal('${inv.id}')" title="Edit"><i class="fa-solid fa-pen" style="font-size:10px;"></i></button>
+        <button class="btn btn-bad btn-sm" style="padding:4px 6px;flex:0 0 auto;" onclick="event.stopPropagation();deleteInvestor('${inv.id}')" title="Delete"><i class="fa-solid fa-trash" style="font-size:10px;"></i></button>
+      </div>
+    </div>`;
+  }).join('') : `<div class="empty"><div class="empty-icon"><i class="fa-solid fa-coins"></i></div>No investors added yet</div>`;
+}
+
+function updateInvestorPreview() {
+  const principal = parseFloat($('ai-principal')?.value) || 0;
+  const rate = parseFloat($('ai-rate')?.value) || 0;
+  const tenure = parseFloat($('ai-tenure')?.value) || 0;
+  const start = $('ai-start')?.value || todayStr();
+  const interest = Math.round(principal * rate / 100 * (tenure / 12));
+  const maturity = principal + interest;
+  const mDate = tenure ? addMonthsToDate(start, tenure) : '—';
+  $('ai-preview').innerHTML = `
+    <div class="formula-line"><span class="fl-label">Principal</span><span class="fl-val">${fmt(principal)}</span></div>
+    <div class="formula-line"><span class="fl-label">+ Interest (${rate||0}% × ${tenure||0}mo)</span><span class="fl-val" style="color:var(--accent);">${fmt(interest)}</span></div>
+    <div class="formula-total"><span>= Payable on ${mDate!=='—'?fmtDate(mDate):'—'}</span><span class="ft-val">${fmt(maturity)}</span></div>`;
+}
+
+function openAddInvestorModal(id) {
+  const inv = id ? (STATE.investors || []).find(i => i.id === id) : null;
+  $('ai-title').textContent = inv ? 'Edit Investor' : 'Add Investor';
+  $('ai-id').value = inv ? inv.id : '';
+  $('ai-name').value = inv ? inv.name : '';
+  $('ai-phone').value = inv ? (inv.phone || '') : '';
+  $('ai-principal').value = inv ? inv.principal : '';
+  $('ai-rate').value = inv ? inv.ratePct : '12';
+  $('ai-start').value = inv ? inv.startDate : todayStr();
+  $('ai-tenure').value = inv ? inv.tenureMonths : '12';
+  $('ai-note').value = inv ? (inv.note || '') : '';
+  updateInvestorPreview();
+  openModal('modal-add-investor');
+}
+
+function saveInvestor() {
+  const name = $('ai-name').value.trim();
+  const principal = parseFloat($('ai-principal').value) || 0;
+  const rate = parseFloat($('ai-rate').value) || 0;
+  const tenure = parseFloat($('ai-tenure').value) || 0;
+  const start = $('ai-start').value || todayStr();
+  if (!name) { toast('Investor name is required', 'error'); return; }
+  if (principal <= 0) { toast('Enter a valid principal amount', 'error'); return; }
+  if (tenure <= 0) { toast('Enter a valid tenure in months', 'error'); return; }
+
+  const id = $('ai-id').value;
+  if (id) {
+    const inv = STATE.investors.find(i => i.id === id);
+    if (inv) {
+      Object.assign(inv, { name, phone: $('ai-phone').value.trim(), principal, ratePct: rate, startDate: start, tenureMonths: tenure, note: $('ai-note').value.trim() });
+      auditLog('INVESTOR_EDIT', `${name} — Principal ${fmt(principal)} @ ${rate}% / ${tenure}mo`);
+    }
+  } else {
+    STATE.investors.unshift({
+      id: newId('INV'), name, phone: $('ai-phone').value.trim(), principal, ratePct: rate,
+      startDate: start, tenureMonths: tenure, note: $('ai-note').value.trim(),
+      reserves: [], status: 'Active'
+    });
+    auditLog('INVESTOR_ADD', `${name} — Principal ${fmt(principal)} @ ${rate}% / ${tenure}mo`);
+  }
+  saveStateLocal();
+  closeModal('modal-add-investor');
+  renderInvestors();
+  renderDashboardAlerts();
+  toast('Investor saved', 'success');
+}
+
+function deleteInvestor(id) {
+  const inv = STATE.investors.find(i => i.id === id);
+  if (!inv) return;
+  showConfirm(`Delete investor "${inv.name}"? This removes all their reserve history too.`, () => {
+    STATE.investors = STATE.investors.filter(i => i.id !== id);
+    auditLog('INVESTOR_DELETE', `${inv.name} removed`);
+    saveStateLocal();
+    renderInvestors();
+    renderDashboardAlerts();
+    toast('Investor deleted', 'success');
+  });
+}
+
+function openAddReserveModal(id) {
+  const inv = (STATE.investors || []).find(i => i.id === id);
+  if (!inv) return;
+  $('ar-invid').value = id;
+  $('ar-amount').value = '';
+  $('ar-date').value = todayStr();
+  $('ar-note').value = '';
+  const remaining = investorRemaining(inv);
+  $('ar-context').innerHTML = `For <b>${escHtml(inv.name)}</b> — ₹${fmtNum(remaining)} still needed by ${fmtDate(investorMaturityDate(inv))}`;
+  openModal('modal-add-reserve');
+}
+
+function saveInvestorReserve() {
+  const id = $('ar-invid').value;
+  const inv = (STATE.investors || []).find(i => i.id === id);
+  if (!inv) return;
+  const amount = parseFloat($('ar-amount').value) || 0;
+  if (amount <= 0) { toast('Enter a valid amount', 'error'); return; }
+  inv.reserves.push({ id: newId('IR'), date: $('ar-date').value || todayStr(), amount, note: $('ar-note').value.trim() });
+  auditLog('INVESTOR_RESERVE', `${inv.name} — reserved ${fmt(amount)}`);
+  saveStateLocal();
+  closeModal('modal-add-reserve');
+  renderInvestors();
+  renderDashboardAlerts();
+  if (typeof openInvestorDetail === 'function' && $('modal-investor-detail')?.classList.contains('open')) openInvestorDetail(id);
+  toast(`₹${fmtNum(amount)} reserved for ${inv.name}`, 'success');
+}
+
+function deleteInvestorReserve(invId, reserveId) {
+  const inv = (STATE.investors || []).find(i => i.id === invId);
+  if (!inv) return;
+  inv.reserves = (inv.reserves || []).filter(r => r.id !== reserveId);
+  saveStateLocal();
+  renderInvestors();
+  renderDashboardAlerts();
+  openInvestorDetail(invId);
+}
+
+function toggleInvestorPaid(id) {
+  const inv = (STATE.investors || []).find(i => i.id === id);
+  if (!inv) return;
+  inv.status = inv.status === 'Paid' ? 'Active' : 'Paid';
+  auditLog('INVESTOR_STATUS', `${inv.name} marked ${inv.status}`);
+  saveStateLocal();
+  renderInvestors();
+  renderDashboardAlerts();
+  closeModal('modal-investor-detail');
+  toast(`${inv.name} marked ${inv.status}`, 'success');
+}
+
+function openInvestorDetail(id) {
+  const inv = (STATE.investors || []).find(i => i.id === id);
+  if (!inv) return;
+  const maturity = investorMaturityAmount(inv);
+  const reserved = investorReserved(inv);
+  const remaining = investorRemaining(inv);
+  const daysLeft = investorDaysLeft(inv);
+  const reserves = [...(inv.reserves || [])].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  $('investor-detail-body').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <div class="pc-avatar" style="background:linear-gradient(135deg,var(--accent),var(--accent2));width:38px;height:38px;">${pcInitials(inv.name)}</div>
+      <div>
+        <div style="font-size:15px;font-weight:700;">${escHtml(inv.name)}</div>
+        <div style="font-size:11px;color:var(--muted);">${inv.phone ? escHtml(inv.phone) + ' · ' : ''}${inv.ratePct}%/yr · ${inv.tenureMonths}mo from ${fmtDate(inv.startDate)}</div>
+      </div>
+    </div>
+    <div class="formula-box">
+      <div class="formula-line"><span class="fl-label">Principal</span><span class="fl-val">${fmt(inv.principal)}</span></div>
+      <div class="formula-line"><span class="fl-label">+ Interest</span><span class="fl-val" style="color:var(--accent);">${fmt(investorInterest(inv))}</span></div>
+      <div class="formula-total"><span>= Payable on ${fmtDate(investorMaturityDate(inv))}</span><span class="ft-val">${fmt(maturity)}</span></div>
+    </div>
+    <div style="margin-top:10px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;">
+      <div style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:9px;padding:10px 12px;">
+        <div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Reserved So Far</div>
+        <div class="mono" style="font-size:16px;font-weight:800;color:var(--good);">${fmt(reserved)}</div>
+      </div>
+      <div style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);border-radius:9px;padding:10px 12px;">
+        <div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Still Needed</div>
+        <div class="mono" style="font-size:16px;font-weight:800;color:var(--bad);">${fmt(remaining)}</div>
+      </div>
+    </div>
+    <div style="margin-top:10px;font-size:11.5px;color:var(--muted);">
+      ${inv.status === 'Paid' ? 'Marked fully paid.' : daysLeft < 0 ? `<span style="color:var(--bad);font-weight:700;">${Math.abs(daysLeft)} days overdue</span> — maturity date has passed.` : `${daysLeft} days left · suggested ₹${fmtNum(investorSuggestedDailyReserve(inv))}/day to stay on track`}
+    </div>
+    ${inv.note ? `<div style="margin-top:6px;font-size:11.5px;color:var(--muted);"><i class="fa-solid fa-note-sticky" style="margin-right:5px;"></i>${escHtml(inv.note)}</div>` : ''}
+    <div style="margin-top:14px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">Reserve History</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;max-height:220px;overflow-y:auto;">
+      ${reserves.length ? reserves.map(r => `
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 10px;">
+          <div style="font-size:11.5px;">
+            <span style="font-weight:700;">${fmt(r.amount)}</span>
+            <span style="color:var(--muted);"> · ${fmtDate(r.date)}${r.note ? ' · ' + escHtml(r.note) : ''}</span>
+          </div>
+          <button class="btn btn-bad btn-sm" style="padding:3px 7px;" onclick="deleteInvestorReserve('${inv.id}','${r.id}')"><i class="fa-solid fa-trash" style="font-size:9px;"></i></button>
+        </div>`).join('') : `<div style="font-size:11.5px;color:var(--muted);">No reserve entries yet.</div>`}
+    </div>
+    <div style="display:flex;gap:10px;margin-top:14px;">
+      <button class="btn btn-ghost" style="flex:1;" onclick="toggleInvestorPaid('${inv.id}')">${inv.status === 'Paid' ? 'Mark Active Again' : 'Mark Fully Paid'}</button>
+      ${inv.status !== 'Paid' ? `<button class="btn btn-primary" style="flex:1;" onclick="closeModal('modal-investor-detail');openAddReserveModal('${inv.id}')">+ Add Reserve</button>` : ''}
+    </div>`;
+  openModal('modal-investor-detail');
 }
 
 function openAddLoanForPerson(name, shopId) {
