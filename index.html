@@ -1069,13 +1069,14 @@ html,body{overflow-x:hidden;max-width:100%;}
         <div id="new-month-banner" style="display:none;"></div>
         <!-- Savings Pending Reminder -->
         <div id="savings-pending-banner" style="display:none;"></div>
+        <div id="graphics-swap-banner" style="display:none;"></div>
         <div id="dashboard-alerts-banner" style="display:none;"></div>
         <!-- Net Worth Hero -->
         <div class="nw-hero">
           <div class="nw-label">Total Net Position</div>
           <div class="nw-val" id="nw-val">₹0</div>
           <div class="nw-breakdown">
-            <div class="nw-bd-item"><div class="k">Personal Wallet</div><div class="v" style="color:var(--accent);" id="nw-galla" title="Cumulative cash-taken-home minus personal expenses">₹0</div></div>
+            <div class="nw-bd-item"><div class="k">Personal Wallet</div><div class="v" style="color:var(--accent);" id="nw-galla" title="Cumulative cash taken home from all shops">₹0</div></div>
             <div class="nw-bd-item"><div class="k">GPay / Online</div><div class="v" style="color:var(--accent2);" id="nw-online">₹0</div></div>
             <div class="nw-bd-item"><div class="k">Credit Due</div><div class="v" style="color:var(--warn);" id="nw-udhaar">₹0</div></div>
             <div class="nw-bd-item"><div class="k">Bills Pending</div><div class="v" style="color:var(--bad);" id="nw-liab">₹0</div></div>
@@ -1368,6 +1369,7 @@ html,body{overflow-x:hidden;max-width:100%;}
 
       <!-- ═══ INTERSHOP ═══ -->
       <div class="tab-section" id="tab-intershop">
+        <div id="graphics-swap-history" style="margin-bottom:16px;"></div>
         <div class="section-hd">
           <div class="filter-bar">
             <button class="filter-btn on" id="isf-all" onclick="setISFilter(&#39;all&#39;)">All</button>
@@ -1588,6 +1590,7 @@ html,body{overflow-x:hidden;max-width:100%;}
         <div class="settings-section">
           <h3><i class="fa-solid fa-trash"></i> Danger Zone</h3>
           <button class="btn btn-ghost btn-sm" onclick="downloadBackup()" style="margin-right:8px;"><i class="fa-solid fa-download" style="margin-right:4px;"></i>Download JSON Backup</button>
+          <button class="btn btn-bad btn-sm" style="margin-right:8px;" onclick="promptDeleteDcMonth()"><i class="fa-solid fa-calendar-xmark" style="margin-right:4px;"></i>Delete Day Close (One Month)</button>
           <button class="btn btn-bad btn-sm" style="margin-right:8px;" onclick="showPrompt('Selective Reset','Type RESET DC to confirm. This will delete Day Close, Home Expenses, Daily Expenses, InterShop, Reminders, Audit Log — and reset shop balances (Galla/Online/Home Transfer) to 0. Market Credit, Outflows and Loans will NOT be touched.','Type RESET DC','',function(v){if(v==='RESET DC')selectiveReset();else toast('Reset cancelled — text did not match','error');})"><i class="fa-solid fa-rotate-left" style="margin-right:4px;"></i>Selective Reset (Keep Credit/Loans)</button>
           <button class="btn btn-bad btn-sm" onclick="showPrompt('Reset All Data','Type RESET JMD to confirm. This will delete ALL data including the shared Google Sheet.','Type RESET JMD','',function(v){if(v==='RESET JMD')resetAll();else toast('Reset cancelled — text did not match','error');})">Reset All Data</button>
         </div>
@@ -2087,7 +2090,7 @@ html,body{overflow-x:hidden;max-width:100%;}
 // The Settings URL field will be hidden/locked automatically.
 //
 // Leave empty if each user should manually enter the URL in Settings.
-const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwD7uZf5epg_y374-NRkoxLR9z0eaF7685tkbYSzqcvhWFTek0XaqpdVTBGHJH-aXPH/exec'
+const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxilywazn-CxZ5HtFD5udJ0RPvJWdnS7Vq3c8sSOV8ZH1GQDCUReF7GfgpT1DqC09c/exec'
 // ═══════════════════════════════════════════════════════════════════
 
 // ─── Initial State ──────────────────────────────────────────────
@@ -2100,7 +2103,18 @@ const DEFAULT_SHOPS = [
 
 // ─── Utilities (must be before STATE init) ──────────────────────
 const $ = id => document.getElementById(id);
-const todayStr = () => new Date().toISOString().split('T')[0];
+// BUG FIX: date-string helper using LOCAL date parts, not UTC. .toISOString() always converts
+// to UTC — for IST (+5:30), that shifts the calendar date backward by one during roughly
+// 12:00 AM–5:29 AM local time (a shop owner closing up late/early would see "yesterday"
+// everywhere: Today's Profit, Day Close default date, Savings reminders, etc). Every place in
+// this file that needs "today" or "a computed local date as a string" should go through this.
+function localDateStr(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+const todayStr = () => localDateStr(new Date());
 let idCounter = Math.floor(Math.random() * 100000);
 const newId = prefix => prefix + '-' + Date.now().toString(36) + '-' + (++idCounter).toString(36);
 
@@ -2557,6 +2571,130 @@ function personalWalletDrain() {
   return (STATE.homeExpenses||[]).filter(e => (e.paidFrom||'PERSONAL')==='PERSONAL').reduce((s,e)=>s+(e.amount||0), 0);
 }
 
+// ─── Graphics Cash↔GPay Swap ────────────────────────────────────────
+// Graphics (SHOP04) is never meant to hold its own physical cash — its book is kept 100%
+// digital/bank. Whenever a Graphics Day Close brings in cash, that cash physically gets handed
+// over to whichever other shop's till, and in exchange an equal amount is moved out of that
+// shop's GPay/online balance into Graphics' online balance. Net effect: Graphics' ledger never
+// shows a home-cash balance, and the "cash" is really just borrowed against another shop's
+// already-spendable (post-40%) GPay balance.
+function pendingGraphicsSwaps() {
+  return (STATE.dayClose||[]).filter(r => !r.deleted && r.shopId === 'SHOP04' && (r.cashHome||0) > 0 && !r.cashSwapDone)
+    .map(r => ({ dcId: r.id, date: r.date, amount: r.cashHome }));
+}
+// Best default suggestion: whichever other shop currently has the most spendable
+// (post-40%-reserved) GPay balance to draw from.
+function suggestGraphicsSwapShop() {
+  const others = STATE.shops.filter(s => s.id !== 'SHOP04');
+  if (!others.length) return null;
+  return others.reduce((best, s) => shopSpendableOnline(s.id) > shopSpendableOnline(best.id) ? s : best, others[0]);
+}
+function confirmGraphicsSwap(dcId, toShopId) {
+  const r = STATE.dayClose.find(x => x.id === dcId && !x.deleted);
+  const toShop = STATE.shops.find(s => s.id === toShopId);
+  const gShop = STATE.shops.find(s => s.id === 'SHOP04');
+  if (!r || !toShop || !gShop || r.cashSwapDone) return;
+  const amt = r.cashHome || 0;
+  if (amt <= 0) return;
+  const avail = shopSpendableOnline(toShopId);
+  if (amt > avail) {
+    toast(`${shopName(toShopId)} has only ${fmt(avail)} spendable in GPay — pick another shop or a smaller amount is pending.`, 'error');
+    return;
+  }
+  // Leg 1 — cash leg: Graphics "gives away" this cash, toShop physically keeps it.
+  gShop.homeTransfer  = (gShop.homeTransfer||0) + amt;   // reduces Graphics' recorded home cash to 0 for this entry
+  toShop.homeTransfer = (toShop.homeTransfer||0) - amt;  // increases toShop's home cash
+  // Leg 2 — GPay leg: toShop hands over equal GPay value, credited into Graphics' online balance.
+  toShop.online = Math.max(0, (toShop.online||0) - amt);
+  gShop.online   = (gShop.online||0) + amt;
+  r.cashSwapDone = true;
+  r.cashSwapToShop = toShopId;
+  auditLog('GRAPHICS_SWAP', `Graphics cash ${fmt(amt)} (${fmtDate(r.date)}) swapped with ${shopName(toShopId)} — cash to ${shopName(toShopId)}, GPay to Graphics`);
+  saveStateLocal();
+  renderDashboard();
+  renderGraphicsSwapBanner();
+  renderGraphicsSwapHistory();
+  renderDcHistory();
+  toast(`Swapped — ${fmt(amt)} cash → ${shopName(toShopId)}, ${fmt(amt)} GPay → Graphics`, 'success');
+}
+// Undo a previously-confirmed swap (used when the underlying DC entry is edited/deleted).
+function reverseGraphicsSwap(r) {
+  if (!r || !r.cashSwapDone || !r.cashSwapToShop) return;
+  const amt = r.cashHome || 0;
+  const toShop = STATE.shops.find(s => s.id === r.cashSwapToShop);
+  const gShop = STATE.shops.find(s => s.id === 'SHOP04');
+  if (toShop) {
+    toShop.homeTransfer = (toShop.homeTransfer||0) + amt;
+    toShop.online = (toShop.online||0) + amt;
+  }
+  if (gShop) {
+    gShop.homeTransfer = (gShop.homeTransfer||0) - amt;
+    gShop.online = Math.max(0, (gShop.online||0) - amt);
+  }
+  r.cashSwapDone = false;
+  r.cashSwapToShop = null;
+}
+function completedGraphicsSwaps() {
+  return (STATE.dayClose||[]).filter(r => !r.deleted && r.shopId === 'SHOP04' && r.cashSwapDone)
+    .sort((a,b) => new Date(b.date) - new Date(a.date));
+}
+function renderGraphicsSwapHistory() {
+  const wrap = $('graphics-swap-history');
+  if (!wrap) return;
+  const list = completedGraphicsSwaps();
+  wrap.innerHTML = `
+    <div class="card" style="padding:14px 16px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <i class="fa-solid fa-clock-rotate-left" style="color:var(--muted);"></i>
+        <div style="font-size:13px;font-weight:700;">Graphics Swap History${list.length ? ' — ' + list.length : ''}</div>
+      </div>
+      ${!list.length ? `<div style="font-size:12px;color:var(--muted);">No swaps done yet.</div>` : `
+      <div style="display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto;">
+        ${list.map(r => `
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 12px;font-size:12px;">
+            <div><span style="font-weight:700;">${escHtml(fmtDate(r.date))}</span></div>
+            <div style="color:var(--muted);">
+              <span class="mono" style="color:var(--jtext);font-weight:700;">${fmt(r.cashHome)}</span>
+              cash → <b>${escHtml(shopName(r.cashSwapToShop))}</b>,
+              <span class="mono" style="color:var(--jtext);font-weight:700;">${fmt(r.cashHome)}</span>
+              GPay → Graphics
+            </div>
+          </div>`).join('')}
+      </div>`}
+    </div>`;
+}
+function renderGraphicsSwapBanner() {
+  const wrap = $('graphics-swap-banner');
+  if (!wrap) return;
+  const pend = pendingGraphicsSwaps();
+  if (!pend.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+  const suggested = suggestGraphicsSwapShop();
+  wrap.style.display = 'block';
+  wrap.innerHTML = `
+    <div class="card" style="padding:14px 16px;border-left:3px solid #f59e0b;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <i class="fa-solid fa-right-left" style="color:#f59e0b;"></i>
+        <div style="font-size:13px;font-weight:700;">Graphics Cash Swap Pending — ${pend.length} pending</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        ${pend.map(p => `
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;">
+            <div style="font-size:12px;">
+              <span style="font-weight:700;">${escHtml(fmtDate(p.date))}</span>
+              <span style="color:var(--muted);"> — Graphics cash to move</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="mono" style="font-weight:700;color:#f59e0b;">${fmt(p.amount)}</span>
+              <select id="gs-shop-${p.dcId}" style="font-size:11.5px;padding:4px 6px;border-radius:6px;background:var(--panel);border:1px solid var(--line);color:var(--jtext);">
+                ${STATE.shops.filter(s=>s.id!=='SHOP04').map(s=>`<option value="${s.id}" ${suggested&&s.id===suggested.id?'selected':''}>${escHtml(s.name)} (spendable GPay ${fmt(shopSpendableOnline(s.id))})</option>`).join('')}
+              </select>
+              <button class="btn btn-good btn-xs" onclick="confirmGraphicsSwap('${p.dcId}', $('gs-shop-${p.dcId}').value)"><i class="fa-solid fa-check"></i> Swap</button>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
 // ─── Spendable Balance (post-40%-savings) ─────────────────────────
 // The 60/40 split applies ONLY to Home Cash (paisa jo ghar le jaate ho) — NOT to galla/counter
 // cash, which is pure shop opening/working capital for the next day's sales and stays fully
@@ -2591,7 +2729,7 @@ function shopSpendableOnline(shopId) {
 function addMonthsToDate(dateStr, months) {
   const d = new Date(dateStr + 'T00:00:00');
   d.setMonth(d.getMonth() + Number(months || 0));
-  return d.toISOString().split('T')[0];
+  return localDateStr(d);
 }
 function investorMaturityDate(inv) { return addMonthsToDate(inv.startDate, inv.tenureMonths); }
 // Simple interest: Maturity = Principal + Principal × Rate% × (Tenure in months / 12)
@@ -2623,8 +2761,11 @@ function renderDashboard() {
   const totalLiab   = STATE.outflows.filter(o=>o.status==='Pending').reduce((s,o)=>s+(o.amount+o.lateFee-o.paid),0);
   const totalLoanPending = STATE.loans.filter(l=>l.status==='Pending').reduce((s,l)=>s+(l.amount-l.repaid),0);
   const totalHomeCash = STATE.shops.reduce((s,sh)=>s+shopHomeCash(sh.id), 0);
-  const persDrain   = personalWalletDrain();
-  const personalWallet = Math.max(0, totalHomeCash - persDrain);        // net home savings
+  // BUG FIX: "PERSONAL" home expenses are explicitly a DIFFERENT source of money — the app
+  // itself tells the user "Paid from personal wallet; shop balances are not affected" when this
+  // option is chosen. So this money never came out of the shop-sourced Home Cash pool, and must
+  // NOT be subtracted from it here. personalWalletDrain() is kept as a pure info figure only.
+  const personalWallet = Math.max(0, totalHomeCash);        // net home savings (shop-sourced only)
   const confirmedSavings = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.desc && e.desc.startsWith('Savings (40%')).reduce((s, e) => s + (e.amount || 0), 0);
   const nw = personalWallet + totalOnlineGross + totalUd - totalLiab - totalLoanPending + confirmedSavings;         // TRUE NET POSITION (loans reduce net worth, confirmed savings add back)
 
@@ -2641,10 +2782,17 @@ function renderDashboard() {
   const shopLoanBorrowed = id => STATE.loans.filter(l=>l.shopId===id).reduce((s,l)=>s+(l.amount||0),0);
   const shopLoanRepaid = id => STATE.loans.filter(l=>l.shopId===id).reduce((s,l)=>s+(l.repaid||0),0);
   const shopLoanPending = id => STATE.loans.filter(l=>l.shopId===id&&l.status==='Pending').reduce((s,l)=>s+(l.amount-l.repaid),0);
-  // Shop-level "own money" = shop's home-cash cumulative + shop online + shop udhaari - shop bills - shop pending loans (counter cash NOT counted)
+  // BUG FIX: confirmed 40% savings (Cash + Bank) is still the shop's own money — just earmarked —
+  // so it must be added back here, same as the Hero Net Position does at the all-shops level.
+  // dailyExpenses savings-confirmation entries already carry a shopId, so this can be attributed
+  // exactly per shop (unlike personalWalletDrain, which is a household-level pool not tied to
+  // any one shop's till — see note on the Total row below for why that one stays hero-only).
+  const shopConfirmedSavings = id => (STATE.dailyExpenses || []).filter(e => !e.deleted && e.shopId === id && e.desc && e.desc.startsWith('Savings (40%')).reduce((s, e) => s + (e.amount || 0), 0);
+  // Shop-level "own money" = shop's home-cash cumulative + shop online + shop udhaari + shop's
+  // confirmed savings - shop bills - shop pending loans (counter cash NOT counted — pure working capital)
   const shopNet = id => {
     const sh=STATE.shops.find(s=>s.id===id);
-    return shopHomeCash(id) + (sh?sh.online:0) + shopUd(id) - shopLiab(id) - shopLoanPending(id);
+    return shopHomeCash(id) + (sh?sh.online:0) + shopUd(id) + shopConfirmedSavings(id) - shopLiab(id) - shopLoanPending(id);
   };
 
   let tbody = '';
@@ -2662,7 +2810,7 @@ function renderDashboard() {
       <td><span class="mono" style="color:var(--warn);">${fmt(shopUd(sh.id))}</span></td>
       <td><span class="mono" style="color:var(--bad);">${fmt(shopLiab(sh.id))}</span></td>
       <td><span class="mono" style="color:var(--bad);font-size:10px;" title="Borrowed: ${fmt(loanBorrowed)}, Repaid: ${fmt(loanRepaid)}">${fmt(loanBorrowed)} / ${fmt(loanRepaid)}</span></td>
-      <td><span class="mono" style="color:${net>=0?'var(--good)':'var(--bad)'};font-weight:800;">${fmtSigned(net)}</span></td>
+      <td><span class="mono" style="color:${net>=0?'var(--good)':'var(--bad)'};font-weight:800;" title="Home Cash ${fmt(shopHomeCash(sh.id))} + GPay ${fmt(sh.online)} + Credit ${fmt(shopUd(sh.id))} + Confirmed Savings ${fmt(shopConfirmedSavings(sh.id))} - Bills ${fmt(shopLiab(sh.id))} - Loans Pending ${fmt(loanPending)}">${fmtSigned(net)}</span></td>
     </tr>`;
   });
   const totHc   = STATE.shops.reduce((s,sh)=>s+shopHomeCash(sh.id),0);          // gross — for Net Worth math
@@ -2671,8 +2819,12 @@ function renderDashboard() {
   const totLiab2= STATE.shops.reduce((s,sh)=>s+shopLiab(sh.id),0);
   const totLoanBorrowed = STATE.shops.reduce((s,sh)=>s+shopLoanBorrowed(sh.id),0);
   const totLoanRepaid = STATE.shops.reduce((s,sh)=>s+shopLoanRepaid(sh.id),0);
-  // Bug 6 fix: use same formula as hero Net Worth for consistency
-  const totNet  = personalWallet + totalOnlineGross + totUd - totLiab2 - totalLoanPending + confirmedSavings;
+  // BUG FIX: Total row must be the literal SUM of the shop rows shown directly above it in this
+  // SAME table — a table footer that doesn't equal the sum of its own rows is the confusing part.
+  // This now also matches the Hero "Total Net Position" card exactly: PERSONAL home expenses are
+  // an outside/different money source (the app itself says "shop balances are not affected" when
+  // PERSONAL is chosen as the source), so they are correctly excluded from both totals.
+  const totNet = STATE.shops.reduce((s,sh)=>s+shopNet(sh.id),0);
   tbody += `<tr><td>Total</td>
     <td class="mono" style="color:var(--accent);">${fmt(totHcSpendable)}</td>
     <td class="mono" style="color:var(--muted);font-size:11.5px;">${fmt(totalGalla)}</td>
@@ -2680,7 +2832,7 @@ function renderDashboard() {
     <td class="mono" style="color:var(--warn);">${fmt(totUd)}</td>
     <td class="mono" style="color:var(--bad);">${fmt(totLiab2)}</td>
     <td class="mono" style="color:var(--bad);font-size:10px;">${fmt(totLoanBorrowed)} / ${fmt(totLoanRepaid)}</td>
-    <td class="mono" style="color:${totNet>=0?'var(--good)':'var(--bad)'};font-weight:800;">${fmtSigned(totNet)}</td>
+    <td class="mono" style="color:${totNet>=0?'var(--good)':'var(--bad)'};font-weight:800;" title="Sum of all shop rows above (${fmt(confirmedSavings)} confirmed savings already included per-shop). Matches the Hero 'Total Net Position' card exactly.">${fmtSigned(totNet)}</td>
   </tr>`;
   $('shop-tbody').innerHTML = tbody;
 
@@ -2706,7 +2858,7 @@ function getProfitPeriodFilter(period) {
   const todayS = todayStr();
   if (period === 'week') {
     const d = new Date(); d.setDate(d.getDate() - 6);
-    const startS = d.toISOString().split('T')[0];
+    const startS = localDateStr(d);
     return dt => dt >= startS && dt <= todayS;
   }
   if (period === 'month') {
@@ -2839,6 +2991,8 @@ function confirmSavingsDone(dcId, type) {
   auditLog('SAVINGS', `${shopName(r.shopId)} ${fmtDate(r.date)} — ${type === 'cash' ? 'Cash' : 'GPay'} savings ${fmt(amt)} confirmed done`);
   saveStateLocal();
   renderSavingsPendingBanner();
+  renderGraphicsSwapBanner();
+  renderGraphicsSwapHistory();
   renderMonthlySummary();
   renderDashboard();
   updateBadges();
@@ -3064,9 +3218,16 @@ function renderMonthlySummary() {
   $('ms-home-val').textContent = fmt(actualHome);
   $('ms-bank-val').textContent = fmt(actualBank);
 
-  // 40% savings targets, rounded to nearest ₹100 — cash & GPay portions calculated separately
-  const cashSavings = roundTo100(cashSale * 0.4);
-  const bankSavings = roundTo100(gpaySale * 0.4);
+  // 40% savings targets — BUG FIX: must be the SUM of each record's actual cashSaveTarget /
+  // bankSaveTarget (the exact same numbers the Savings Pending reminder banner tracks and
+  // confirmSavingsDone() confirms against). Previously this recomputed fresh off cashSale/
+  // gpaySale totals, which (a) used cash SALE — home + counter — as the Cash-40% basis instead
+  // of Home Cash only, permanently inflating the target above what could ever be confirmed, and
+  // (b) rounded the monthly total once instead of summing each day's already-rounded target,
+  // causing small mismatches even for Bank Savings. Summing the per-record targets makes
+  // Confirmed + Pending always reconcile exactly to the target shown here.
+  const cashSavings = recs.reduce((s, r) => s + (r.cashSaveTarget || 0), 0);
+  const bankSavings = recs.reduce((s, r) => s + (r.bankSaveTarget || 0), 0);
   // Monthly Summary fix: also calculate confirmed savings for this month/shop filter
   const monthShopExps = (STATE.dailyExpenses || []).filter(e => !e.deleted && (e.date || '').slice(0, 7) === ym && (_msShopFilter === 'ALL' || e.shopId === _msShopFilter));
   const confirmedCashSave = monthShopExps.filter(e => e.desc && e.desc.startsWith('Savings (40% Cash')).reduce((s, e) => s + (e.amount || 0), 0);
@@ -3112,40 +3273,12 @@ function renderMonthlySummary() {
   // Adjustment tile: make it clear what this number actually means, rather than a bare figure.
   const adjEl = $('ms-adj-val');
   if (adjEl && adjEl.parentElement) {
-    adjEl.parentElement.title = 'Home Cash target (40% of Cash Sale) minus what was actually brought home this month — a shortfall here means less was taken home than the savings target, and it carries forward against your accumulated Home balance.';
+    adjEl.parentElement.title = 'Home Cash target (40% of Home Cash) minus what was actually brought home this month — a shortfall here means less was taken home than the savings target, and it carries forward against your accumulated Home balance.';
   }
 
-  // Negative-balance days this month: for each Day Close entry, check if that day's Home/GP
-  // expenses pushed the wallet below zero (same check as the Day Close detail modal).
+  // Negative-balance days banner — removed per user request (felt noisy showing every date).
   const banner = $('ms-negative-banner');
-  if (banner) {
-    const negDays = recs.map(r => ({ r, bal: computeDcBalanceStory(r) }))
-      .filter(x => x.bal.homeNegative || x.bal.onlineNegative)
-      .sort((a, b) => (a.r.date || '').localeCompare(b.r.date || ''));
-    if (negDays.length) {
-      banner.style.display = 'block';
-      banner.innerHTML = `
-        <div style="margin-bottom:14px;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.35);border-radius:9px;padding:12px 14px;">
-          <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;color:var(--bad);margin-bottom:8px;">
-            <i class="fa-solid fa-triangle-exclamation"></i> ${negDays.length} day${negDays.length>1?'s':''} this month went balance-minus
-          </div>
-          <div style="display:flex;flex-direction:column;gap:5px;">
-            ${negDays.map(({r, bal}) => `
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11.5px;cursor:pointer;" onclick="msJumpToDcDetail('${r.id}','${r.date}')">
-                <span style="font-weight:700;">${fmtDateShort(r.date)} — ${r.shopName||shopName(r.shopId)}</span>
-                <span>
-                  ${bal.homeNegative?`<span style="color:var(--bad);">Home ${fmt(bal.afterHome)}</span>`:''}
-                  ${bal.homeNegative && bal.onlineNegative?' · ':''}
-                  ${bal.onlineNegative?`<span style="color:var(--bad);">GPay ${fmt(bal.afterOnline)}</span>`:''}
-                </span>
-              </div>`).join('')}
-          </div>
-        </div>`;
-    } else {
-      banner.style.display = 'none';
-      banner.innerHTML = '';
-    }
-  }
+  if (banner) { banner.style.display = 'none'; banner.innerHTML = ''; }
 }
 
 // Jump from a Monthly Summary negative-balance row straight to that day's Day Close detail modal.
@@ -3207,7 +3340,7 @@ function renderSalesChart() {
     return shopsToShow.reduce((sum, sh) => {
       const rec = activeDC.find(r=>r.date===d&&r.shopId===sh.id);
       if (!rec) return sum;
-      const p = rec.profit != null ? rec.profit : Math.round(((rec.cashHome||0) + (rec.gpay||0)) * (sh.profitPct||40)/100);
+      const p = rec.profit != null ? rec.profit : (sh.id === 'SHOP04' ? ((rec.cashHome||0) + (rec.gpay||0)) : Math.round(((rec.cashHome||0) + (rec.gpay||0)) * (sh.profitPct||40)/100));
       return sum + p;
     }, 0);
   });
@@ -3746,7 +3879,7 @@ function updateDcCalc(shopId) {
 
   // Live profit — auto = sale × profitPct, editable if user overrides
   const sh = STATE.shops.find(s=>s.id===shopId);
-  const autoProfit = Math.round((home + gpay) * (sh?.profitPct||40)/100);
+  const autoProfit = (sh?.id === 'SHOP04') ? (home + gpay) : Math.round((home + gpay) * (sh?.profitPct||40)/100);
   set(`dc-autoprof-${shopId}`, autoProfit);
   const pInp = $(`dc-profit-${shopId}`);
   if (pInp && !pInp.dataset.userEdited) {
@@ -3779,7 +3912,7 @@ function submitDayClose(shopId) {
   const prev    = g(`dc-prev-${shopId}`);
   const sale = home + counter + gpay + exp - prev;
   const sh = STATE.shops.find(s=>s.id===shopId);
-  const autoProfit = Math.round((home + gpay) * (sh?.profitPct||40)/100);
+  const autoProfit = (sh?.id === 'SHOP04') ? (home + gpay) : Math.round((home + gpay) * (sh?.profitPct||40)/100);
   const profitVal  = $(`dc-profit-${shopId}`)?.value;
   const profit     = (profitVal!=='' && profitVal!=null && !isNaN(parseFloat(profitVal))) ? parseFloat(profitVal) : autoProfit;
   const note = $(`dc-note-${shopId}`)?.value?.trim() || '';
@@ -3833,8 +3966,17 @@ function submitDayClose(shopId) {
     // confirm ab galat amount ke against tha.
     // Cash-40% target = 40% of Home Cash (paisa jo ghar le jaate ho) — NOT of total cash sale.
     // Counter cash (galla) is pure shop working capital and is never part of the 60/40 split.
-    const newCashSaveTarget = roundTo100(home * 0.4);
-    const newBankSaveTarget = roundTo100(gpay * 0.4);
+    // Graphics (SHOP04) is order-based — no 40% savings split applies to it, whatever remains
+    // after order costs IS the profit already, nothing further to set aside.
+    // Graphics is order-based — no 40% savings split applies to it, whatever remains
+    // after order costs IS the profit already, nothing further to set aside.
+    const newCashSaveTarget = shopId === 'SHOP04' ? 0 : roundTo100(home * 0.4);
+    const newBankSaveTarget = shopId === 'SHOP04' ? 0 : roundTo100(gpay * 0.4);
+    // If a Graphics cash swap was already confirmed for this entry but the cash amount is now
+    // being edited, undo the old swap first — it was against the old (now-wrong) amount.
+    if (shopId === 'SHOP04' && existing.cashSwapDone && (existing.cashHome||0) !== home) {
+      reverseGraphicsSwap(existing);
+    }
     // Bug 2 fix: If savings was previously confirmed but target changed, delete old savings
     // dailyExpenses linked to this DC and reverse the GPay deduction. Otherwise we'd get
     // duplicate savings expenses when user confirms the new (different) target.
@@ -3873,6 +4015,8 @@ function submitDayClose(shopId) {
     renderDcHistory();
     renderDashboard();
     renderSavingsPendingBanner();
+  renderGraphicsSwapBanner();
+  renderGraphicsSwapHistory();
     if (deltaBits.length) {
       toast(`${shopName(shopId)} Day Close updated — only the difference applied: ${deltaBits.join(', ')}`, 'success');
     } else {
@@ -3889,9 +4033,10 @@ function submitDayClose(shopId) {
     // 40% savings targets for this specific day — tracked per-entry so we can remind
     // separately for cash vs GPay until each is actually confirmed as "set aside".
     // Cash-40% = 40% of Home Cash (paisa jo ghar le jaate ho); galla/counter is untouched.
-    cashSaveTarget: roundTo100(home * 0.4),
-    bankSaveTarget: roundTo100(gpay * 0.4),
-    cashSaveDone: false, bankSaveDone: false
+    cashSaveTarget: shopId === 'SHOP04' ? 0 : roundTo100(home * 0.4),
+    bankSaveTarget: shopId === 'SHOP04' ? 0 : roundTo100(gpay * 0.4),
+    cashSaveDone: false, bankSaveDone: false,
+    cashSwapDone: false, cashSwapToShop: null
   };
   STATE.dayClose.unshift(entry);
   if (sh) {
@@ -3916,6 +4061,8 @@ function submitDayClose(shopId) {
   renderDcHistory();
   renderDashboard();
   renderSavingsPendingBanner();
+  renderGraphicsSwapBanner();
+  renderGraphicsSwapHistory();
   toast(`${shopName(shopId)} Day Close saved (${fmtDate(entryDate)}) — Sale ${fmt(sale)} · Profit ${fmt(profit)}`, 'success');
 
   // Auto-advance to the next shop that still doesn't have an entry for this date,
@@ -4123,8 +4270,14 @@ function setDcEntriesSort(key) {
 // Per-record derived stats: 40% savings split, Home/GP-sourced daily expenses, 40% adjustment, combined Exp/Out
 function computeDcEntryStats(r) {
   const cashSale = (r.sale || 0) - (r.gpay || 0);
-  const cashSavings = roundTo100(cashSale * 0.4);
-  const bankSavings = roundTo100((r.gpay || 0) * 0.4);
+  // BUG FIX: Cash Savings (40%) must be 40% of HOME CASH only (r.cashHome) — same basis as
+  // r.cashSaveTarget, which is what the Savings Pending reminder / confirm system actually
+  // tracks. It must NOT be 40% of total cash sale (home + counter) — counter cash (galla) is
+  // pure shop working capital and was never part of the 60/40 split (see save-entry comment).
+  // Using cashSale here previously made this number permanently larger than what could ever
+  // be confirmed, so "Pending" never reached ₹0 even after confirming everything.
+  const cashSavings = r.cashSaveTarget != null ? r.cashSaveTarget : roundTo100((r.cashHome || 0) * 0.4);
+  const bankSavings = r.bankSaveTarget != null ? r.bankSaveTarget : roundTo100((r.gpay || 0) * 0.4);
   const dayExps = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.shopId === r.shopId && e.date === r.date);
   const homeExp = dayExps.filter(e => e.source === 'HOME').reduce((s, e) => s + (e.amount || 0), 0);
   const gpExp = dayExps.filter(e => e.source === 'GP').reduce((s, e) => s + (e.amount || 0), 0);
@@ -4306,7 +4459,7 @@ function shareDcMonthReport() {
 function openDcDetail(id) {
   const r = STATE.dayClose.find(x=>x.id===id); if(!r) return;
   const sh = STATE.shops.find(s=>s.id===r.shopId);
-  const profit = r.profit != null ? r.profit : Math.round(((r.cashHome||0)+(r.gpay||0)) * (sh?.profitPct||40)/100);
+  const profit = r.profit != null ? r.profit : (sh?.id === 'SHOP04' ? ((r.cashHome||0)+(r.gpay||0)) : Math.round(((r.cashHome||0)+(r.gpay||0)) * (sh?.profitPct||40)/100));
   const s = computeDcEntryStats(r);
   const bal = computeDcBalanceStory(r);
   const anyNegative = bal.homeNegative || bal.onlineNegative;
@@ -4346,7 +4499,7 @@ function openDcDetail(id) {
     </div>
     <div style="margin-top:12px;background:rgba(124,92,252,0.08);border:1px solid rgba(124,92,252,0.2);border-radius:9px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">
       <div>
-        <div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Est. Profit (${sh?.profitPct||40}%)</div>
+        <div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Est. Profit (${sh?.id === 'SHOP04' ? 100 : (sh?.profitPct||40)}%)</div>
         <div class="mono" style="font-size:18px;font-weight:800;color:var(--accent);">${fmt(profit)}</div>
       </div>
       ${r.note?`<div style="font-size:12px;color:var(--muted);max-width:200px;text-align:right;"><i class="fa-solid fa-note-sticky" style="margin-right:4px;"></i>${escHtml(r.note)}</div>`:''}
@@ -4380,6 +4533,7 @@ function deleteDayClose(id) {
     icon:'!',yesText:'Delete',yesCls:'btn-bad',
     onYes:()=>{
       r.deleted = true;
+      if (r.shopId === 'SHOP04' && r.cashSwapDone) reverseGraphicsSwap(r);
       const sh = STATE.shops.find(s=>s.id===r.shopId);
       if (sh) {
         // Extra fix: only reverse gpay from online if it was actually counted in there —
@@ -4397,7 +4551,8 @@ function deleteDayClose(id) {
         }
       }
       auditLog('DELETE_DC', `Soft-deleted DC: ${r.shopName||shopName(r.shopId)} — ${fmtDate(r.date)} — Sale ${fmt(r.sale)} (rollback applied)`);
-      saveStateLocal(); renderDcHistory(); renderDashboard(); initDcForms();
+      saveStateLocal(); renderDcHistory(); renderDashboard(); renderGraphicsSwapBanner();
+  renderGraphicsSwapHistory(); initDcForms();
       toast(`Deleted — balances rolled back. Undo from history.`, 'info');
     }
   });
@@ -6366,8 +6521,7 @@ function deleteHomeExpense(id) {
 
 function renderHomeExpenses() {
   const list = STATE.homeExpenses || [];
-  const now = new Date();
-  const ym = now.toISOString().slice(0,7); // YYYY-MM
+  const ym = todayStr().slice(0,7); // YYYY-MM (local, not UTC)
   const thisMonth = list.filter(e => (e.date||'').startsWith(ym));
   const monthTotal = thisMonth.reduce((s,e)=>s+(e.amount||0),0);
 
@@ -6785,8 +6939,7 @@ function exportPdfReport() {
   const totalUd = STATE.udhaari.filter(u=>u.status==='Active').reduce((s,u)=>s+(u.totalBill-u.received),0);
   const totalLiab = STATE.outflows.filter(o=>o.status==='Pending').reduce((s,o)=>s+(o.amount+o.lateFee-o.paid),0);
   const totHc = STATE.shops.reduce((s,sh)=>s+shopHomeCash(sh.id), 0);
-  const persDrain = personalWalletDrain();
-  const personalWallet = Math.max(0, totHc - persDrain);
+  const personalWallet = Math.max(0, totHc); // PERSONAL expenses are an outside source, not shop cash — not subtracted
   const pendLoanAmt = STATE.loans.filter(l=>l.status==='Pending').reduce((s,l)=>s+(l.amount-l.repaid),0);
   const confirmedSavings = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.desc && e.desc.startsWith('Savings (40%')).reduce((s, e) => s + (e.amount || 0), 0);
   const netPos = personalWallet + totalOnlineGross + totalUd - totalLiab - pendLoanAmt + confirmedSavings;
@@ -7235,8 +7388,7 @@ function buildDailySummary() {
   const totalLiab = STATE.outflows.filter(o=>o.status==='Pending').reduce((s,o)=>s+(o.amount+o.lateFee-o.paid),0);
   const pendLoanAmt = STATE.loans.filter(l=>l.status==='Pending').reduce((s,l)=>s+(l.amount-l.repaid),0);
   const totHc = STATE.shops.reduce((s,sh)=>s+shopHomeCash(sh.id), 0);
-  const persDrain = personalWalletDrain();
-  const personalWallet = Math.max(0, totHc - persDrain);
+  const personalWallet = Math.max(0, totHc); // PERSONAL expenses are an outside source, not shop cash — not subtracted
   const confirmedSavings = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.desc && e.desc.startsWith('Savings (40%')).reduce((s, e) => s + (e.amount || 0), 0);
   const cashSavingsToday = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.date === today && e.desc && e.desc.startsWith('Savings (40%') && e.source === 'HOME').reduce((s, e) => s + (e.amount || 0), 0);
   const bankSavingsToday = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.date === today && e.desc && e.desc.startsWith('Savings (40%') && e.source === 'GP').reduce((s, e) => s + (e.amount || 0), 0);
@@ -7258,7 +7410,7 @@ function buildDailySummary() {
       msg += `- Counter cash kept: ${nf(dc.counterCash)}\n`;
       msg += `- GPay / Online: ${nf(dc.gpay)}\n`;
       msg += `- Counter expenses: ${nf(dc.expense)}\n`;
-      const profit = dc.profit != null ? dc.profit : Math.round(((dc.cashHome||0)+(dc.gpay||0))*(sh.profitPct||40)/100);
+      const profit = dc.profit != null ? dc.profit : (sh.id === 'SHOP04' ? ((dc.cashHome||0)+(dc.gpay||0)) : Math.round(((dc.cashHome||0)+(dc.gpay||0))*(sh.profitPct||40)/100));
       msg += `- Sale: ${nf(dc.sale)}   ||   Profit: ${nf(profit)}\n`;
     } else {
       msg += `_No Entries_\n`;
@@ -7300,7 +7452,7 @@ function buildShopDailySummary(shopId, dateStr) {
   if (dc) {
     m += `*Day Close*\n`;
     m += `Sale : ${nf(dc.sale)}\n`;
-    m += `Profit : ${nf(dc.profit != null ? dc.profit : Math.round(((dc.cashHome||0)+(dc.gpay||0))*(sh.profitPct||40)/100))}\n\n`;
+    m += `Profit : ${nf(dc.profit != null ? dc.profit : (sh.id === 'SHOP04' ? ((dc.cashHome||0)+(dc.gpay||0)) : Math.round(((dc.cashHome||0)+(dc.gpay||0))*(sh.profitPct||40)/100)))}\n\n`;
     m += `Cash Home : ${nf(dc.cashHome)}\n`;
     m += `Counter : ${nf(dc.counterCash)}\n`;
     m += `GPay : ${nf(dc.gpay)}\n\n`;
@@ -7454,7 +7606,7 @@ function removeWaContact(idx) {
 let _heDonut = null;
 function renderHomeExpenseDonut() {
   const canvas = $('he-donut'); if (!canvas || typeof Chart === 'undefined') return;
-  const ym = new Date().toISOString().slice(0,7);
+  const ym = todayStr().slice(0,7);
   const monthList = (STATE.homeExpenses||[]).filter(e => (e.date||'').startsWith(ym));
   if (_heDonut) { _heDonut.destroy(); _heDonut = null; }
   if (!monthList.length) {
@@ -7844,6 +7996,47 @@ async function pushToSheetNow() {
   STATE.lastSyncAt = new Date().toISOString();
   await fetch(url, {method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'save', data: STATE})});
   localStorage.setItem('jmd_state', JSON.stringify(STATE));
+}
+
+// ─── Delete Day Close entries for a single month (permanent, Day Close only) ─────
+// Unlike Selective Reset (which wipes Day Close + Home/Daily Expenses + InterShop +
+// Reminders + Audit + zeroes shop balances), this ONLY removes Day Close rows for the
+// chosen month — everything else (balances, other data) is left exactly as-is.
+function promptDeleteDcMonth() {
+  showPrompt(
+    'Delete Day Close (One Month)',
+    'Enter the month to permanently delete Day Close entries for, in YYYY-MM format (e.g. 2026-07). Only Day Close rows for that month are removed — nothing else is touched.',
+    'e.g. 2026-07', '',
+    function(monthStr) {
+      monthStr = (monthStr || '').trim();
+      if (!/^\d{4}-\d{2}$/.test(monthStr)) { toast('Invalid format — use YYYY-MM (e.g. 2026-07)', 'error'); return; }
+      const count = STATE.dayClose.filter(r => !r.deleted && (r.date||'').startsWith(monthStr)).length;
+      if (count === 0) { toast(`No Day Close entries found for ${monthStr}`, 'error'); return; }
+      showPrompt(
+        `Confirm Delete — ${count} entries`,
+        `Type DELETE ${monthStr} to permanently remove all ${count} Day Close entries for ${monthStr}. This cannot be undone.`,
+        `DELETE ${monthStr}`, '',
+        function(confirmText) {
+          if (confirmText === `DELETE ${monthStr}`) deleteDayCloseForMonth(monthStr);
+          else toast('Delete cancelled — text did not match', 'error');
+        }
+      );
+    }
+  );
+}
+async function deleteDayCloseForMonth(monthStr) {
+  const before = STATE.dayClose.length;
+  // Any Graphics swap tied to a deleted entry must be reversed first, or the shops
+  // it moved money to/from would be left holding balances with no matching record.
+  STATE.dayClose.filter(r => r.shopId === 'SHOP04' && r.cashSwapDone && (r.date||'').startsWith(monthStr))
+    .forEach(r => reverseGraphicsSwap(r));
+  STATE.dayClose = STATE.dayClose.filter(r => !(r.date||'').startsWith(monthStr));
+  const removed = before - STATE.dayClose.length;
+  localStorage.setItem('jmd_state', JSON.stringify(STATE));
+  auditLog('DELETE_DC_MONTH', `Permanently deleted ${removed} Day Close entries for ${monthStr}`);
+  toast(`${removed} Day Close entries for ${monthStr} permanently deleted`, 'success');
+  try { await pushToSheetNow(); } catch(e) {}
+  location.reload();
 }
 
 function downloadBackup() {
