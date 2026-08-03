@@ -1591,7 +1591,7 @@ html,body{overflow-x:hidden;max-width:100%;}
           <h3><i class="fa-solid fa-trash"></i> Danger Zone</h3>
           <button class="btn btn-ghost btn-sm" onclick="downloadBackup()" style="margin-right:8px;"><i class="fa-solid fa-download" style="margin-right:4px;"></i>Download JSON Backup</button>
           <button class="btn btn-bad btn-sm" style="margin-right:8px;" onclick="promptDeleteDcMonth()"><i class="fa-solid fa-calendar-xmark" style="margin-right:4px;"></i>Delete Day Close (One Month)</button>
-          <button class="btn btn-bad btn-sm" style="margin-right:8px;" onclick="showPrompt('Selective Reset','Type RESET DC to confirm. This will delete Day Close, Home Expenses, Daily Expenses, InterShop, Reminders, Audit Log — and reset shop balances (Galla/Online/Home Transfer) to 0. Market Credit, Outflows and Loans will NOT be touched.','Type RESET DC','',function(v){if(v==='RESET DC')selectiveReset();else toast('Reset cancelled — text did not match','error');})"><i class="fa-solid fa-rotate-left" style="margin-right:4px;"></i>Selective Reset (Keep Credit/Loans)</button>
+          <button class="btn btn-bad btn-sm" style="margin-right:8px;" onclick="showPrompt('Selective Reset','Type RESET DC to confirm. This will delete Day Close, Daily Expenses, InterShop, Audit Log — and reset shop balances (Galla/Online/Home Transfer) to 0. Home Expenses, Reminders, Market Credit, Outflows and Loans will NOT be touched.','Type RESET DC','',function(v){if(v==='RESET DC')selectiveReset();else toast('Reset cancelled — text did not match','error');})"><i class="fa-solid fa-rotate-left" style="margin-right:4px;"></i>Selective Reset (Keep Home Exp/Reminders/Credit/Loans)</button>
           <button class="btn btn-bad btn-sm" onclick="showPrompt('Reset All Data','Type RESET JMD to confirm. This will delete ALL data including the shared Google Sheet.','Type RESET JMD','',function(v){if(v==='RESET JMD')resetAll();else toast('Reset cancelled — text did not match','error');})">Reset All Data</button>
         </div>
       </div>
@@ -7970,20 +7970,19 @@ async function resetAll() {
   location.reload();
 }
 
-// Selective Reset: clears Day Close, Home/Daily Expenses, InterShop, Reminders, Audit
-// and zeroes out shop balances (galla/online/homeTransfer) — but KEEPS Market Udhaari
-// (credit), Outflows and Loans untouched, since those need to carry forward.
+// Selective Reset: clears Day Close, Daily Expenses, InterShop, Audit
+// and zeroes out shop balances (galla/online/homeTransfer) — but KEEPS Home Expenses,
+// Reminders, Market Udhaari (credit), Outflows and Loans untouched, since those need
+// to carry forward.
 async function selectiveReset() {
   STATE.dayClose = [];
-  STATE.homeExpenses = [];
   STATE.dailyExpenses = [];
   STATE.intershop = [];
-  STATE.reminders = [];
   STATE.audit = [];
   (STATE.shops || []).forEach(sh => { sh.galla = 0; sh.online = 0; sh.homeTransfer = 0; });
-  // udhaari, outflows, loans are deliberately left untouched
+  // homeExpenses, reminders, udhaari, outflows, loans are deliberately left untouched
   localStorage.setItem('jmd_state', JSON.stringify(STATE));
-  toast('Selective reset done — Credit/Outflows/Loans preserved', 'success');
+  toast('Selective reset done — Home Expenses/Reminders/Credit/Outflows/Loans preserved', 'success');
   try { await pushToSheetNow(); } catch(e) {}
   location.reload();
 }
@@ -7999,9 +7998,9 @@ async function pushToSheetNow() {
 }
 
 // ─── Delete Day Close entries for a single month (permanent, Day Close only) ─────
-// Unlike Selective Reset (which wipes Day Close + Home/Daily Expenses + InterShop +
-// Reminders + Audit + zeroes shop balances), this ONLY removes Day Close rows for the
-// chosen month — everything else (balances, other data) is left exactly as-is.
+// Unlike Selective Reset (which wipes Day Close + Daily Expenses + InterShop +
+// Audit + zeroes shop balances, keeping Home Expenses/Reminders safe), this ONLY
+// removes Day Close rows for the chosen month — everything else is left exactly as-is.
 function promptDeleteDcMonth() {
   showPrompt(
     'Delete Day Close (One Month)',
