@@ -7433,73 +7433,106 @@ function buildDailySummary() {
 }
 
 // Build a per-shop daily summary message
+// Per-shop WhatsApp summary — Day Close block styled like shareDcDayReport()
+// ("JMD SHOPNAME" header, Cash in Counter/To Home/GPay Sale/Today's Sale,
+// itemized EXPENSES with (C)/(H)/(GP) tags, Today's Savings, Till Date Summary),
+// PLUS this function's own extra sections (New Credit, Outflows, Loans,
+// Inter-shop, Pending Reminders) that shareDcDayReport() doesn't cover.
 function buildShopDailySummary(shopId, dateStr) {
   const sh = STATE.shops.find(s => s.id === shopId);
   if (!sh) return '';
   const d = dateStr || todayStr();
-  const nf = n => { const v = parseFloat(n)||0; return (v<0?'-':'') + 'Rs ' + Math.abs(v).toLocaleString('en-IN'); };
+  const DIVIDER = '──────────────────────';
   const dc = STATE.dayClose.find(r => r.shopId===shopId && r.date===d && !r.deleted);
-  const items = STATE.dailyExpenses.filter(e => e.shopId===shopId && e.date===d && !e.deleted);
+
+  let m = `*${sh.name.toUpperCase()} (${shopShortCode(shopId)})*\n`;
+  m += `*Date: ${fmtDateOrdinalFull(d)}*\n`;
+  m += `${DIVIDER}\n`;
+
+  if (dc) {
+    const s = computeDcEntryStats(dc);
+    const dayExps = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.shopId===shopId && e.date===d);
+
+    m += `*• Cash in Counter : ${fmt(dc.counterCash)}*\n`;
+    m += `*• To Home : ${fmt(dc.cashHome)}*\n`;
+    m += `*• GPay Sale : ${fmt(dc.gpay)}*\n`;
+    m += `> *• Today's Sale : ${fmt(dc.sale)}*\n`;
+    // Profit isn't part of the JMD-style template, but kept as a plain (unbolded)
+    // line so this number isn't lost from the older summary.
+    const profit = dc.profit != null ? dc.profit : (sh.id === 'SHOP04' ? ((dc.cashHome||0)+(dc.gpay||0)) : Math.round(((dc.cashHome||0)+(dc.gpay||0))*(sh.profitPct||40)/100));
+    m += `Profit : ${fmt(profit)}\n`;
+
+    if (dayExps.length) {
+      m += `\n*EXPENSES*\n`;
+      m += dayExps.map(e => `${e.desc} (${DE_SOURCE_TAG[e.source] || '?'}) : ${fmtNum(e.amount)} /-`).join('\n') + `\n`;
+    }
+
+    const hcParts = [];
+    if (s.homeExp > 0) hcParts.push(`Home Exp : ${fmt(s.homeExp)}`);
+    if ((dc.expense || 0) > 0) hcParts.push(`Counter Exp : ${fmt(dc.expense)}`);
+    if (hcParts.length || s.gpExp > 0) m += `\n`;
+    if (hcParts.length) m += `*• ${hcParts.join(' / ')}*\n`;
+    if (s.gpExp > 0) m += `*• GPay Exp : ${fmt(s.gpExp)}*\n`;
+    if (dc.note) m += `Note: ${dc.note}\n`;
+
+    m += `\n*_Today's Savings_*\n`;
+    m += `*_• Cash (40%) : ${fmt(s.cashSavings)}_*\n`;
+    m += `*_• Bank (40%) : ${fmt(s.bankSavings)}_*\n`;
+
+    // Till-date running totals for this shop, as of this record's date
+    const priorRecords = STATE.dayClose.filter(x => !x.deleted && x.shopId===shopId && x.date <= d);
+    const totalCashSavings = priorRecords.reduce((sum,x)=>sum+(x.cashSaveTarget||0),0);
+    const totalBankSavings = priorRecords.reduce((sum,x)=>sum+(x.bankSaveTarget||0),0);
+    const broughtTillDate = priorRecords.reduce((sum,x)=>sum+(x.cashHome||0),0);
+    const spentTillDate = (STATE.dailyExpenses||[]).filter(e=>!e.deleted && e.shopId===shopId && e.source==='HOME' && e.date<=d).reduce((sum,e)=>sum+(e.amount||0),0);
+    const homeXfer = (sh.homeTransfer||0);
+    const homeCashBalanceTillDate = broughtTillDate - spentTillDate - homeXfer;
+
+    m += `\n${DIVIDER}\n`;
+    m += `*Till Date Summary (${sh.name})*\n`;
+    m += `> *• Total Cash Savings : ${fmt(totalCashSavings)}*\n`;
+    m += `> *• Total Bank Savings : ${fmt(totalBankSavings)}*\n`;
+    m += `> *• Home Cash Balance : ${fmt(homeCashBalanceTillDate)}*\n`;
+  } else {
+    m += `_Day Close pending_\n`;
+  }
+
+  // Extra sections beyond Day Close — new activity for this shop/date
   const udhaariNew = STATE.udhaari.filter(u => u.shopId===shopId && u.date===d);
   const outNew = STATE.outflows.filter(o => o.shopId===shopId && o.dueDate===d);
   const loanNew = STATE.loans.filter(l => l.shopId===shopId && l.date===d);
   const isNew = STATE.intershop.filter(i => (i.fromShop===shopId || i.toShop===shopId) && i.date===d);
   const remPending = (STATE.reminders||[]).filter(r => daysUntil(r.dueDate) <= 3);
 
-  let m = `*${sh.name}* — ${fmtDate(d)}\n`;
-  m += `━━━━━━━━━━━━━━━\n`;
-
-  if (dc) {
-    m += `*Day Close*\n`;
-    m += `Sale : ${nf(dc.sale)}\n`;
-    m += `Profit : ${nf(dc.profit != null ? dc.profit : (sh.id === 'SHOP04' ? ((dc.cashHome||0)+(dc.gpay||0)) : Math.round(((dc.cashHome||0)+(dc.gpay||0))*(sh.profitPct||40)/100)))}\n\n`;
-    m += `Cash Home : ${nf(dc.cashHome)}\n`;
-    m += `Counter : ${nf(dc.counterCash)}\n`;
-    m += `GPay : ${nf(dc.gpay)}\n\n`;
-    m += `Expenses: ${nf(dc.expense)}\n`;
-    if (dc.note) m += `Note: ${dc.note}\n`;
-  } else {
-    m += `Day Close pending\n`;
-  }
-
-  // {DETAILS} section
-  let details = '';
-  if (items.length) {
-    details += `\n*Expenses (${items.length})*\n`;
-    items.forEach(e => details += `• ${e.desc} — ${nf(e.amount)} (${DE_SOURCE_LABEL[e.source]||e.source})\n`);
-  }
-
+  let extra = '';
   if (udhaariNew.length) {
-    details += `\n*New Credit*\n`;
-    udhaariNew.forEach(u => details += `• ${u.customer}: ${nf(u.totalBill)}\n`);
+    extra += `\n*New Credit*\n`;
+    udhaariNew.forEach(u => extra += `• ${u.customer}: ${fmt(u.totalBill)}\n`);
   }
-
   if (outNew.length) {
-    details += `\n*Outflows*\n`;
-    outNew.forEach(o => details += `• ${o.payee} (${o.category}): ${nf(o.amount)}\n`);
+    extra += `\n*Outflows*\n`;
+    outNew.forEach(o => extra += `• ${o.payee} (${o.category}): ${fmt(o.amount)}\n`);
   }
-
   if (loanNew.length) {
-    details += `\n*Loans*\n`;
-    loanNew.forEach(l => details += `• ${l.from}: ${nf(l.amount)} — ${l.purpose||''}\n`);
+    extra += `\n*Loans*\n`;
+    loanNew.forEach(l => extra += `• ${l.from}: ${fmt(l.amount)} — ${l.purpose||''}\n`);
   }
-
   if (isNew.length) {
-    details += `\n*Inter-shop*\n`;
-    isNew.forEach(i => details += `• ${shopName(i.fromShop)} → ${shopName(i.toShop)}: ${nf(i.amount)}\n`);
+    extra += `\n*Inter-shop*\n`;
+    isNew.forEach(i => extra += `• ${shopName(i.fromShop)} → ${shopName(i.toShop)}: ${fmt(i.amount)}\n`);
   }
-
   if (remPending.length) {
-    details += `\n*Pending Reminders*\n`;
+    extra += `\n*Pending Reminders*\n`;
     remPending.slice(0, 3).forEach(r => {
       const du = daysUntil(r.dueDate);
       const label = du === 0 ? 'due today' : du < 0 ? `${Math.abs(du)}d overdue` : `in ${du}d`;
-      details += `• ${r.name} — ${nf(r.amount)} (${label})\n`;
+      extra += `• ${r.name} — ${fmt(r.amount)} (${label})\n`;
     });
   }
 
-  m += details;
-  m += `━━━━━━━━━━━━━\n`;
+  if (extra) m += `\n${DIVIDER}\n` + extra;
+
+  m += `\n${DIVIDER}\n`;
   m += `_Sent from JMD Traders Software_`;
   return m.trim();
 }
