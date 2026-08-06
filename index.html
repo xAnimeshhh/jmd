@@ -1091,8 +1091,12 @@ html,body{overflow-x:hidden;max-width:100%;}
 
         <!-- Shop matrix -->
         <div class="card" style="margin-bottom:18px;overflow:auto;">
-          <div style="padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;">
-            <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;">Shop Balances <span style="font-size:10px;font-weight:400;margin-left:6px;">(dbl-click to edit)</span></div>
+          <div style="padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+            <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;">Shop Balances <span style="font-size:10px;font-weight:400;margin-left:6px;" id="shop-bal-hint">(dbl-click to edit)</span></div>
+            <div class="ms-mode-toggle" id="shop-bal-period-toggle">
+              <button type="button" class="ms-mode-btn on" data-period="all" onclick="setShopBalPeriod('all')">All Time</button>
+              <button type="button" class="ms-mode-btn" data-period="month" onclick="setShopBalPeriod('month')">This Month</button>
+            </div>
           </div>
           <table class="shop-table">
             <thead><tr>
@@ -1255,7 +1259,16 @@ html,body{overflow-x:hidden;max-width:100%;}
         </div>
 
         <!-- Performance Tracker -->
-        <div class="section-hd"><h2><i class="fa-solid fa-chart-bar" style="margin-right:5px;"></i>Shop Performance</h2></div>
+        <div class="section-hd" style="flex-wrap:wrap;gap:8px;">
+          <h2><i class="fa-solid fa-chart-bar" style="margin-right:5px;"></i>Shop Performance</h2>
+          <div style="display:flex;gap:6px;" id="perf-period-toggle">
+            <button class="filter-btn" data-period="today" onclick="setPerfPeriod('today')">Daily</button>
+            <button class="filter-btn" data-period="week" onclick="setPerfPeriod('week')">Weekly</button>
+            <button class="filter-btn on" data-period="month" onclick="setPerfPeriod('month')">Monthly</button>
+            <button class="filter-btn" data-period="year" onclick="setPerfPeriod('year')">Yearly</button>
+            <button class="filter-btn" data-period="all" onclick="setPerfPeriod('all')">All Time</button>
+          </div>
+        </div>
         <div class="cards-grid" id="perf-grid"></div>
       </div>
 
@@ -1614,6 +1627,8 @@ html,body{overflow-x:hidden;max-width:100%;}
         <div class="settings-section">
           <h3><i class="fa-solid fa-trash"></i> Danger Zone</h3>
           <button class="btn btn-ghost btn-sm" onclick="downloadBackup()" style="margin-right:8px;"><i class="fa-solid fa-download" style="margin-right:4px;"></i>Download JSON Backup</button>
+          <button class="btn btn-ghost btn-sm" onclick="triggerRestoreBackup()" style="margin-right:8px;"><i class="fa-solid fa-upload" style="margin-right:4px;"></i>Restore JSON Backup</button>
+          <input type="file" id="restore-file-inp" accept="application/json" style="display:none;" onchange="restoreBackupFromFile(this)">
           <button class="btn btn-bad btn-sm" style="margin-right:8px;" onclick="promptDeleteDcMonth()"><i class="fa-solid fa-calendar-xmark" style="margin-right:4px;"></i>Delete Day Close (One Month)</button>
           <button class="btn btn-bad btn-sm" style="margin-right:8px;" onclick="showPrompt('Selective Reset','Type RESET DC to confirm. This will delete Day Close, Daily Expenses, InterShop, Audit Log — and reset shop balances (Galla/Online/Home Transfer) to 0. Home Expenses, Reminders, Market Credit, Outflows and Loans will NOT be touched.','Type RESET DC','',function(v){if(v==='RESET DC')selectiveReset();else toast('Reset cancelled — text did not match','error');})"><i class="fa-solid fa-rotate-left" style="margin-right:4px;"></i>Selective Reset (Keep Home Exp/Reminders/Credit/Loans)</button>
           <button class="btn btn-bad btn-sm" onclick="showPrompt('Reset All Data','Type RESET JMD to confirm. This will delete ALL data including the shared Google Sheet.','Type RESET JMD','',function(v){if(v==='RESET JMD')resetAll();else toast('Reset cancelled — text did not match','error');})">Reset All Data</button>
@@ -2040,6 +2055,9 @@ html,body{overflow-x:hidden;max-width:100%;}
   <div class="modal-box">
     <div class="modal-title" id="reminder-modal-title">Add Fixed Payment Reminder <button class="modal-close" onclick="closeModal(&#39;modal-add-reminder&#39;)">×</button></div>
     <input type="hidden" id="rem-id">
+    <input type="hidden" id="rem-linked-from">
+    <input type="hidden" id="rem-linked-shop">
+    <div id="rem-linked-note" style="display:none;font-size:11px;color:var(--accent);background:rgba(124,92,252,0.08);border:1px solid rgba(124,92,252,0.25);border-radius:7px;padding:7px 10px;margin-bottom:10px;"><i class="fa-solid fa-link" style="margin-right:5px;"></i>Linked to this loan — paying it off (fully or partly) here or from the Loans tab will keep both in sync and auto-clear this reminder once fully repaid.</div>
     <div class="fg"><div class="lbl">Payment Name</div><input class="inp" id="rem-name" placeholder="e.g. HDFC EMI, Shop Rent, Netflix"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       <div class="fg"><div class="lbl">Category</div>
@@ -2167,7 +2185,7 @@ html,body{overflow-x:hidden;max-width:100%;}
 // The Settings URL field will be hidden/locked automatically.
 //
 // Leave empty if each user should manually enter the URL in Settings.
-const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbyWyKt_kjhbpHFLxe0WIaW9GF7rTUN0VXn2pN76YB0KJRhPZv8F2oyAHVl34FHNOs5X/exec'
+const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbzcqu43djuAIYPts3hjFaGFRZ9LX2StxWCxtvrobn49Jv8Xw3WX2HC4IqmbO_Dczb8N/exec'
 // ═══════════════════════════════════════════════════════════════════
 
 // ─── Initial State ──────────────────────────────────────────────
@@ -2324,31 +2342,6 @@ function shopColor(id) {
   return colors[id] || '#8888a8';
 }
 
-// ─── Chip Group Helpers (Modern selectors) ───────────────────
-function shopChips(groupId, defaultValue, opts) {
-  opts = opts || {};
-  const list = STATE.shops.map(s => ({ value: s.id, label: s.name, color: shopColor(s.id) }));
-  if (opts.includeGeneral) list.push({ value: 'GENERAL', label: 'General', color: '#8888a8' });
-  if (opts.includePersonal) list.unshift({ value: 'PERSONAL', label: 'Personal', color: '#a1a1aa' });
-  return `<div class="chip-group chip-shops" id="${groupId}" data-value="${defaultValue||''}">
-    ${list.map(o => `<button type="button" class="chip-tile ${o.value===defaultValue?'active':''}" data-value="${o.value}" onclick="chipPick('${groupId}','${o.value}'${opts.onChange?`,'${opts.onChange}'`:''})">
-      <span class="chip-dot" style="background:${o.color};"></span>${o.label}
-    </button>`).join('')}
-  </div>`;
-}
-
-function modeChips(groupId, defaultValue, options, extraCls) {
-  const opts = options || [
-    { value:'Cash', label:'Cash', icon:'fa-money-bill-wave' },
-    { value:'GPay', label:'GPay', icon:'fa-mobile-screen' }
-  ];
-  return `<div class="chip-group ${extraCls||''}" id="${groupId}" data-value="${defaultValue||opts[0].value}">
-    ${opts.map(o => `<button type="button" class="chip-tile ${o.value===defaultValue?'active':''}" data-value="${o.value}" onclick="chipPick('${groupId}','${o.value}')">
-      ${o.icon?`<i class="fa-solid ${o.icon}"></i>`:''}${o.label}
-    </button>`).join('')}
-  </div>`;
-}
-
 function chipPick(groupId, value, onChange) {
   const g = $(groupId);
   if (!g) return;
@@ -2357,7 +2350,6 @@ function chipPick(groupId, value, onChange) {
   if (onChange && typeof window[onChange] === 'function') window[onChange]();
 }
 function chipValue(groupId) { return $(groupId)?.dataset?.value || ''; }
-function chipSet(groupId, value) { chipPick(groupId, value); }
 
 function isOverdue(u) { return u.status==='Active' && u.dueDate && u.dueDate < todayStr(); }
 function isOutflowOverdue(o) { return o.status==='Pending' && o.dueDate && o.dueDate < todayStr(); }
@@ -2797,6 +2789,13 @@ function shopHomeReserved(shopId) {
 function shopSpendableHomeCash(shopId) {
   return Math.max(0, shopHomeCash(shopId) - shopHomeReserved(shopId));
 }
+// DISPLAY-ONLY variant — never floors at 0. A shop that has genuinely gone negative (spent more
+// Home Cash than it ever brought in) needs to actually SHOW that negative number in red, not a
+// misleading ₹0 that hides the deficit and makes table totals not match the Hero Net Position
+// (which is computed by summing the true per-shop figures first, then clamping once at the end).
+function shopSpendableHomeCashRaw(shopId) {
+  return shopHomeCash(shopId) - shopHomeReserved(shopId);
+}
 // GPay/Bank-40%: confirming it DOES really subtract from sh.online (see confirmSavingsDone).
 // Once confirmed, that money is already gone from sh.online — no need to reserve it again.
 // Only *pending* (not yet confirmed) bank targets still need reserving.
@@ -2809,6 +2808,12 @@ function shopSpendableOnline(shopId) {
   const sh = STATE.shops.find(s=>s.id===shopId);
   if (!sh) return 0;
   return Math.max(0, (sh.online||0) - shopOnlineReserved(shopId));
+}
+// DISPLAY-ONLY variant — never floors at 0, for the same reason as shopSpendableHomeCashRaw above.
+function shopSpendableOnlineRaw(shopId) {
+  const sh = STATE.shops.find(s=>s.id===shopId);
+  if (!sh) return 0;
+  return (sh.online||0) - shopOnlineReserved(shopId);
 }
 
 // ─── Shared "would go negative" balance guard ───────────────────────────────
@@ -2850,6 +2855,41 @@ function investorSuggestedDailyReserve(inv) {
   return Math.ceil(remaining / daysLeft);
 }
 function activeInvestors() { return (STATE.investors || []).filter(i => i.status === 'Active'); }
+
+// ─── Shop Balances table: All-Time vs This-Month toggle ─────────────────────
+// 'all'   = current running/opening-balance totals (dbl-click editable, can be clamped-off negative)
+// 'month' = this month's flow ONLY (same underlying formula as Monthly Summary's Home/Bank figures,
+//           for the same month it's currently showing), so the two sections become directly
+//           comparable. Month mode is a computed/derived figure — not an opening balance — so
+//           dbl-click editing is disabled for it (editing only makes sense for the all-time total).
+let _shopBalPeriod = 'all';
+function setShopBalPeriod(period) {
+  _shopBalPeriod = period;
+  document.querySelectorAll('#shop-bal-period-toggle .ms-mode-btn').forEach(btn => {
+    btn.classList.toggle('on', btn.dataset.period === period);
+  });
+  const hint = $('shop-bal-hint');
+  if (hint) hint.textContent = period === 'month' ? '(this month\'s flow — read-only)' : '(dbl-click to edit)';
+  renderDashboard();
+}
+// This month's Home Cash actually brought home for one shop, net of HOME-source itemized
+// expenses — identical formula to Monthly Summary's "actualHome", just scoped to a single shop
+// and NOT floored at 0 (so it can go negative/red here too, same as the all-time raw variant).
+function shopMonthHomeCashRaw(shopId) {
+  const ym = msTargetYm();
+  const recs = (STATE.dayClose || []).filter(r => !r.deleted && r.shopId === shopId && (r.date || '').slice(0, 7) === ym);
+  const homeExps = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.shopId === shopId && (e.date || '').slice(0, 7) === ym && e.source === 'HOME');
+  return recs.reduce((s, r) => s + (r.cashHome || 0), 0) - homeExps.reduce((s, e) => s + (e.amount || 0), 0);
+}
+// This month's GPay actually received for one shop, net of GP-source itemized expenses —
+// identical formula to Monthly Summary's "actualBank", scoped to a single shop.
+function shopMonthOnlineRaw(shopId) {
+  const ym = msTargetYm();
+  const recs = (STATE.dayClose || []).filter(r => !r.deleted && r.shopId === shopId && (r.date || '').slice(0, 7) === ym);
+  const gpExps = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.shopId === shopId && (e.date || '').slice(0, 7) === ym && e.source === 'GP');
+  const gpaySale = recs.reduce((s, r) => s + (r.gpay || 0), 0);
+  return gpaySale - gpExps.reduce((s, e) => s + (e.amount || 0), 0);
+}
 
 function renderDashboard() {
   // Spendable = gross minus whatever's reserved for 40% savings (not yet actually removed from
@@ -2897,18 +2937,36 @@ function renderDashboard() {
     return shopHomeCash(id) + (sh?sh.online:0) + shopUd(id) + shopConfirmedSavings(id) - shopLiab(id) - shopLoanPending(id);
   };
 
+  const isMonthPeriod = _shopBalPeriod === 'month';
+  const monthYm = isMonthPeriod ? msTargetYm() : null;
   let tbody = '';
   STATE.shops.forEach(sh => {
     const net = shopNet(sh.id);
-    const hc  = shopSpendableHomeCash(sh.id);
+    // All-Time = spendable running total (gross minus 40%-reserve — a lifetime concept).
+    // This-Month = raw month-only flow (same formula as Monthly Summary), no reserve subtraction,
+    // since 40%-reserve tracking only makes sense against the lifetime running balance.
+    const hc  = isMonthPeriod ? shopMonthHomeCashRaw(sh.id) : shopSpendableHomeCashRaw(sh.id);
+    const gp  = isMonthPeriod ? shopMonthOnlineRaw(sh.id)   : shopSpendableOnlineRaw(sh.id);
     const loanBorrowed = shopLoanBorrowed(sh.id);
     const loanRepaid = shopLoanRepaid(sh.id);
     const loanPending = shopLoanPending(sh.id);
+    // dbl-click editing an "opening balance" only makes sense for the all-time running total —
+    // disabled in Month mode since that figure is a computed monthly flow, not a stored balance.
+    const hcAttr = isMonthPeriod ? '' : ` ondblclick="inlineEditHomeCash(this,'${sh.id}',${shopHomeCash(sh.id)})"`;
+    const gpAttr = isMonthPeriod ? '' : ` ondblclick="inlineEdit(this,'${sh.id}','online',${sh.online})"`;
+    const hcCls  = isMonthPeriod ? 'mono' : 'mono editable-cell';
+    const gpCls  = isMonthPeriod ? 'mono' : 'mono editable-cell';
+    const hcTitle = isMonthPeriod
+      ? `This month (${monthYm}) Home Cash brought home, net of Home-source expenses — read-only`
+      : `Spendable Home Cash (gross ${fmt(shopHomeCash(sh.id))} minus ${fmt(shopHomeReserved(sh.id))} reserved for 40% cash-savings) — dbl-click to set opening balance`;
+    const gpTitle = isMonthPeriod
+      ? `This month (${monthYm}) GPay received, net of GP-source expenses — read-only`
+      : `Spendable GPay (gross ${fmt(sh.online)} minus ${fmt(shopOnlineReserved(sh.id))} reserved for pending 40% bank-savings) — dbl-click to edit gross`;
     tbody += `<tr>
       <td><span style="display:inline-flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:${shopColor(sh.id)};"></span><strong>${sh.name}</strong></span></td>
-      <td><span class="mono editable-cell" style="color:var(--accent);" ondblclick="inlineEditHomeCash(this,'${sh.id}',${shopHomeCash(sh.id)})" title="Spendable Home Cash (gross ${fmt(shopHomeCash(sh.id))} minus ${fmt(shopHomeReserved(sh.id))} reserved for 40% cash-savings) — dbl-click to set opening balance">${fmt(hc)}</span></td>
+      <td><span class="${hcCls}" style="color:${hc<0?'var(--bad)':'var(--accent)'};"${hcAttr} title="${hcTitle}">${fmtSigned(hc)}</span></td>
       <td><span class="mono editable-cell" style="color:var(--muted);font-size:11.5px;" ondblclick="inlineEdit(this,'${sh.id}','galla',${sh.galla})" title="Working capital in counter (opening balance for next day) — dbl-click to edit">${fmt(sh.galla)}</span></td>
-      <td><span class="mono editable-cell" ondblclick="inlineEdit(this,'${sh.id}','online',${sh.online})" title="Spendable GPay (gross ${fmt(sh.online)} minus ${fmt(shopOnlineReserved(sh.id))} reserved for pending 40% bank-savings) — dbl-click to edit gross">${fmt(shopSpendableOnline(sh.id))}</span></td>
+      <td><span class="${gpCls}" style="color:${gp<0?'var(--bad)':'inherit'};"${gpAttr} title="${gpTitle}">${fmtSigned(gp)}</span></td>
       <td><span class="mono" style="color:var(--warn);">${fmt(shopUd(sh.id))}</span></td>
       <td><span class="mono" style="color:var(--bad);">${fmt(shopLiab(sh.id))}</span></td>
       <td><span class="mono" style="color:var(--bad);font-size:10px;" title="Borrowed: ${fmt(loanBorrowed)}, Repaid: ${fmt(loanRepaid)}">${fmt(loanBorrowed)} / ${fmt(loanRepaid)}</span></td>
@@ -2916,7 +2974,14 @@ function renderDashboard() {
     </tr>`;
   });
   const totHc   = STATE.shops.reduce((s,sh)=>s+shopHomeCash(sh.id),0);          // gross — for Net Worth math
-  const totHcSpendable = STATE.shops.reduce((s,sh)=>s+shopSpendableHomeCash(sh.id),0); // spendable — for display row
+  // Total row's Home Cash / GPay must equal the sum of whichever column mode is currently shown
+  // above (All-Time spendable vs This-Month raw flow) — same toggle-awareness as the rows.
+  const totHcSpendable = isMonthPeriod
+    ? STATE.shops.reduce((s,sh)=>s+shopMonthHomeCashRaw(sh.id),0)
+    : STATE.shops.reduce((s,sh)=>s+shopSpendableHomeCashRaw(sh.id),0);
+  const totGpSpendable = isMonthPeriod
+    ? STATE.shops.reduce((s,sh)=>s+shopMonthOnlineRaw(sh.id),0)
+    : STATE.shops.reduce((s,sh)=>s+shopSpendableOnlineRaw(sh.id),0);
   const totUd   = STATE.shops.reduce((s,sh)=>s+shopUd(sh.id),0);
   const totLiab2= STATE.shops.reduce((s,sh)=>s+shopLiab(sh.id),0);
   const totLoanBorrowed = STATE.shops.reduce((s,sh)=>s+shopLoanBorrowed(sh.id),0);
@@ -2928,9 +2993,9 @@ function renderDashboard() {
   // PERSONAL is chosen as the source), so they are correctly excluded from both totals.
   const totNet = STATE.shops.reduce((s,sh)=>s+shopNet(sh.id),0);
   tbody += `<tr><td>Total</td>
-    <td class="mono" style="color:var(--accent);">${fmt(totHcSpendable)}</td>
+    <td class="mono" style="color:${totHcSpendable<0?'var(--bad)':'var(--accent)'};">${fmtSigned(totHcSpendable)}</td>
     <td class="mono" style="color:var(--muted);font-size:11.5px;">${fmt(totalGalla)}</td>
-    <td class="mono">${fmt(totalOnline)}</td>
+    <td class="mono" style="color:${totGpSpendable<0?'var(--bad)':'inherit'};">${fmtSigned(totGpSpendable)}</td>
     <td class="mono" style="color:var(--warn);">${fmt(totUd)}</td>
     <td class="mono" style="color:var(--bad);">${fmt(totLiab2)}</td>
     <td class="mono" style="color:var(--bad);font-size:10px;">${fmt(totLoanBorrowed)} / ${fmt(totLoanRepaid)}</td>
@@ -2948,6 +3013,8 @@ function renderDashboard() {
   $('qs-loans').textContent = fmt(pendLoanAmt);
 
   renderPerfTracker();
+  renderGraphicsSwapBanner();
+  renderGraphicsSwapHistory();
   try { renderSalesChart(); } catch (e) { console.error('renderSalesChart failed', e); }
   renderProfitBox();
   renderMonthlySummary();
@@ -3388,14 +3455,6 @@ function renderMonthlySummary() {
   if (banner) { banner.style.display = 'none'; banner.innerHTML = ''; }
 }
 
-// Jump from a Monthly Summary negative-balance row straight to that day's Day Close detail modal.
-function msJumpToDcDetail(id, date) {
-  switchTab('dayclose');
-  if (date) { dcEntriesMonth = (date || '').slice(0, 7); renderDcEntriesTable(); }
-  setTimeout(() => openDcDetail(id), 60);
-}
-
-
 // ─── Sales Chart ─────────────────────────────────────────────────
 let _salesChart = null;
 function renderSalesChart() {
@@ -3550,7 +3609,7 @@ function executeTransfer() {
     const homeAvail = shopSpendableHomeCash(sh.id);
     guardBalance(sh.name, 'Home Cash', homeAvail, amt, () => {
       sh.homeTransfer = (sh.homeTransfer||0) + amt;
-      sh.galla       -= amt;
+      sh.galla       += amt;  // FIX: Counter should INCREASE (money coming IN from home)
       _finishTransfer(`${sh.name}: ${fmt(amt)} Home → Counter Cash`);
     });
   } else if (type === 'h2g') {
@@ -3638,8 +3697,15 @@ function inlineEditHomeCash(el, shopId, current) {
   inp.addEventListener('keydown', e=>{if(e.key==='Enter')inp.blur();if(e.key==='Escape'){inp.value=current;inp.blur();}});
 }
 
+let _perfPeriod = 'month'; // 'today' | 'week' | 'month' | 'year' | 'all'
+function setPerfPeriod(period) {
+  _perfPeriod = period;
+  document.querySelectorAll('#perf-period-toggle .filter-btn').forEach(b => b.classList.toggle('on', b.dataset.period === period));
+  renderPerfTracker();
+}
 function renderPerfTracker() {
-  const allDC = STATE.dayClose.filter(r=>!r.deleted);
+  const filterFn = _perfPeriod === 'all' ? (() => true) : getProfitPeriodFilter(_perfPeriod);
+  const allDC = STATE.dayClose.filter(r=>!r.deleted && filterFn(r.date));
   const maxSale = Math.max(1, ...STATE.shops.map(sh=>allDC.filter(r=>r.shopId===sh.id).reduce((s,r)=>s+(r.sale||0),0)));
   const maxExp  = Math.max(1, ...STATE.shops.map(sh=>allDC.filter(r=>r.shopId===sh.id).reduce((s,r)=>s+(r.expense||0),0)));
 
@@ -3647,8 +3713,8 @@ function renderPerfTracker() {
     const recs = allDC.filter(r=>r.shopId===sh.id);
     const totalSale = recs.reduce((s,r)=>s+(r.sale||0),0);
     const totalExp  = recs.reduce((s,r)=>s+(r.expense||0),0);
-    const totalProfit = recs.reduce((s,r)=>s+(r.profit!=null?r.profit:Math.round(((r.cashHome||0)+(r.gpay||0))*sh.profitPct/100)),0);
-    const loanPend = STATE.loans.filter(l=>l.shopId===sh.id&&l.status==='Pending').reduce((s,l)=>s+(l.amount-l.repaid),0);
+    const totalProfit = recs.reduce((s,r)=>s+profitForRecord(r),0);
+    const avgSale = recs.length ? Math.round(totalSale / recs.length) : 0;
     const salePct = Math.round(totalSale/maxSale*100);
     const expPct  = Math.round(totalExp/maxExp*100);
     return `<div class="perf-card">
@@ -3669,16 +3735,10 @@ function renderPerfTracker() {
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
         <div class="card2" style="padding:8px 10px;"><div style="font-size:9px;color:var(--muted);">TOTAL PROFIT</div><div class="mono" style="font-size:13px;font-weight:700;color:var(--accent);">${fmt(totalProfit)}</div></div>
-        <div class="card2" style="padding:8px 10px;"><div style="font-size:9px;color:var(--muted);">LOAN PENDING</div><div class="mono" style="font-size:13px;font-weight:700;color:${loanPend>0?'#f472b6':'var(--muted)'};">${fmt(loanPend)}</div></div>
+        <div class="card2" style="padding:8px 10px;"><div style="font-size:9px;color:var(--muted);">AVG SALE/DAY</div><div class="mono" style="font-size:13px;font-weight:700;">${fmt(avgSale)}</div></div>
       </div>
     </div>`;
-  }).join('') || '<div class="empty">Submit a Day Close first to see performance data</div>';
-}
-
-function updateProfitPct(shopId, val) {
-  const sh = STATE.shops.find(s=>s.id===shopId);
-  if (sh) sh.profitPct = Math.max(0, Math.min(100, parseFloat(val)||0));
-  saveStateLocal(); renderPerfTracker();
+  }).join('') || '<div class="empty">No Day Close entries in this period</div>';
 }
 
 // ─── Day Close ───────────────────────────────────────────────────
@@ -4998,6 +5058,13 @@ function saveCollect() {
     remaining -= toApply;
   });
   
+  // Update shop balance so collected money shows immediately
+  const sh = STATE.shops.find(s => s.id === u.shopId);
+  if (sh) {
+    if (mode === 'GPay') sh.online = (sh.online||0) + amt;
+    else sh.galla = (sh.galla||0) + amt;  // Cash → counter cash
+  }
+  
   auditLog('COLLECT_UDHAARI',`${u.customer} — ${fmt(amt)} collected via ${mode} across ${allEntries.length} entries`);
   saveStateLocal(); renderUdhaari(); updateBadges(); renderDashboard();
   closeModal('modal-collect-udhaari');
@@ -5365,7 +5432,20 @@ function savePayOutflow() {
     const vsh = STATE.shops.find(s=>s.id===vault);
     if (vsh) {
       if (mode==='GPay') vsh.online = (vsh.online||0) - amt;
-      else if (mode==='Home') vsh.homeTransfer = (vsh.homeTransfer||0) + amt;
+      // Home mode: NO homeTransfer adjustment — the HOME-source daily expense
+      // below already reduces shopHomeCash() via `spent`. Adjusting homeTransfer
+      // too would double-deduct.
+    }
+    // Create a daily expense so this bill payment shows in that day's expenses
+    if (mode !== 'Counter') {
+      STATE.dailyExpenses = STATE.dailyExpenses || [];
+      STATE.dailyExpenses.unshift({
+        id: newId('DE'), shopId: vault, date: payDate,
+        desc: `Bill paid — ${o.payee}`,
+        source: mode === 'GPay' ? 'GP' : 'HOME',
+        amount: amt, deleted: false,
+        linkedOutflowPayee: o.payee
+      });
     }
     if(mode!=='Counter' && vault!==o.shopId){
       STATE.intershop.unshift({id:newId('IS'),fromShop:vault,toShop:o.shopId,date:payDate,amount:amt,reason:`Outflow: ${o.payee}`,status:'Open'});
@@ -5374,6 +5454,8 @@ function savePayOutflow() {
     auditLog('SETTLE_OUTFLOW',`${o.payee} — ${fmt(amt)} paid via ${mode} across ${allEntries.length} entries${lf>0?` + ${fmt(lf)} late fee`:''}`);
     saveStateLocal(); renderOutflows(); renderIntershop(); updateBadges(); renderDashboard();
     renderDcCashReminder(vault);
+    renderSavingsPendingBanner(); renderDashboardAlerts(); renderMonthlySummary();
+    if (mode !== 'Counter') renderDailyExpenses(vault);
     closeModal('modal-pay-outflow');
     toast(`${o.payee} — ${fmt(amt)} paid${remaining===0?' — Fully Cleared!':''}`);
   }
@@ -5590,11 +5672,26 @@ function savePaySalary() {
     const vsh = STATE.shops.find(sh=>sh.id===vault);
     if (vsh) {
       if (mode==='GPay') vsh.online = (vsh.online||0) - amt;
-      else if (mode==='Home') vsh.homeTransfer = (vsh.homeTransfer||0) + amt;
+      // Home mode: NO homeTransfer adjustment — the HOME-source daily expense
+      // below already reduces shopHomeCash() via `spent`. Adjusting homeTransfer
+      // too would double-deduct.
+    }
+    // Create a daily expense so salary payment shows in that day's expenses
+    if (mode !== 'Counter') {
+      STATE.dailyExpenses = STATE.dailyExpenses || [];
+      STATE.dailyExpenses.unshift({
+        id: newId('DE'), shopId: vault, date: todayStr(),
+        desc: `Salary — ${s.name}`,
+        source: mode === 'GPay' ? 'GP' : 'HOME',
+        amount: amt, deleted: false,
+        linkedStaffId: s.id
+      });
     }
     auditLog('PAY_SALARY', `${s.name} — ${fmt(amt)} for ${month} paid via ${mode}${note?` (${note})`:''}`);
     saveStateLocal(); renderStaff(); updateBadges(); renderDashboard();
     if (vault) renderDcCashReminder(vault);
+    renderSavingsPendingBanner(); renderDashboardAlerts(); renderMonthlySummary();
+    if (mode !== 'Counter') renderDailyExpenses(vault);
     closeModal('modal-pay-salary');
     toast(`${s.name} — ${fmt(amt)} paid for ${month}`);
   }
@@ -5926,6 +6023,7 @@ function renderLoans() {
     const pending=g.amount-g.repaid;
     const pct=Math.min(100,Math.round(g.repaid/Math.max(1,g.amount)*100));
     const allRepaid = g.entries.every(e => e.status === 'Repaid');
+    const linkedRem = STATE.reminders.find(r => (r.linkedLoanFrom||'').toLowerCase()===(g.from||'').toLowerCase() && r.linkedLoanShopId===g.shopId);
     const sc = shopColor(g.shopId);
     return `<div class="pc-row${allRepaid?' pc-settled':''}" onclick="pcRowClick(this,'loan','${escJsAttr(g.from)}','${g.shopId}')">
       <div class="pc-avatar" style="background:linear-gradient(135deg,${sc},${sc}88);box-shadow:0 2px 8px ${sc}33;">${pcInitials(g.from)}</div>
@@ -5950,6 +6048,7 @@ function renderLoans() {
       </div>
       <div class="pc-actions">
         ${!allRepaid?`<button class="btn btn-good btn-sm" style="flex:2;" onclick="event.stopPropagation();openRepayLoanGroup('${escJsAttr(g.from)}','${g.shopId}')">Repay</button>`:''}
+        ${!allRepaid?`<button class="btn btn-ghost btn-sm" style="padding:4px 6px;flex:0 0 auto;${linkedRem?'color:var(--accent);':''}" onclick="event.stopPropagation();openLoanReminderModal('${escJsAttr(g.from)}','${g.shopId}')" title="${linkedRem?'Edit linked reminder':'Set a reminder for this loan'}"><i class="fa-solid fa-bell${linkedRem?'':'-slash'}" style="font-size:10px;"></i></button>`:''}
         <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="event.stopPropagation();openPersonHistory('loan','${escJsAttr(g.from)}','${g.shopId}')" title="View transactions"><i class="fa-solid fa-list-ul" style="font-size:10px;margin-right:4px;"></i>View</button>
         <button class="btn btn-ghost btn-sm" style="padding:4px 6px;flex:0 0 auto;" onclick="event.stopPropagation();openEditLoan('${g.entries[0].id}')" title="Edit"><i class="fa-solid fa-pen" style="font-size:10px;"></i></button>
         <button class="btn btn-bad btn-sm" style="padding:4px 6px;flex:0 0 auto;" onclick="event.stopPropagation();deleteLoan('${g.entries[0].id}')" title="Delete"><i class="fa-solid fa-trash" style="font-size:10px;"></i></button>
@@ -6264,6 +6363,69 @@ function openRepayLoanGroup(personName, shopId) {
   openModal('modal-repay-loan');
 }
 
+// ─── Shared loan-repayment engine ─────────────────────────────────────────────
+// Used by both the Loans tab (saveRepayLoan) and a linked Reminder being marked
+// "paid" (confirmReminderPaid), so the two stay in sync instead of drifting:
+//  - deducts the paid fund (GPay/Home Cash) from the shop
+//  - logs the deduction into that day's Daily Expenses (so it shows in that day's exp,
+//    same as the 40% savings set-aside already does via confirmSavingsDone)
+//  - distributes the amount across the person+shop's pending loan entries
+//  - shrinks/clears any Reminder linked to this loan (auto-dismisses the banner once
+//    the loan is fully repaid)
+function applyLoanRepayment(fromName, shopId, amt, repayDate, mode) {
+  const allEntries = STATE.loans.filter(entry =>
+    entry.from === fromName && entry.shopId === shopId && entry.status !== 'Repaid'
+  );
+
+  if (shopId !== 'GENERAL') {
+    const sh = STATE.shops.find(s=>s.id===shopId);
+    if (sh) {
+      if (mode === 'GPay') sh.online = (sh.online||0) - amt;
+      // HOME mode: NO homeTransfer adjustment — the HOME-source daily expense
+      // below already reduces shopHomeCash() via the `spent` variable.
+      // Adjusting homeTransfer too would double-deduct.
+    }
+  }
+  // Always create a daily expense so loan repayments show in that day's expenses
+  const deShopId = (shopId !== 'GENERAL') ? shopId : (STATE.shops[0]?.id || 'SHOP01');
+  STATE.dailyExpenses = STATE.dailyExpenses || [];
+  STATE.dailyExpenses.unshift({
+    id: newId('DE'), shopId: deShopId, date: repayDate,
+    desc: `Loan repayment — ${fromName}${shopId === 'GENERAL' ? ' (General)' : ''}`,
+    source: mode === 'GPay' ? 'GP' : 'HOME',
+    amount: amt, deleted: false, linkedLoanFrom: fromName
+  });
+
+  let remaining = amt;
+  allEntries.forEach(entry => {
+    if (remaining <= 0) return;
+    const pendingForEntry = entry.amount - entry.repaid;
+    const toApply = Math.min(remaining, pendingForEntry);
+    entry.repaid += toApply;
+    if(!entry.repayments) entry.repayments=[];
+    entry.repayments.push({id:newId('RP'),date:repayDate,amount:toApply,mode});
+    if(entry.repaid>=entry.amount) entry.status='Repaid';
+    remaining -= toApply;
+  });
+
+  const stillPending = allEntries.reduce((s,e)=>s+Math.max(0,(e.amount||0)-(e.repaid||0)),0);
+  STATE.reminders = STATE.reminders.filter(r => {
+    const isLinked = (r.linkedLoanFrom||'').toLowerCase() === fromName.toLowerCase() && r.linkedLoanShopId === shopId;
+    if (!isLinked) return true;
+    if (stillPending <= 0) return false; // loan fully repaid — drop the reminder
+    r.amount = stillPending;
+    return true;
+  });
+
+  auditLog('REPAY_LOAN',`${fmt(amt)} repaid to ${fromName} on ${fmtDate(repayDate)} across ${allEntries.length} entries`);
+  if (shopId !== 'GENERAL') { renderDcCashReminder(shopId); renderDailyExpenses(shopId); }
+  else { renderDailyExpenses(deShopId); }
+  renderSavingsPendingBanner();
+  renderDashboardAlerts();
+  renderMonthlySummary();
+  return { entriesCount: allEntries.length, remaining, stillPending };
+}
+
 function saveRepayLoan() {
   const l=STATE.loans.find(x=>x.id===activeLoanId); if(!l) return;
   const amt=parseFloat($('rl-amt').value)||0;
@@ -6272,38 +6434,9 @@ function saveRepayLoan() {
   if(amt<=0){ toast('Enter a valid amount','error'); return; }
 
   function _finishRepayLoan() {
-    // Find all entries for this person+shop
-    const allEntries = STATE.loans.filter(entry =>
-      entry.from === l.from &&
-      entry.shopId === l.shopId &&
-      entry.status !== 'Repaid'
-    );
-
-    // Deduct from selected fund
-    if (l.shopId !== 'GENERAL') {
-      const sh = STATE.shops.find(s=>s.id===l.shopId);
-      if (sh) {
-        if (mode === 'GPay') sh.online = (sh.online||0) - amt;
-        else sh.homeTransfer = (sh.homeTransfer||0) + amt; // Add to homeTransfer to decrease home cash
-      }
-    }
-
-    // Distribute repayment across all entries
-    let remaining = amt;
-    allEntries.forEach(entry => {
-      if (remaining <= 0) return;
-      const pendingForEntry = entry.amount - entry.repaid;
-      const toApply = Math.min(remaining, pendingForEntry);
-      entry.repaid += toApply;
-      if(!entry.repayments) entry.repayments=[];
-      entry.repayments.push({id:newId('RP'),date:repayDate,amount:toApply,mode});
-      if(entry.repaid>=entry.amount) entry.status='Repaid';
-      remaining -= toApply;
-    });
-
-    auditLog('REPAY_LOAN',`${fmt(amt)} repaid to ${l.from} on ${fmtDate(repayDate)} across ${allEntries.length} entries`);
-    saveStateLocal(); renderLoans(); updateBadges(); renderDashboard();
-    if (l.shopId !== 'GENERAL') renderDcCashReminder(l.shopId);
+    const { remaining } = applyLoanRepayment(l.from, l.shopId, amt, repayDate, mode);
+    saveStateLocal(); renderLoans(); renderReminders(); updateBadges(); renderDashboard();
+    renderSavingsPendingBanner(); renderDashboardAlerts(); renderMonthlySummary();
     closeModal('modal-repay-loan');
     toast(`${fmt(amt)} repaid to ${l.from}${remaining===0?' — fully repaid':''}`);
   }
@@ -6897,6 +7030,17 @@ function deleteHomeExpense(id) {
           const useGpay = (r.mode==='GPay' || r.mode==='Bank Transfer');
           if (useGpay) sh.online = (sh.online||0) + reverseAmt;
           else sh.galla = (sh.galla||0) + reverseAmt;
+        }
+      }
+      // Also delete any linked daily expense created by reminder payment
+      if (STATE.dailyExpenses) {
+        const linkedDE = STATE.dailyExpenses.find(e => e.linkedReminderId === r.id && !e.deleted);
+        if (linkedDE) {
+          if (linkedDE.source === 'GP') {
+            const sh = STATE.shops.find(s => s.id === r.paidFrom);
+            if (sh) sh.online = (sh.online||0) + (linkedDE.amount||0);
+          }
+          linkedDE.deleted = true;
         }
       }
       STATE.homeExpenses.splice(idx,1);
@@ -8173,12 +8317,40 @@ function openAddReminderModal(id) {
       $('rem-date').value = r.dueDate;
       $('rem-repeat').value = r.repeat || 'monthly';
       $('rem-note').value = r.note||'';
+      $('rem-linked-from').value = r.linkedLoanFrom || '';
+      $('rem-linked-shop').value = r.linkedLoanShopId || '';
     }
   } else {
     $('rem-name').value=''; $('rem-amt').value=''; $('rem-note').value='';
     $('rem-cat').value='EMI'; $('rem-repeat').value='monthly';
     if (!$('rem-date').value) $('rem-date').value = todayStr();
+    $('rem-linked-from').value = ''; $('rem-linked-shop').value = '';
   }
+  const linkedNote = $('rem-linked-note');
+  if (linkedNote) linkedNote.style.display = $('rem-linked-from').value ? '' : 'none';
+  syncSelectUI('rem-cat'); syncSelectUI('rem-repeat');
+  openModal('modal-add-reminder');
+}
+
+// Opens the reminder modal pre-filled for a specific pending loan (person+shop group),
+// so paying it off from either the Loans tab or the Reminders tab keeps both in sync.
+function openLoanReminderModal(fromName, shopId) {
+  const entries = STATE.loans.filter(l => l.from && l.from.toLowerCase() === fromName.toLowerCase() && l.shopId === shopId && l.status !== 'Repaid');
+  if (!entries.length) { toast('No pending loan for this entry', 'error'); return; }
+  const pending = entries.reduce((s,l)=>s+((l.amount||0)-(l.repaid||0)),0);
+  const existing = STATE.reminders.find(r => (r.linkedLoanFrom||'').toLowerCase()===fromName.toLowerCase() && r.linkedLoanShopId===shopId);
+  $('rem-id').value = existing ? existing.id : '';
+  $('reminder-modal-title').firstChild.textContent = existing ? 'Edit Loan Reminder ' : 'Set Loan Reminder ';
+  $('rem-name').value = existing ? existing.name : `${fromName} — Loan Repayment`;
+  $('rem-cat').value = 'Loan';
+  $('rem-amt').value = existing ? existing.amount : pending;
+  $('rem-date').value = existing ? existing.dueDate : todayStr();
+  $('rem-repeat').value = existing ? (existing.repeat||'none') : 'none';
+  $('rem-note').value = existing ? (existing.note||'') : `Auto-clears when ${fromName}'s loan is fully repaid`;
+  $('rem-linked-from').value = fromName;
+  $('rem-linked-shop').value = shopId;
+  const linkedNote = $('rem-linked-note');
+  if (linkedNote) linkedNote.style.display = '';
   syncSelectUI('rem-cat'); syncSelectUI('rem-repeat');
   openModal('modal-add-reminder');
 }
@@ -8191,15 +8363,22 @@ function saveReminder() {
   const date = $('rem-date').value;
   const rep  = $('rem-repeat').value;
   const note = $('rem-note').value.trim();
+  const linkedFrom = $('rem-linked-from') ? $('rem-linked-from').value.trim() : '';
+  const linkedShop = $('rem-linked-shop') ? $('rem-linked-shop').value.trim() : '';
   if (!name || !amt || !date) { toast('Name, amount, and due date are required', 'error'); return; }
 
   if (id) {
     const r = STATE.reminders.find(x=>x.id===id);
-    if (r) Object.assign(r, { name, category:cat, amount:amt, dueDate:date, repeat:rep, note });
+    if (r) {
+      Object.assign(r, { name, category:cat, amount:amt, dueDate:date, repeat:rep, note });
+      if (linkedFrom && linkedShop) { r.linkedLoanFrom = linkedFrom; r.linkedLoanShopId = linkedShop; }
+    }
     auditLog('REMINDER', `[UPDATE] ${name} — ${fmt(amt)} due ${fmtDate(date)}`);
   } else {
-    STATE.reminders.unshift({ id:newId('R'), name, category:cat, amount:amt, dueDate:date, repeat:rep, note });
-    auditLog('REMINDER', `Added: ${name} — ${fmt(amt)} due ${fmtDate(date)} [${rep}]`);
+    const entry = { id:newId('R'), name, category:cat, amount:amt, dueDate:date, repeat:rep, note };
+    if (linkedFrom && linkedShop) { entry.linkedLoanFrom = linkedFrom; entry.linkedLoanShopId = linkedShop; }
+    STATE.reminders.unshift(entry);
+    auditLog('REMINDER', `Added: ${name} — ${fmt(amt)} due ${fmtDate(date)} [${rep}]${linkedFrom?' (linked to loan)':''}`);
   }
   saveStateLocal(); renderReminders(); updateBadges();
   closeModal('modal-add-reminder');
@@ -8269,6 +8448,19 @@ function confirmReminderPaid() {
     // Store actual deducted so delete only reverses what was really taken
     if (sh && from !== 'PERSONAL' && actualDeducted < amt) heEntry.actualDeducted = actualDeducted;
     STATE.homeExpenses.unshift(heEntry);
+    // Also create a Daily Expense entry so it shows in that day's expenses
+    if (sh && from !== 'PERSONAL') {
+      STATE.dailyExpenses = STATE.dailyExpenses || [];
+      STATE.dailyExpenses.unshift({
+        id: newId('DE'), shopId: from, date: todayStr(),
+        desc: `Reminder — ${r.name}`,
+        // Cash mode: money came from galla (counter cash) → COUNTER source
+        // GPay/Bank mode: money came from sh.online → GP source
+        source: useGpay ? 'GP' : 'COUNTER',
+        amount: actualDeducted, deleted: false,
+        linkedReminderId: r.id
+      });
+    }
     auditLog('HOME_EXPENSE', `[REMINDER PAID] ${r.name} — ${fmt(amt)} via ${mode} from ${from==='PERSONAL'?'Personal':shopName(from)}`);
     if (r.repeat && r.repeat !== 'none') {
       const d = new Date(r.dueDate);
@@ -8282,6 +8474,8 @@ function confirmReminderPaid() {
       if (idx>=0) STATE.reminders.splice(idx,1);
     }
     saveStateLocal(); renderReminders(); renderHomeExpenses(); renderDashboard(); updateBadges();
+    renderSavingsPendingBanner(); renderDashboardAlerts(); renderMonthlySummary();
+    if (sh && from !== 'PERSONAL') renderDailyExpenses(from);
     closeModal('modal-pay-reminder');
     toast(`${r.name} paid — ${fmt(amt)} logged as expense`);
   }
@@ -8522,6 +8716,38 @@ function downloadBackup() {
   toast('Backup downloaded', 'success');
 }
 
+function triggerRestoreBackup() { $('restore-file-inp').click(); }
+function restoreBackupFromFile(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    let parsed;
+    try { parsed = JSON.parse(reader.result); }
+    catch (e) { toast('Not a valid JSON file', 'error'); input.value = ''; return; }
+    // Basic shape check — a real backup always has these arrays (see downloadBackup/STATE shape).
+    const looksValid = parsed && typeof parsed === 'object' && Array.isArray(parsed.shops) && Array.isArray(parsed.dayClose);
+    if (!looksValid) { toast('This file doesn\'t look like a JMD backup', 'error'); input.value = ''; return; }
+    showConfirm({
+      title: 'Restore This Backup?',
+      msg: `This file has <strong>${(parsed.dayClose||[]).length}</strong> Day Close entries, <strong>${(parsed.udhaari||[]).length}</strong> Udhaari records, <strong>${(parsed.loans||[]).length}</strong> loans.<br><br>This will <strong>replace everything currently in the app</strong> (and immediately push this over the shared Sheet too). Make sure this is really the data you want to restore.`,
+      icon: '!', yesText: 'Restore & Push to Sheet', yesCls: 'btn-bad',
+      onYes: () => {
+        STATE = parsed;
+        if (INBUILT_SHEET_URL) STATE.sheetUrl = INBUILT_SHEET_URL; // preserve override
+        migrateState(STATE);
+        localStorage.setItem('jmd_state', JSON.stringify(STATE));
+        _sheetSyncReady = true; // this restore IS the deliberate new source of truth — push it now
+        initDcForms(); initReportControls(); renderSettings(); updateLockUi(); renderAll();
+        pushToSheet();
+        toast('Backup restored and pushed to Sheet', 'success');
+      }
+    });
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
 // ─── Google Sheet Sync ───────────────────────────────────────────
 function formatSyncTime(iso) {
   if (!iso) return '—';
@@ -8546,12 +8772,28 @@ function updateSyncUI() {
   lbl.textContent = INBUILT_SHEET_URL ? 'Team Sync' : 'Connected';
 }
 let syncTimer=null;
+// Guards against the sync model's biggest risk: pushToSheet() sends the WHOLE local STATE
+// and fully overwrites whatever is currently in the shared Sheet (it's not a merge/append).
+// So on a fresh browser (empty localStorage) — or if the very first pullFromSheet() silently
+// fails (slow network, cold Apps Script start) — a push could blank out the entire team's
+// real data with zero warning. _sheetSyncReady only flips true after we've successfully
+// talked to the Sheet at least once this session; until then, pushes are held back and a
+// pull is retried instead.
+let _sheetSyncReady = !effectiveSheetUrl();
+
 function pushToSheet() {
   const url = effectiveSheetUrl();
   if(!url) return;
   clearTimeout(syncTimer);
   syncTimer=setTimeout(async()=>{
     const dot=$('sync-dot'), lbl=$('sync-label');
+    if (!_sheetSyncReady) {
+      // Never overwrite the shared Sheet before confirming what's already on it.
+      lbl.textContent = 'Waiting to sync…';
+      dot.className = 'sync-dot syncing';
+      pullFromSheet(); // will retry the push automatically once this succeeds (see below)
+      return;
+    }
     dot.className='sync-dot syncing'; lbl.textContent='Syncing...';
     try {
       STATE.lastSyncAt = new Date().toISOString();
@@ -8565,7 +8807,8 @@ function pushToSheet() {
 }
 async function pullFromSheet() {
   const url = effectiveSheetUrl();
-  if(!url) return;
+  if(!url) { _sheetSyncReady = true; return; }
+  const hadPendingEdits = !_sheetSyncReady; // a push was waiting on this exact pull
   try {
     const res=await fetch(url+'?action=load');
     const json=await res.json();
@@ -8579,6 +8822,8 @@ async function pullFromSheet() {
       initDcForms(); initReportControls(); updateLockUi(); renderAll();
       toast('Latest data loaded from Sheet','info');
     }
+    _sheetSyncReady = true; // we've successfully confirmed what's on the Sheet — safe to push now
+    if (hadPendingEdits) pushToSheet(); // retry the push that was held back, now against confirmed data
   } catch(e){}
   updateSyncUI();
 }
@@ -8769,6 +9014,7 @@ function installPWA() {
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
 </body>
 </html>
