@@ -134,6 +134,16 @@ select.inp { background: rgba(10,10,22,0.85); color: var(--jtext); -webkit-appea
 .nav-badge.amber { background: rgba(245,158,11,0.18); color: #f59e0b; }
 .sidebar-footer { padding: 12px 14px; border-top: 1px solid var(--line); }
 .sidebar-footer .owner { font-size: 10.5px; color: var(--muted); margin-bottom: 8px; }
+.sidebar-go-link {
+  display:flex; align-items:center; gap:8px; padding:10px 12px; margin-bottom:10px;
+  background: linear-gradient(135deg, rgba(52,211,153,0.12), rgba(34,211,238,0.08));
+  border: 1px solid rgba(52,211,153,0.25);
+  color: var(--good); border-radius: 8px; cursor: pointer;
+  font-size: 12px; font-weight: 700; text-decoration:none;
+  transition: all 0.2s;
+}
+.sidebar-go-link:hover { background: linear-gradient(135deg, rgba(52,211,153,0.2), rgba(34,211,238,0.12)); }
+@media(max-width:640px){ .hide-mob { display: none !important; } }
 
 /* ── Main ── */
 #main { margin-left: 210px; min-height: 100vh; position: relative; z-index: 1; }
@@ -552,53 +562,96 @@ select.csel-native { position: absolute; width: 1px; height: 1px; padding: 0; ma
 .sync-dot.error { background: var(--bad); box-shadow: 0 0 6px rgba(248,113,113,0.4); }
 @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
 
-/* ── Mobile bottom nav ── */
+/* ============ MOBILE BOTTOM NAV (solid edge-to-edge bar) ============ */
 #bnav {
-  display: none; position: fixed; bottom: 0; left: 0; right: 0;
-  background: linear-gradient(180deg, rgba(10,10,20,0.98), rgba(6,6,14,0.99));
-  border-top: 1px solid rgba(139,108,255,0.12);
-  z-index: 40; padding: 8px 4px env(safe-area-inset-bottom);
-  backdrop-filter: blur(20px);
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+  display: none; position: fixed; left: 0; right: 0; bottom: 0;
+  z-index: 40;
+  background: linear-gradient(180deg, #14142400, #101020 14%, #0a0a14);
+  background-color: #0b0b16;
+  border-top: 1px solid rgba(139,108,255,0.16);
+  box-shadow: 0 -6px 22px rgba(0,0,0,0.55);
+  padding-bottom: env(safe-area-inset-bottom);
+  overflow: visible;   /* let the centre circle lift out of the bar */
 }
-.bnav-items { display: flex; justify-content: space-around; align-items: center; }
+.bnav-shape { display: none; }
+.bnav-items {
+  display: flex; align-items: stretch;
+}
 .bnav-item {
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  padding: 6px 12px; cursor: pointer; color: var(--muted);
-  font-size: 9px; font-weight: 600; transition: all 0.2s;
-  border-radius: 10px; position: relative;
+  flex: 1 1 0; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  height: 58px; cursor: pointer; color: var(--muted);
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.01em;
+  position: relative; border-radius: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.2s, background 0.2s;
 }
-.bnav-item i { font-size: 18px; transition: all 0.2s; }
-.bnav-item.active {
-  color: var(--accent);
-  background: rgba(139,108,255,0.1);
-  transform: translateY(-2px);
+.bnav-item i { font-size: 18px; transition: transform 0.2s, color 0.2s; }
+.bnav-item span {
+  display: block; max-width: 100%; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
 }
-.bnav-item.active i {
-  font-size: 22px;
-  filter: drop-shadow(0 0 8px rgba(139,108,255,0.5));
-}
-.bnav-item.active::after {
-  content: ''; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
-  width: 20px; height: 3px; border-radius: 2px;
+.bnav-item:active { background: rgba(139,108,255,0.08); }
+.bnav-item:active i { transform: scale(0.9); }
+/* Active: top accent rail + lit icon, no gaps between slots */
+.bnav-item.active { color: var(--accent); background: linear-gradient(180deg, rgba(139,108,255,0.16), rgba(139,108,255,0) 78%); }
+.bnav-item.active i { color: var(--accent); filter: drop-shadow(0 0 7px rgba(139,108,255,0.55)); }
+.bnav-item.active::before {
+  content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 46%; height: 3px; border-radius: 0 0 3px 3px;
   background: linear-gradient(90deg, var(--accent), var(--accent2));
-  box-shadow: 0 0 8px rgba(139,108,255,0.4);
+  box-shadow: 0 0 10px rgba(139,108,255,0.6);
 }
+/* CENTER — floating glowing circle, lifts above the solid bar.
+   The bar itself stays flush; only this circle floats. */
+.bnav-item.bnav-center {
+  color: var(--good);
+  justify-content: flex-end; padding-bottom: 6px;
+  background: none !important;
+  overflow: visible;
+}
+.bnav-item.bnav-center i {
+  position: absolute; top: -22px; left: 50%; margin-left: -26px;
+  font-size: 20px !important; color: #fff;
+  width: 52px; height: 52px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--good), #14b8a6);
+  border: 3px solid #0b0b16;
+  box-shadow:
+    0 0 0 4px rgba(52,211,153,0.12),
+    0 0 18px rgba(52,211,153,0.55),
+    0 8px 20px rgba(0,0,0,0.45);
+  animation: bnavGlow 2.4s ease-in-out infinite;
+  transition: transform 0.2s;
+}
+@keyframes bnavGlow {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(52,211,153,0.12), 0 0 16px rgba(52,211,153,0.45), 0 8px 20px rgba(0,0,0,0.45); }
+  50%      { box-shadow: 0 0 0 7px rgba(52,211,153,0.05), 0 0 26px rgba(52,211,153,0.8),  0 8px 20px rgba(0,0,0,0.45); }
+}
+.bnav-item.bnav-center span { color: var(--good); font-size: 9px; font-weight: 800; }
+.bnav-item.bnav-center:active i { transform: scale(0.92); animation: none; }
+@media(prefers-reduced-motion:reduce){ .bnav-item.bnav-center i { animation: none; } }
+.bnav-badge:empty { display: none; }
 .bnav-badge {
-  position: absolute; top: 2px; right: 6px;
-  min-width: 14px; height: 14px; padding: 0 4px;
-  border-radius: 7px; font-size: 8px; font-weight: 800;
+  position: absolute; top: 6px; left: 50%; margin-left: 4px;
+  min-width: 15px; height: 15px; padding: 0 4px;
+  border-radius: 8px; font-size: 9px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
   color: #fff; line-height: 1;
+  background: var(--bad);
+  box-shadow: 0 0 0 2px #0b0b16;
 }
 .bnav-badge.red { background: var(--bad); box-shadow: 0 0 6px rgba(248,113,113,0.5); }
 .bnav-badge.amber { background: var(--warn); box-shadow: 0 0 6px rgba(251,191,36,0.5); }
 
 /* ── Floating Action Button ── */
 .fab-container {
-  position: fixed; bottom: 80px; right: 16px; z-index: 45;
+  position: fixed; bottom: calc(70px + env(safe-area-inset-bottom)); right: 14px; z-index: 45;
   display: none; flex-direction: column-reverse; align-items: flex-end; gap: 10px;
+  pointer-events: none;
 }
+.fab-container.open { pointer-events: all; }
+.fab-main { pointer-events: all; }
 .fab-main {
   width: 52px; height: 52px; border-radius: 16px; border: none;
   background: linear-gradient(135deg, var(--accent), #6d4de8);
@@ -634,7 +687,7 @@ select.csel-native { position: absolute; width: 1px; height: 1px; padding: 0; ma
 
 @media(max-width: 768px){
   #sidebar { display: none; }
-  #main { margin-left: 0; padding-bottom: 80px; }
+  #main { margin-left: 0; padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
   #bnav { display: block; }
   .fab-container { display: flex; }
   .top-bar { padding: 10px 14px; }
@@ -1036,6 +1089,9 @@ html,body{overflow-x:hidden;max-width:100%;}
       <div class="nav-item" id="nav-settings" onclick="switchTab(&#39;settings&#39;)"><i class="fa-solid fa-gear" style="width:14px;"></i> Settings</div>
     </div>
     <div class="sidebar-footer">
+      <a href="wholesale.html" class="sidebar-go-link" onclick="return navigateTo(event,'wholesale.html');">
+        <i class="fa-solid fa-warehouse"></i> Wholesale Module
+      </a>
       <div class="owner">Logged in as Owner</div>
       <button class="btn btn-ghost" id="lock-session-btn" style="width:100%;font-size:11px;display:none;" onclick="lockApp()"><i class="fa-solid fa-lock" style="margin-right:5px;"></i>Lock Session</button>
     </div>
@@ -1054,6 +1110,9 @@ html,body{overflow-x:hidden;max-width:100%;}
           <i class="fa-solid fa-download"></i> Install App
         </button>
         <button class="btn btn-good btn-sm" onclick="openWaShareModal()" title="Share daily summary on WhatsApp"><i class="fa-brands fa-whatsapp"></i> Share</button>
+        <a href="wholesale.html" class="btn btn-good btn-sm hide-mob" onclick="return navigateTo(event,'wholesale.html');" style="text-decoration:none;" title="Open Wholesale module">
+          <i class="fa-solid fa-warehouse"></i> Wholesale
+        </a>
         <span class="sync-dot" id="sync-dot" title="Sync status" style="background: rgb(68, 68, 96);"></span>
         <span style="font-size:11px;color:var(--muted);" id="sync-label">No Sheet</span>
         <span style="font-size:10.5px;color:var(--muted);border-left:1px solid var(--line);padding-left:8px;" id="sync-last">Last sync: —</span>
@@ -1640,11 +1699,16 @@ html,body{overflow-x:hidden;max-width:100%;}
 
   <!-- Mobile bottom nav -->
   <div id="bnav">
+    <div class="bnav-shape"></div>
     <div class="bnav-items">
       <div class="bnav-item active" id="bnav-dashboard" onclick="switchTab(&#39;dashboard&#39;)"><i class="fa-solid fa-chart-pie"></i><span>Home</span><span class="bnav-badge amber" id="mbadge-dashboard" style="display:none;"></span></div>
       <div class="bnav-item" id="bnav-dayclose" onclick="switchTab(&#39;dayclose&#39;)"><i class="fa-solid fa-calendar-check"></i><span>Day Close</span></div>
+      <!-- CENTER: GO TO WHOLESALE MODULE -->
+      <a class="bnav-item bnav-center" href="wholesale.html" onclick="return navigateTo(event,'wholesale.html');" style="text-decoration:none;">
+        <i class="fa-solid fa-warehouse"></i>
+        <span>Wholesale</span>
+      </a>
       <div class="bnav-item" id="bnav-udhaari" onclick="switchTab(&#39;udhaari&#39;)"><i class="fa-solid fa-users"></i><span>Credit</span><span class="bnav-badge red" id="mbadge-udhaari" style="display:none;"></span></div>
-      <div class="bnav-item" id="bnav-outflows" onclick="switchTab(&#39;outflows&#39;)"><i class="fa-solid fa-file-invoice"></i><span>Bills</span><span class="bnav-badge amber" id="mbadge-outflows" style="display:none;"></span></div>
       <div class="bnav-item" id="bnav-more" onclick="openMobileMore()"><i class="fa-solid fa-ellipsis"></i><span>More</span></div>
     </div>
   </div>
@@ -1674,6 +1738,10 @@ html,body{overflow-x:hidden;max-width:100%;}
       <div class="mobile-sheet-handle"></div>
       <div class="mobile-sheet-title">More Options</div>
       <div class="mobile-sheet-grid">
+        <div class="mobile-sheet-item" onclick="switchTab('outflows');closeMobileMore();">
+          <div class="mobile-sheet-icon" style="background:linear-gradient(135deg,#fbbf24,#d97706);"><i class="fa-solid fa-file-invoice"></i></div>
+          <span>Bills</span>
+        </div>
         <div class="mobile-sheet-item" onclick="switchTab('intershop');closeMobileMore();">
           <div class="mobile-sheet-icon" style="background:linear-gradient(135deg,#eab308,#ca8a04);"><i class="fa-solid fa-right-left"></i></div>
           <span>InterShop</span>
@@ -9015,6 +9083,83 @@ function installPWA() {
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
+<!-- ═══════════ PAGE TRANSITION (retail ⇄ wholesale) ═══════════ -->
+<style>
+#page-veil{
+  position:fixed; inset:0; z-index:9999; pointer-events:none; opacity:0;
+  background:#06060c;
+  background-image:radial-gradient(circle at 50% 45%, rgba(52,211,153,0.16), transparent 62%);
+  transition:opacity .26s ease;
+  display:flex; align-items:center; justify-content:center;
+}
+#page-veil.show{opacity:1; pointer-events:all;}
+#page-veil .pv-box{
+  display:flex; flex-direction:column; align-items:center; gap:12px;
+  transform:scale(.86); opacity:0; transition:all .3s cubic-bezier(.34,1.56,.64,1);
+}
+#page-veil.show .pv-box{transform:scale(1); opacity:1;}
+#page-veil .pv-ico{
+  width:62px; height:62px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:23px; color:#fff;
+  background:linear-gradient(135deg,#34d399,#14b8a6);
+  box-shadow:0 8px 26px rgba(52,211,153,.5);
+  animation:pvPulse 1s ease-in-out infinite;
+}
+#page-veil .pv-label{
+  font-size:12px; font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:#34d399; font-family:'Outfit',system-ui,sans-serif;
+}
+@keyframes pvPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.07);}}
+/* Entry animation for the page shell */
+@keyframes pageIn{from{opacity:0; transform:translateY(8px) scale(.995);} to{opacity:1; transform:none;}}
+@keyframes navIn{from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:none;}}
+body.page-enter #main{animation:pageIn .34s cubic-bezier(.4,0,.2,1) both;}
+body.page-enter #bnav{animation:navIn .34s cubic-bezier(.4,0,.2,1) both;}
+@media(prefers-reduced-motion:reduce){
+  #page-veil,#page-veil .pv-box{transition:none;}
+  #page-veil .pv-ico{animation:none;}
+  body.page-enter #main, body.page-enter #bnav{animation:none;}
+}
+</style>
+<div id="page-veil">
+  <div class="pv-box">
+    <div class="pv-ico"><i class="fa-solid fa-warehouse"></i></div>
+    <div class="pv-label">Opening Wholesale</div>
+  </div>
+</div>
+<script>
+/* Smooth cross-page navigation with a fade/scale veil.
+   Falls back to a normal link click if anything is unavailable. */
+function navigateTo(ev, url, label, icon){
+  try{
+    if(ev){
+      if(ev.metaKey||ev.ctrlKey||ev.shiftKey||ev.button===1) return true; // let browser handle new-tab
+      ev.preventDefault();
+    }
+    var veil=document.getElementById('page-veil');
+    if(!veil){ window.location.href=url; return false; }
+    if(label){ var l=veil.querySelector('.pv-label'); if(l) l.textContent=label; }
+    if(icon){ var i=veil.querySelector('.pv-ico i'); if(i) i.className=icon; }
+    veil.classList.add('show');
+    var done=false;
+    var go=function(){ if(done) return; done=true; window.location.href=url; };
+    setTimeout(go, 300);
+    return false;
+  }catch(e){ window.location.href=url; return false; }
+}
+/* Play the entry animation on load, and re-hide the veil if the page is
+   restored from the back/forward cache. */
+(function(){
+  document.body.classList.add('page-enter');
+  setTimeout(function(){ document.body.classList.remove('page-enter'); }, 420);
+  window.addEventListener('pageshow', function(e){
+    var veil=document.getElementById('page-veil');
+    if(veil) veil.classList.remove('show');
+  });
+})();
+</script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
 </body>
 </html>
