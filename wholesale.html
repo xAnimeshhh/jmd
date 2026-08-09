@@ -571,50 +571,78 @@ body.light select:hover {
 .tl-step.done { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
 .tl-labels { display:flex; justify-content: space-between; font-size: 9.5px; color: var(--muted); margin-top: 4px; }
 .tl-labels span.done { color: var(--accent); font-weight: 700; }
-/* ============ MOBILE BOTTOM NAV (floating pill + notched center FAB) ============ */
+/* ============ MOBILE BOTTOM NAV (solid edge-to-edge bar) ============ */
 #bnav {
-  display: none; position: fixed; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom));
-  transform: translateX(-50%);
-  width: calc(100% - 28px); max-width: 460px;
+  display: none; position: fixed; left: 0; right: 0; bottom: 0;
   z-index: 40;
+  background: linear-gradient(180deg, #14142400, #101020 14%, #0a0a14);
+  background-color: #0b0b16;
+  border-top: 1px solid rgba(139,108,255,0.16);
+  box-shadow: 0 -6px 22px rgba(0,0,0,0.55);
+  padding-bottom: env(safe-area-inset-bottom);
+  overflow: visible;   /* let the centre circle lift out of the bar */
 }
-.bnav-shape {
-  position: absolute; inset: 0; border-radius: 28px;
-  background: linear-gradient(180deg, rgba(20,20,36,0.98), rgba(9,9,18,0.99));
-  border: 1px solid rgba(139,108,255,0.16);
-  box-shadow: 0 10px 28px rgba(0,0,0,0.45);
-  backdrop-filter: blur(20px);
-  -webkit-mask-image: radial-gradient(circle 30px at 50% -4px, transparent 99%, #000 100%);
-          mask-image: radial-gradient(circle 30px at 50% -4px, transparent 99%, #000 100%);
-}
+.bnav-shape { display: none; }
 .bnav-items {
-  position: relative; z-index: 1;
-  display: flex; justify-content: space-around; align-items: center;
-  padding: 10px 6px 8px;
+  display: flex; align-items: stretch;
 }
 .bnav-item {
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-  width: 42px; height: 42px; cursor: pointer; color: var(--muted);
-  font-size: 8px; font-weight: 700; transition: all 0.2s;
-  border-radius: 13px; position: relative;
+  flex: 1 1 0; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  height: 58px; cursor: pointer; color: var(--muted);
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.01em;
+  position: relative; border-radius: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.2s, background 0.2s;
 }
-.bnav-item i { font-size: 16.5px; transition: all 0.2s; }
-.bnav-item span { display: none; }
-.bnav-item.active { color: #fff; background: rgba(139,108,255,0.16); }
-.bnav-item.active i { color: var(--accent); filter: drop-shadow(0 0 6px rgba(139,108,255,0.5)); }
-.bnav-item.active span { display: block; color: var(--accent); margin-top: 1px; }
-/* CENTER ELEVATED — Daily Sale (back to retail) — floats above the notch */
+.bnav-item i { font-size: 18px; transition: transform 0.2s, color 0.2s; }
+.bnav-item span {
+  display: block; max-width: 100%; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.bnav-item:active { background: rgba(139,108,255,0.08); }
+.bnav-item:active i { transform: scale(0.9); }
+/* Active: top accent rail + lit icon, no gaps between slots */
+.bnav-item.active { color: var(--accent); background: linear-gradient(180deg, rgba(139,108,255,0.16), rgba(139,108,255,0) 78%); }
+.bnav-item.active i { color: var(--accent); filter: drop-shadow(0 0 7px rgba(139,108,255,0.55)); }
+.bnav-item.active::before {
+  content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 46%; height: 3px; border-radius: 0 0 3px 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  box-shadow: 0 0 10px rgba(139,108,255,0.6);
+}
+/* CENTER — floating glowing circle, lifts above the solid bar.
+   The bar itself stays flush; only this circle floats. */
 .bnav-item.bnav-center {
-  width: 56px; height: 56px; margin-top: -32px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; background: linear-gradient(135deg, var(--good), #14b8a6);
-  box-shadow: 0 6px 18px rgba(52,211,153,0.5), 0 0 0 5px var(--bg);
+  color: var(--good);
+  justify-content: flex-end; padding-bottom: 6px;
+  background: none !important;
+  overflow: visible;
 }
-.bnav-item.bnav-center i { font-size: 19px !important; }
-.bnav-item.bnav-center span { display: block; position: absolute; bottom: -15px; font-size: 8px; color: var(--good); font-weight: 700; white-space: nowrap; }
+.bnav-item.bnav-center i {
+  position: absolute; top: -22px; left: 50%; margin-left: -26px;
+  font-size: 20px !important; color: #fff;
+  width: 52px; height: 52px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--good), #14b8a6);
+  border: 3px solid #0b0b16;
+  box-shadow:
+    0 0 0 4px rgba(52,211,153,0.12),
+    0 0 18px rgba(52,211,153,0.55),
+    0 8px 20px rgba(0,0,0,0.45);
+  animation: bnavGlow 2.4s ease-in-out infinite;
+  transition: transform 0.2s;
+}
+@keyframes bnavGlow {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(52,211,153,0.12), 0 0 16px rgba(52,211,153,0.45), 0 8px 20px rgba(0,0,0,0.45); }
+  50%      { box-shadow: 0 0 0 7px rgba(52,211,153,0.05), 0 0 26px rgba(52,211,153,0.8),  0 8px 20px rgba(0,0,0,0.45); }
+}
+.bnav-item.bnav-center span { color: var(--good); font-size: 9px; font-weight: 800; }
+.bnav-item.bnav-center:active i { transform: scale(0.92); animation: none; }
+@media(prefers-reduced-motion:reduce){ .bnav-item.bnav-center i { animation: none; } }
 
 /* ============ FAB ============ */
-.fab-container { position: fixed; bottom: 80px; right: 16px; z-index: 45;
+.fab-container { position: fixed; bottom: calc(70px + env(safe-area-inset-bottom)); right: 14px; z-index: 45;
   display: none; flex-direction: column-reverse; align-items: flex-end; gap: 10px;
   pointer-events: none; }
 .fab-container.open { pointer-events: all; }
@@ -711,10 +739,11 @@ body.light select:hover {
 .deliv-toggle.on { background: rgba(52,211,153,0.13); border-color: rgba(52,211,153,0.35); color: var(--good); }
 
 .bnav-badge:empty { display: none; }
-.bnav-badge { position: absolute; top: 2px; right: 14px;
+.bnav-badge { position: absolute; top: 6px; left: 50%; margin-left: 4px;
   background: var(--bad); color: #fff; font-size: 9px; font-weight: 700;
   min-width: 15px; height: 15px; line-height: 15px; text-align: center;
   border-radius: 8px; padding: 0 4px;
+  box-shadow: 0 0 0 2px #0b0b16;
 }
 
 @media(max-width:640px){
@@ -763,7 +792,7 @@ body.light select:hover {
 /* ============ RESPONSIVE ============ */
 @media(max-width: 768px){
   #sidebar { display: none; }
-  #main { margin-left: 0; padding-bottom: 100px; }
+  #main { margin-left: 0; padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
   #bnav { display: block; }
   .fab-container { display: flex; }
   .top-bar { padding: 8px 12px; }
@@ -985,7 +1014,7 @@ body.light select:hover {
     </div>
   </div>
   <div class="sidebar-footer">
-    <a href="index.html" class="sidebar-back-link">
+    <a href="index.html" class="sidebar-back-link" onclick="return navigateTo(event,'index.html');">
       <i class="fa-solid fa-arrow-left"></i> Back to Retail
     </a>
     <div class="owner" style="margin-top:8px;">Wholesale Module · Isolated</div>
@@ -1009,7 +1038,7 @@ body.light select:hover {
         <i class="fa-solid fa-cloud" id="sync-icon"></i> <span class="hide-mob" id="sync-label">Sync</span>
       </button>
       <button class="btn btn-ghost btn-sm" onclick="openQuickSearch()"><i class="fa-solid fa-magnifying-glass"></i> <span class="hide-mob">Search</span></button>
-      <a href="index.html" class="btn btn-good btn-sm hide-mob" style="text-decoration:none;">
+      <a href="index.html" class="btn btn-good btn-sm hide-mob" onclick="return navigateTo(event,'index.html');" style="text-decoration:none;">
         <i class="fa-solid fa-shop"></i> Daily Sale
       </a>
     </div>
@@ -1041,7 +1070,7 @@ body.light select:hover {
       <span class="bnav-badge" id="badge-orders-mob"></span>
     </div>
     <!-- CENTER: BACK TO RETAIL DAILY SALE -->
-    <a class="bnav-item bnav-center" href="index.html" style="text-decoration:none;">
+    <a class="bnav-item bnav-center" href="index.html" onclick="return navigateTo(event,'index.html');" style="text-decoration:none;">
       <i class="fa-solid fa-shop"></i>
       <span>Daily Sale</span>
     </a>
@@ -1106,6 +1135,9 @@ body.light select:hover {
   </div>
 </div>
 <div class="fab-container" id="fab-container">
+  <!-- Button first in the DOM: .fab-container is column-reverse, so this keeps
+       the + pinned at the bottom and the menu stacking upward (same as index.html) -->
+  <button class="fab-main" id="fab-main" onclick="toggleFab()"><i class="fa-solid fa-plus"></i></button>
   <div class="fab-menu">
     <div class="fab-item" onclick="closeFab(); openCustomerModal();">
       <span class="fab-item-label">New Customer</span>
@@ -1128,7 +1160,6 @@ body.light select:hover {
       <div class="fab-item-icon" style="background:linear-gradient(135deg,#fb923c,#ea580c);"><i class="fa-solid fa-cart-shopping"></i></div>
     </div>
   </div>
-  <button class="fab-main" id="fab-main" onclick="toggleFab()"><i class="fa-solid fa-plus"></i></button>
 </div>
 <!-- Customer Modal -->
 <div class="modal-overlay" id="modal-customer">
@@ -6956,6 +6987,84 @@ setInterval(() => {
 </script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8FaUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
+<!-- ═══════════ PAGE TRANSITION (wholesale ⇄ retail) ═══════════ -->
+<style>
+#page-veil{
+  position:fixed; inset:0; z-index:9999; pointer-events:none; opacity:0;
+  background:#06060c;
+  background-image:radial-gradient(circle at 50% 45%, rgba(52,211,153,0.16), transparent 62%);
+  transition:opacity .26s ease;
+  display:flex; align-items:center; justify-content:center;
+}
+body.light #page-veil{
+  background:#f5f5fc;
+  background-image:radial-gradient(circle at 50% 45%, rgba(52,211,153,0.16), transparent 62%);
+}
+#page-veil.show{opacity:1; pointer-events:all;}
+#page-veil .pv-box{
+  display:flex; flex-direction:column; align-items:center; gap:12px;
+  transform:scale(.86); opacity:0; transition:all .3s cubic-bezier(.34,1.56,.64,1);
+}
+#page-veil.show .pv-box{transform:scale(1); opacity:1;}
+#page-veil .pv-ico{
+  width:62px; height:62px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:23px; color:#fff;
+  background:linear-gradient(135deg,#34d399,#14b8a6);
+  box-shadow:0 8px 26px rgba(52,211,153,.5);
+  animation:pvPulse 1s ease-in-out infinite;
+}
+#page-veil .pv-label{
+  font-size:12px; font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:#34d399;
+}
+@keyframes pvPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.07);}}
+@keyframes pageIn{from{opacity:0; transform:translateY(8px) scale(.995);} to{opacity:1; transform:none;}}
+@keyframes navIn{from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:none;}}
+body.page-enter #main{animation:pageIn .34s cubic-bezier(.4,0,.2,1) both;}
+body.page-enter #bnav{animation:navIn .34s cubic-bezier(.4,0,.2,1) both;}
+@media(prefers-reduced-motion:reduce){
+  #page-veil,#page-veil .pv-box{transition:none;}
+  #page-veil .pv-ico{animation:none;}
+  body.page-enter #main, body.page-enter #bnav{animation:none;}
+}
+</style>
+<div id="page-veil">
+  <div class="pv-box">
+    <div class="pv-ico"><i class="fa-solid fa-shop"></i></div>
+    <div class="pv-label">Opening Daily Sale</div>
+  </div>
+</div>
+<script>
+/* Smooth cross-page navigation with a fade/scale veil.
+   Falls back to a normal link click if anything is unavailable. */
+function navigateTo(ev, url, label, icon){
+  try{
+    if(ev){
+      if(ev.metaKey||ev.ctrlKey||ev.shiftKey||ev.button===1) return true;
+      ev.preventDefault();
+    }
+    var veil=document.getElementById('page-veil');
+    if(!veil){ window.location.href=url; return false; }
+    if(label){ var l=veil.querySelector('.pv-label'); if(l) l.textContent=label; }
+    if(icon){ var i=veil.querySelector('.pv-ico i'); if(i) i.className=icon; }
+    veil.classList.add('show');
+    var done=false;
+    var go=function(){ if(done) return; done=true; window.location.href=url; };
+    setTimeout(go, 300);
+    return false;
+  }catch(e){ window.location.href=url; return false; }
+}
+(function(){
+  document.body.classList.add('page-enter');
+  setTimeout(function(){ document.body.classList.remove('page-enter'); }, 420);
+  window.addEventListener('pageshow', function(){
+    var veil=document.getElementById('page-veil');
+    if(veil) veil.classList.remove('show');
+  });
+})();
+</script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
 </body>
 </html>
