@@ -1151,11 +1151,7 @@ html,body{overflow-x:hidden;max-width:100%;}
         <!-- Shop matrix -->
         <div class="card" style="margin-bottom:18px;overflow:auto;">
           <div style="padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-            <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;">Shop Balances <span style="font-size:10px;font-weight:400;margin-left:6px;" id="shop-bal-hint">(dbl-click to edit)</span></div>
-            <div class="ms-mode-toggle" id="shop-bal-period-toggle">
-              <button type="button" class="ms-mode-btn on" data-period="all" onclick="setShopBalPeriod('all')">All Time</button>
-              <button type="button" class="ms-mode-btn" data-period="month" onclick="setShopBalPeriod('month')">This Month</button>
-            </div>
+            <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;">Shop Balances <span style="font-size:10px;font-weight:400;margin-left:6px;color:var(--muted);">— current balance, right now (dbl-click to edit)</span></div>
           </div>
           <table class="shop-table">
             <thead><tr>
@@ -1239,7 +1235,7 @@ html,body{overflow-x:hidden;max-width:100%;}
             </div>
             <div class="ms-grid">
               <div class="ms-tile">
-                <div class="ms-tile-label"><i class="fa-solid fa-scale-balanced" style="color:var(--accent2);"></i> Net Bal (Home | Bank)</div>
+                <div class="ms-tile-label"><i class="fa-solid fa-scale-balanced" style="color:var(--accent2);"></i> Live Bal (Home | Bank)</div>
                 <div class="ms-tile-val" style="font-size:16px;"><span id="ms-home-val" style="color:var(--warn);">₹0</span> <span style="color:var(--muted);font-size:13px;">|</span> <span id="ms-bank-val" style="color:var(--accent2);">₹0</span></div>
                 <div class="ms-tile-sub">Adjustment: <span class="mono" id="ms-adj-val">₹0</span></div>
               </div>
@@ -2744,7 +2740,7 @@ function confirmGraphicsSwap(dcId, toShopId) {
   if (amt <= 0) return;
   const avail = shopSpendableOnline(toShopId);
   if (amt > avail) {
-    toast(`${shopName(toShopId)} has only ${fmt(avail)} spendable in GPay — pick another shop or a smaller amount is pending.`, 'error');
+    toast(`${shopName(toShopId)} has only ${fmt(avail)} in GPay — pick another shop or a smaller amount is pending.`, 'error');
     return;
   }
   // Leg 1 — cash leg: Graphics "gives away" this cash, toShop physically keeps it.
@@ -2832,7 +2828,7 @@ function renderGraphicsSwapBanner() {
             <div style="display:flex;align-items:center;gap:8px;">
               <span class="mono" style="font-weight:700;color:#f59e0b;">${fmt(p.amount)}</span>
               <select id="gs-shop-${p.dcId}" style="font-size:11.5px;padding:4px 6px;border-radius:6px;background:var(--panel);border:1px solid var(--line);color:var(--jtext);">
-                ${STATE.shops.filter(s=>s.id!=='SHOP04').map(s=>`<option value="${s.id}" ${suggested&&s.id===suggested.id?'selected':''}>${escHtml(s.name)} (spendable GPay ${fmt(shopSpendableOnline(s.id))})</option>`).join('')}
+                ${STATE.shops.filter(s=>s.id!=='SHOP04').map(s=>`<option value="${s.id}" ${suggested&&s.id===suggested.id?'selected':''}>${escHtml(s.name)} (GPay ${fmt(shopSpendableOnline(s.id))})</option>`).join('')}
               </select>
               <button class="btn btn-good btn-xs" onclick="confirmGraphicsSwap('${p.dcId}', $('gs-shop-${p.dcId}').value)"><i class="fa-solid fa-check"></i> Swap</button>
             </div>
@@ -2853,16 +2849,18 @@ function shopHomeReserved(shopId) {
   return (STATE.dayClose||[]).filter(r=>!r.deleted && r.shopId===shopId && !r.cashSaveDone)
     .reduce((s,r)=>s+(r.cashSaveTarget||0), 0);
 }
-// The number that should be shown/checked as "how much Home Cash can I actually still spend".
+// SINGLE SOURCE OF TRUTH — Home Cash actually in hand. Owner's model: the 40% profit is only a
+// REMINDER to set aside; the physical cash is all still here until you press "Done". So the balance
+// shown = the FULL current Home Cash — NOT reduced by the pending 40%. It only changes when you
+// confirm savings "Done": confirmSavingsDone() then logs a real HOME expense that reduces
+// shopHomeCash, so the full figure drops on its own at that moment (e.g. 4000 → 2400 after Done).
+// Not floored at 0 — a genuine negative shows in red everywhere (owner's explicit choice).
 function shopSpendableHomeCash(shopId) {
-  return Math.max(0, shopHomeCash(shopId) - shopHomeReserved(shopId));
+  return shopHomeCash(shopId);
 }
-// DISPLAY-ONLY variant — never floors at 0. A shop that has genuinely gone negative (spent more
-// Home Cash than it ever brought in) needs to actually SHOW that negative number in red, not a
-// misleading ₹0 that hides the deficit and makes table totals not match the Hero Net Position
-// (which is computed by summing the true per-shop figures first, then clamping once at the end).
+// Kept as an alias so any legacy caller stays identical to the single source above.
 function shopSpendableHomeCashRaw(shopId) {
-  return shopHomeCash(shopId) - shopHomeReserved(shopId);
+  return shopSpendableHomeCash(shopId);
 }
 // GPay/Bank-40%: confirming it DOES really subtract from sh.online (see confirmSavingsDone).
 // Once confirmed, that money is already gone from sh.online — no need to reserve it again.
@@ -2871,17 +2869,20 @@ function shopOnlineReserved(shopId) {
   return (STATE.dayClose||[]).filter(r=>!r.deleted && r.shopId===shopId && !r.bankSaveDone)
     .reduce((s,r)=>s+(r.bankSaveTarget||0), 0);
 }
-// The number that should be shown as "GPay/Online" and checked before any GPay-mode spend.
+// SINGLE SOURCE OF TRUTH — GPay/Online actually available. Same rule as Home Cash above: the 40%
+// bank-profit is only a REMINDER; the money is all still in the balance until you press "Done".
+// So this shows the FULL current online balance — NOT reduced by the pending 40%. It only drops
+// when you confirm bank savings "Done": confirmSavingsDone() then subtracts the amount from
+// sh.online directly, so the figure updates on its own at that moment (e.g. 3000 → 1800 after Done).
+// Not floored at 0 — a genuine negative shows in red everywhere (owner's explicit choice).
 function shopSpendableOnline(shopId) {
   const sh = STATE.shops.find(s=>s.id===shopId);
   if (!sh) return 0;
-  return Math.max(0, (sh.online||0) - shopOnlineReserved(shopId));
+  return (sh.online||0);
 }
-// DISPLAY-ONLY variant — never floors at 0, for the same reason as shopSpendableHomeCashRaw above.
+// Kept as an alias so any legacy caller stays identical to the single source above.
 function shopSpendableOnlineRaw(shopId) {
-  const sh = STATE.shops.find(s=>s.id===shopId);
-  if (!sh) return 0;
-  return (sh.online||0) - shopOnlineReserved(shopId);
+  return shopSpendableOnline(shopId);
 }
 
 // ─── Shared "would go negative" balance guard ───────────────────────────────
@@ -2930,14 +2931,13 @@ function activeInvestors() { return (STATE.investors || []).filter(i => i.status
 //           for the same month it's currently showing), so the two sections become directly
 //           comparable. Month mode is a computed/derived figure — not an opening balance — so
 //           dbl-click editing is disabled for it (editing only makes sense for the all-time total).
+// LOCKED to 'all' — the confusing "This Month" toggle was removed from the UI per the owner's
+// request. Shop Balances now always shows the single "current balance, right now" figure, so it
+// never shows two different numbers for the same thing. setShopBalPeriod is kept as a safe no-op
+// (forces 'all') in case any old reference calls it.
 let _shopBalPeriod = 'all';
-function setShopBalPeriod(period) {
-  _shopBalPeriod = period;
-  document.querySelectorAll('#shop-bal-period-toggle .ms-mode-btn').forEach(btn => {
-    btn.classList.toggle('on', btn.dataset.period === period);
-  });
-  const hint = $('shop-bal-hint');
-  if (hint) hint.textContent = period === 'month' ? '(this month\'s flow — read-only)' : '(dbl-click to edit)';
+function setShopBalPeriod(_period) {
+  _shopBalPeriod = 'all';
   renderDashboard();
 }
 // This month's Home Cash actually brought home for one shop, net of HOME-source itemized
@@ -2960,12 +2960,11 @@ function shopMonthOnlineRaw(shopId) {
 }
 
 function renderDashboard() {
-  // Spendable = gross minus whatever's reserved for 40% savings (not yet actually removed from
-  // the pool). This is what should gate "can I spend this?" and what the Counter/GPay columns show.
-  const totalGalla  = STATE.shops.reduce((s,sh)=>s+(sh.galla||0),0);   // galla is pure opening/working capital — fully spendable, no reserve
-  const totalOnline = STATE.shops.reduce((s,sh)=>s+shopSpendableOnline(sh.id),0);  // spendable GPay
-  // Gross = the TRUE asset value, used for Net Worth — reserved-for-savings money is still the
-  // person's own wealth (just earmarked), so it must NOT be subtracted from net worth.
+  // SINGLE SOURCE OF TRUTH: every balance below is the ONE true stored value — no reserve
+  // subtraction anywhere — so the same shop shows the same number in every screen.
+  const totalGalla  = STATE.shops.reduce((s,sh)=>s+(sh.galla||0),0);   // counter working capital
+  const totalOnline = STATE.shops.reduce((s,sh)=>s+shopSpendableOnline(sh.id),0);  // true GPay total (== gross)
+  // Kept as its own name for the Net Worth line below; now identical to totalOnline.
   const totalOnlineGross = STATE.shops.reduce((s,sh)=>s+(sh.online||0),0);
   const totalUd     = STATE.udhaari.filter(u=>u.status==='Active').reduce((s,u)=>s+(u.totalBill-u.received),0);
   const totalLiab   = STATE.outflows.filter(o=>o.status==='Pending').reduce((s,o)=>s+(o.amount+o.lateFee-o.paid),0);
@@ -3010,11 +3009,14 @@ function renderDashboard() {
   let tbody = '';
   STATE.shops.forEach(sh => {
     const net = shopNet(sh.id);
-    // All-Time = spendable running total (gross minus 40%-reserve — a lifetime concept).
-    // This-Month = raw month-only flow (same formula as Monthly Summary), no reserve subtraction,
-    // since 40%-reserve tracking only makes sense against the lifetime running balance.
-    const hc  = isMonthPeriod ? shopMonthHomeCashRaw(sh.id) : shopSpendableHomeCashRaw(sh.id);
-    const gp  = isMonthPeriod ? shopMonthOnlineRaw(sh.id)   : shopSpendableOnlineRaw(sh.id);
+    // OWNER'S 60/40 MODEL: All-Time shows SPENDABLE (60%) — i.e. current balance minus the still-
+    // pending 40% profit that's meant to be set aside. This is the ONE spendable figure used
+    // everywhere (table, Monthly Summary, transfer preview, pay guards), so the same shop always
+    // shows the same number. Not floored, so over-spending into the locked profit shows a true
+    // negative in red. Graphics (SHOP04) has 0 reserve, so its spendable == its full balance.
+    // This-Month = raw month-only flow (same formula as Monthly Summary).
+    const hc  = isMonthPeriod ? shopMonthHomeCashRaw(sh.id) : shopSpendableHomeCash(sh.id);
+    const gp  = isMonthPeriod ? shopMonthOnlineRaw(sh.id)   : shopSpendableOnline(sh.id);
     const loanBorrowed = shopLoanBorrowed(sh.id);
     const loanRepaid = shopLoanRepaid(sh.id);
     const loanPending = shopLoanPending(sh.id);
@@ -3026,10 +3028,10 @@ function renderDashboard() {
     const gpCls  = isMonthPeriod ? 'mono' : 'mono editable-cell';
     const hcTitle = isMonthPeriod
       ? `This month (${monthYm}) Home Cash brought home, net of Home-source expenses — read-only`
-      : `Spendable Home Cash (gross ${fmt(shopHomeCash(sh.id))} minus ${fmt(shopHomeReserved(sh.id))} reserved for 40% cash-savings) — dbl-click to set opening balance`;
+      : `Home Cash in hand: ${fmt(shopHomeCash(sh.id))} (full amount). Reminder: ${fmt(shopHomeReserved(sh.id))} still to set aside as 40% profit — this balance drops only when you mark that savings "Done". Dbl-click to set opening balance`;
     const gpTitle = isMonthPeriod
       ? `This month (${monthYm}) GPay received, net of GP-source expenses — read-only`
-      : `Spendable GPay (gross ${fmt(sh.online)} minus ${fmt(shopOnlineReserved(sh.id))} reserved for pending 40% bank-savings) — dbl-click to edit gross`;
+      : `GPay/Bank available: ${fmt(sh.online)} (full amount). Reminder: ${fmt(shopOnlineReserved(sh.id))} still to set aside as 40% profit — this balance drops only when you mark that savings "Done". Dbl-click to edit`;
     tbody += `<tr>
       <td><span style="display:inline-flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:${shopColor(sh.id)};"></span><strong>${sh.name}</strong></span></td>
       <td><span class="${hcCls}" style="color:${hc<0?'var(--bad)':'var(--accent)'};"${hcAttr} title="${hcTitle}">${fmtSigned(hc)}</span></td>
@@ -3043,13 +3045,14 @@ function renderDashboard() {
   });
   const totHc   = STATE.shops.reduce((s,sh)=>s+shopHomeCash(sh.id),0);          // gross — for Net Worth math
   // Total row's Home Cash / GPay must equal the sum of whichever column mode is currently shown
-  // above (All-Time spendable vs This-Month raw flow) — same toggle-awareness as the rows.
+  // above (All-Time SPENDABLE-60% vs This-Month raw flow) — same toggle-awareness as the rows,
+  // so the footer equals the literal sum of the rows shown directly above it.
   const totHcSpendable = isMonthPeriod
     ? STATE.shops.reduce((s,sh)=>s+shopMonthHomeCashRaw(sh.id),0)
-    : STATE.shops.reduce((s,sh)=>s+shopSpendableHomeCashRaw(sh.id),0);
+    : STATE.shops.reduce((s,sh)=>s+shopSpendableHomeCash(sh.id),0);
   const totGpSpendable = isMonthPeriod
     ? STATE.shops.reduce((s,sh)=>s+shopMonthOnlineRaw(sh.id),0)
-    : STATE.shops.reduce((s,sh)=>s+shopSpendableOnlineRaw(sh.id),0);
+    : STATE.shops.reduce((s,sh)=>s+shopSpendableOnline(sh.id),0);
   const totUd   = STATE.shops.reduce((s,sh)=>s+shopUd(sh.id),0);
   const totLiab2= STATE.shops.reduce((s,sh)=>s+shopLiab(sh.id),0);
   const totLoanBorrowed = STATE.shops.reduce((s,sh)=>s+shopLoanBorrowed(sh.id),0);
@@ -3452,13 +3455,30 @@ function renderMonthlySummary() {
   const shownSale = _msMode === 'Full' ? totalSale : (_msMode === 'Home' ? cashSale : gpaySale);
   saleEl.textContent = fmt(shownSale);
 
-  // Actual cash physically brought home / received via GPay this month, net of Home/GP-source itemized expenses
+  // Actual cash physically brought home / received via GPay THIS MONTH, net of Home/GP-source
+  // itemized expenses. Kept because the Adjustment tile below is a month-scoped concept that
+  // still needs actualHome. NOTE: these month-flow figures are deliberately NO LONGER shown in
+  // the "Net Bal" tiles (see truth-model change below) — that was the root of complaint 3, where
+  // month-flow ignored homeTransfer / Graphics-swap / manual-adjust and so never matched the real
+  // wallet (e.g. Graphics swap showed 2,950 | 9,887 while the account actually held 11,150).
   const actualHome = recs.reduce((s, r) => s + (r.cashHome || 0), 0)
     - exps.filter(e => e.source === 'HOME').reduce((s, e) => s + (e.amount || 0), 0);
   const actualBank = gpaySale
     - exps.filter(e => e.source === 'GP').reduce((s, e) => s + (e.amount || 0), 0);
-  $('ms-home-val').textContent = fmt(actualHome);
-  $('ms-bank-val').textContent = fmt(actualBank);
+
+  // "Live Bal (Home | Bank)" shows the FULL current balance — the exact same figure as the Shop
+  // Balances All-Time columns (same shopSpendableHomeCash / shopSpendableOnline), so the two
+  // sections always reconcile and the same shop shows the same number everywhere. The 40% profit
+  // is only a reminder; these figures drop on their own when savings are marked "Done".
+  const netShops = _msShopFilter === 'ALL' ? STATE.shops : STATE.shops.filter(s => s.id === _msShopFilter);
+  const curNetHome = netShops.reduce((s, sh) => s + shopSpendableHomeCash(sh.id), 0);
+  const curNetBank = netShops.reduce((s, sh) => s + shopSpendableOnline(sh.id), 0);
+  $('ms-home-val').textContent = fmtSigned(curNetHome);
+  $('ms-bank-val').textContent = fmtSigned(curNetBank);
+  $('ms-home-val').style.color = curNetHome < 0 ? 'var(--bad)' : 'var(--warn)';
+  $('ms-bank-val').style.color = curNetBank < 0 ? 'var(--bad)' : 'var(--accent2)';
+  const netTile = $('ms-home-val').closest('.ms-tile');
+  if (netTile) netTile.title = `Full live balance — matches Shop Balances → All-Time. Home ${fmt(curNetHome)}, Bank/GPay ${fmt(curNetBank)}. The 40% profit is only a reminder to set aside; these drop on their own when you mark savings "Done". Running total across all time — the tiles below (Sale, Expenses, Savings, Loans) are scoped to ${ym}.`;
 
   // 40% savings targets — BUG FIX: must be the SUM of each record's actual cashSaveTarget /
   // bankSaveTarget (the exact same numbers the Savings Pending reminder banner tracks and
@@ -3489,9 +3509,11 @@ function renderMonthlySummary() {
   $('ms-adj-val').textContent = fmt(adjustment);
   $('ms-adj-val').style.color = adjustment > 0 ? 'var(--bad)' : 'var(--muted)';
 
-  // Monthly expenses = Counter expenses (Day Close) + Home-source + GP-source itemized daily expenses
+  // Monthly expenses = Counter expenses (Day Close) + Home-source + GP-source itemized daily expenses.
+  // EXCLUDE 40% "Savings (…)" entries — those set-asides reduce the wallet but are profit reserve,
+  // not business spending, so they must not inflate the Expenses total.
   const counterExp = recs.reduce((s, r) => s + (r.expense || 0), 0);
-  const itemExp = exps.filter(e => e.source !== 'COUNTER').reduce((s, e) => s + (e.amount || 0), 0);
+  const itemExp = exps.filter(e => e.source !== 'COUNTER' && !(e.desc || '').startsWith('Savings (40%')).reduce((s, e) => s + (e.amount || 0), 0);
   $('ms-exp-val').textContent = fmt(counterExp + itemExp);
 
   // Calculate loans for this month
@@ -4085,7 +4107,9 @@ function renderDailyExpenses(shopId) {
   const listEl = $(`de-list-${shopId}`), sumEl = $(`de-summary-${shopId}`);
   if (!listEl) return;
   const entryDate = $(`dc-date-${shopId}`)?.value || todayStr();
-  const items = STATE.dailyExpenses.filter(e => e.shopId===shopId && e.date===entryDate && !e.deleted);
+  // 40% "Savings" set-asides live in dailyExpenses so they reduce the wallet, but they are profit
+  // reserve — not spending — so they must not appear in this expense list or its Home/GP totals.
+  const items = STATE.dailyExpenses.filter(e => e.shopId===shopId && e.date===entryDate && !e.deleted && !(e.desc || '').startsWith('Savings (40%'));
 
   listEl.innerHTML = items.map(e => `
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 10px;">
@@ -4498,12 +4522,21 @@ function computeDcEntryStats(r) {
   const cashSavings = r.cashSaveTarget != null ? r.cashSaveTarget : roundTo100((r.cashHome || 0) * 0.4);
   const bankSavings = r.bankSaveTarget != null ? r.bankSaveTarget : roundTo100((r.gpay || 0) * 0.4);
   const dayExps = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.shopId === r.shopId && e.date === r.date);
+  const isSaving = e => (e.desc || '').startsWith('Savings (40%');
   const homeExp = dayExps.filter(e => e.source === 'HOME').reduce((s, e) => s + (e.amount || 0), 0);
   const gpExp = dayExps.filter(e => e.source === 'GP').reduce((s, e) => s + (e.amount || 0), 0);
+  // "Real" expense = actual spending only. Marking a 40% savings "Done" books a HOME/GP
+  // daily-expense so it correctly REDUCES the live wallet balance — but that set-aside is
+  // profit reserve, NOT a business expense, so it must be excluded from Expense reports/totals.
+  // homeExp/gpExp (which INCLUDE savings) stay untouched because the balance-story math relies
+  // on them; the *Real variants are what every Expense display should use.
+  const homeExpReal = dayExps.filter(e => e.source === 'HOME' && !isSaving(e)).reduce((s, e) => s + (e.amount || 0), 0);
+  const gpExpReal = dayExps.filter(e => e.source === 'GP' && !isSaving(e)).reduce((s, e) => s + (e.amount || 0), 0);
   const adj40 = Math.max(0, cashSavings - (r.cashHome || 0));
   const expTotal = (r.expense || 0) + homeExp + gpExp;
+  const expTotalReal = (r.expense || 0) + homeExpReal + gpExpReal;
   const outTotal = (STATE.outflows || []).filter(o => o.shopId === r.shopId && o.entryDate === r.date).reduce((s, o) => s + (o.amount || 0), 0);
-  return { cashSavings, bankSavings, homeExp, gpExp, adj40, expTotal, outTotal };
+  return { cashSavings, bankSavings, homeExp, gpExp, homeExpReal, gpExpReal, adj40, expTotal, expTotalReal, outTotal };
 }
 
 function renderDcEntriesTable() {
@@ -4537,7 +4570,7 @@ function renderDcEntriesTable() {
       case 'savings': return dir * ((a.s.cashSavings+a.s.bankSavings) - (b.s.cashSavings+b.s.bankSavings));
       case 'netcash': return dir * ((a.r.cashHome||0) - (b.r.cashHome||0));
       case 'gpay': return dir * ((a.r.gpay||0) - (b.r.gpay||0));
-      case 'expense': return dir * ((a.s.expTotal+a.s.outTotal) - (b.s.expTotal+b.s.outTotal));
+      case 'expense': return dir * ((a.s.expTotalReal+a.s.outTotal) - (b.s.expTotalReal+b.s.outTotal));
       case 'date':
       default: return dir * (a.r.date||'').localeCompare(b.r.date||'');
     }
@@ -4559,14 +4592,14 @@ function renderDcEntriesTable() {
       <td>
         <div style="color:var(--warn);font-weight:700;">${fmt(r.cashHome)}</div>
         <div class="dce-sub">40% Adj: ${fmt(s.adj40)}</div>
-        <div class="dce-sub">Exp (H): ${fmt(s.homeExp)}</div>
+        <div class="dce-sub">Exp (H): ${fmt(s.homeExpReal)}</div>
       </td>
       <td>
         <div style="font-weight:700;">${fmt(r.gpay)}</div>
-        <div class="dce-sub">Exp (G): ${fmt(s.gpExp)}</div>
+        <div class="dce-sub">Exp (G): ${fmt(s.gpExpReal)}</div>
       </td>
       <td>
-        <div style="color:var(--bad);">Exp: ${fmt(s.expTotal)}</div>
+        <div style="color:var(--bad);">Exp: ${fmt(s.expTotalReal)}</div>
         <div style="color:var(--bad);">Out: ${fmt(s.outTotal)}</div>
       </td>
       <td onclick="event.stopPropagation();">
@@ -4605,7 +4638,9 @@ function shareDcDayReport(id) {
   const shopLabel = shopDisplayName.toUpperCase();
   const DIVIDER = '──────────────────────';
 
-  const dayExps = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.shopId === r.shopId && e.date === r.date);
+  // Exclude 40% "Savings" set-asides from the itemised EXPENSES list — they appear under the
+  // dedicated "Today's Savings" section, and are profit reserve, not spending.
+  const dayExps = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.shopId === r.shopId && e.date === r.date && !(e.desc || '').startsWith('Savings (40%'));
 
   // Till-date running totals for this shop, as of this record's date
   const priorRecords = STATE.dayClose.filter(x => !x.deleted && x.shopId === r.shopId && x.date <= r.date);
@@ -4630,11 +4665,11 @@ function shareDcDayReport(id) {
   }
 
   const hcParts = [];
-  if (s.homeExp > 0) hcParts.push(`Home Exp : ${fmt(s.homeExp)}`);
+  if (s.homeExpReal > 0) hcParts.push(`Home Exp : ${fmt(s.homeExpReal)}`);
   if ((r.expense || 0) > 0) hcParts.push(`Counter Exp : ${fmt(r.expense)}`);
-  if (hcParts.length || s.gpExp > 0) msg += `\n`;
+  if (hcParts.length || s.gpExpReal > 0) msg += `\n`;
   if (hcParts.length) msg += `*• ${hcParts.join(' / ')}*\n`;
-  if (s.gpExp > 0) msg += `*• GPay Exp : ${fmt(s.gpExp)}*\n`;
+  if (s.gpExpReal > 0) msg += `*• GPay Exp : ${fmt(s.gpExpReal)}*\n`;
 
   msg += `\n*_Today's Savings_*\n`;
   msg += `*_• Cash (40%) : ${fmt(s.cashSavings)}_*\n`;
@@ -4660,7 +4695,7 @@ function shareDcMonthReport() {
   const totals = visible.reduce((acc, r) => {
     const s = computeDcEntryStats(r);
     acc.sale += r.sale || 0; acc.cashSavings += s.cashSavings; acc.bankSavings += s.bankSavings;
-    acc.cashHome += r.cashHome || 0; acc.gpay += r.gpay || 0; acc.exp += s.expTotal; acc.out += s.outTotal;
+    acc.cashHome += r.cashHome || 0; acc.gpay += r.gpay || 0; acc.exp += s.expTotalReal; acc.out += s.outTotal;
     return acc;
   }, { sale: 0, cashSavings: 0, bankSavings: 0, cashHome: 0, gpay: 0, exp: 0, out: 0 });
 
@@ -4734,10 +4769,10 @@ function openDcDetail(id) {
       </div>
     </div>
     <div style="margin-top:10px;font-size:11.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 14px;padding:0 2px;">
-      <span>Exp (Home): <b style="color:var(--jtext);">${fmt(s.homeExp)}</b></span>
-      <span>Exp (GPay): <b style="color:var(--jtext);">${fmt(s.gpExp)}</b></span>
+      <span>Exp (Home): <b style="color:var(--jtext);">${fmt(s.homeExpReal)}</b></span>
+      <span>Exp (GPay): <b style="color:var(--jtext);">${fmt(s.gpExpReal)}</b></span>
       <span>Outflows today: <b style="color:var(--jtext);">${fmt(s.outTotal)}</b></span>
-      <span>Total Exp: <b style="color:var(--bad);">${fmt(s.expTotal)}</b></span>
+      <span>Total Exp: <b style="color:var(--bad);">${fmt(s.expTotalReal)}</b></span>
     </div>
     <button class="btn btn-good" style="width:100%;margin-top:16px;" onclick="shareDcDayReport('${r.id}')"><i class="fa-brands fa-whatsapp"></i> Share on WhatsApp</button>`;
   openModal('modal-dc-detail');
@@ -5972,7 +6007,7 @@ function saveIntershop() {
       // put old effect back before bailing, so state isn't left half-reversed
       applyLoanMovement(i);
       if (i.status === 'Settled') applyRepayMovement(i);
-      toast(`${fromShop.name} spendable ${mode==='GPay'?'GPay':'Home Cash'} is only ${fmt(avail)} (40% savings reserve already deducted)`, 'error'); return;
+      toast(`${fromShop.name} current ${mode==='GPay'?'GPay':'Home Cash'} is only ${fmt(avail)}`, 'error'); return;
     }
     i.fromShop = from; i.toShop = to; i.amount = amt; i.date = date; i.reason = reason; i.mode = mode; i.kind = 'loan';
     applyLoanMovement(i);
@@ -5981,7 +6016,7 @@ function saveIntershop() {
     toast(`Transfer updated — ${shopName(from)} → ${shopName(to)} ${fmt(amt)}`);
   } else {
     const avail = mode==='GPay' ? shopSpendableOnline(from) : shopSpendableHomeCash(from);
-    if (avail < amt) { toast(`${fromShop.name} spendable ${mode==='GPay'?'GPay':'Home Cash'} is only ${fmt(avail)} (40% savings reserve already deducted)`, 'error'); return; }
+    if (avail < amt) { toast(`${fromShop.name} current ${mode==='GPay'?'GPay':'Home Cash'} is only ${fmt(avail)}`, 'error'); return; }
     const entry = {id:newId('IS'), fromShop:from, toShop:to, date, amount:amt, reason, mode, status:'Open', kind:'loan'};
     applyLoanMovement(entry);
     STATE.intershop.unshift(entry);
@@ -6045,7 +6080,7 @@ function saveSettleIntershop() {
   const toShop = STATE.shops.find(s=>s.id===i.toShop);
   if (!fromShop || !toShop) { toast('Shop not found','error'); return; }
   const avail = repayMode==='GPay' ? shopSpendableOnline(i.toShop) : shopSpendableHomeCash(i.toShop);
-  if (avail < i.amount) { toast(`${toShop.name} spendable ${repayMode==='GPay'?'GPay':'Home Cash'} is only ${fmt(avail)} (40% savings reserve already deducted)`, 'error'); return; }
+  if (avail < i.amount) { toast(`${toShop.name} current ${repayMode==='GPay'?'GPay':'Home Cash'} is only ${fmt(avail)}`, 'error'); return; }
   i.repayMode = repayMode;
   i.status = 'Settled';
   applyRepayMovement(i);
@@ -7044,7 +7079,7 @@ function saveHomeExpense() {  const desc = $('he-desc').value.trim();
     if (available < amt) {
       showConfirm({
         title:'Low Balance!',
-        msg:`<strong>${escHtml(sh.name)}</strong> spendable <strong>${useGpay?'GPay':'Counter Cash'}</strong> is only <strong>${fmt(available)}</strong> (40% savings reserve already deducted). Log anyway?`,
+        msg:`<strong>${escHtml(sh.name)}</strong> current <strong>${useGpay?'GPay':'Counter Cash'}</strong> is only <strong>${fmt(available)}</strong>. Log anyway?`,
         icon:'!',yesText:'Log Anyway',yesCls:'btn-bad',
         onYes:()=>{
           // Bug 3 fix: store actualDeducted so delete only reverses what was really deducted (not full amount)
@@ -7419,7 +7454,7 @@ function exportExcelReport() {
   ), 'Home Expenses');
 
   // Daily Expenses
-  const deRows = (STATE.dailyExpenses||[]).filter(e=>!e.deleted).map(e => [e.date, shopName(e.shopId), e.desc, DE_SOURCE_LABEL[e.source]||e.source, e.amount||0]);
+  const deRows = (STATE.dailyExpenses||[]).filter(e=>!e.deleted && !(e.desc || '').startsWith('Savings (40%')).map(e => [e.date, shopName(e.shopId), e.desc, DE_SOURCE_LABEL[e.source]||e.source, e.amount||0]);
   if (deRows.length) XLSX.utils.book_append_sheet(wb, makeSheet(
     ['Date','Shop','Description','Source','Amount'],
     deRows, [12,14,20,10,12]
@@ -7557,8 +7592,8 @@ function exportPdfReport() {
 
   // === NET POSITION BOX ===
   const totalGalla = STATE.shops.reduce((s,sh) => s + (sh.galla||0), 0);   // pure working capital, fully spendable
-  const totalOnline = STATE.shops.reduce((s,sh) => s + shopSpendableOnline(sh.id), 0); // spendable (post 40%-reserve)
-  const totalOnlineGross = STATE.shops.reduce((s,sh) => s + (sh.online||0), 0);        // true asset value for Net Position
+  const totalOnline = STATE.shops.reduce((s,sh) => s + shopSpendableOnline(sh.id), 0); // full GPay balance (40% is only a reminder, not subtracted)
+  const totalOnlineGross = STATE.shops.reduce((s,sh) => s + (sh.online||0), 0);        // same value; kept name for the Net Position line
   const totalUd = STATE.udhaari.filter(u=>u.status==='Active').reduce((s,u)=>s+(u.totalBill-u.received),0);
   const totalLiab = STATE.outflows.filter(o=>o.status==='Pending').reduce((s,o)=>s+(o.amount+o.lateFee-o.paid),0);
   const totHc = STATE.shops.reduce((s,sh)=>s+shopHomeCash(sh.id), 0);
@@ -7952,7 +7987,7 @@ function exportPdfReport() {
   }
 
   // === DAILY EXPENSES ===
-  const deActive = (STATE.dailyExpenses||[]).filter(e=>!e.deleted);
+  const deActive = (STATE.dailyExpenses||[]).filter(e=>!e.deleted && !(e.desc || '').startsWith('Savings (40%'));
   if (deActive.length) {
     sectionTitle('Daily Counter Expenses');
     const deBody = deActive.map(e => [
@@ -8034,8 +8069,8 @@ function buildDailySummary() {
   const todayFmt = new Date().toLocaleDateString('en-IN', { weekday:'short', day:'2-digit', month:'long', year:'numeric' });
 
   const totalGalla  = STATE.shops.reduce((s,sh)=>s+(sh.galla||0),0);   // pure working capital, fully spendable
-  const totalOnline = STATE.shops.reduce((s,sh)=>s+shopSpendableOnline(sh.id),0);  // spendable (post 40%-reserve)
-  const totalOnlineGross = STATE.shops.reduce((s,sh)=>s+(sh.online||0),0);         // true asset value for Net Position
+  const totalOnline = STATE.shops.reduce((s,sh)=>s+shopSpendableOnline(sh.id),0);  // full GPay balance (40% is only a reminder, not subtracted)
+  const totalOnlineGross = STATE.shops.reduce((s,sh)=>s+(sh.online||0),0);         // same value; kept name for the Net Position line
   const totalUd = STATE.udhaari.filter(u=>u.status==='Active').reduce((s,u)=>s+(u.totalBill-u.received),0);
   const totalLiab = STATE.outflows.filter(o=>o.status==='Pending').reduce((s,o)=>s+(o.amount+o.lateFee-o.paid),0);
   const pendLoanAmt = STATE.loans.filter(l=>l.status==='Pending').reduce((s,l)=>s+(l.amount-l.repaid),0);
@@ -8103,7 +8138,8 @@ function buildShopDailySummary(shopId, dateStr) {
 
   if (dc) {
     const s = computeDcEntryStats(dc);
-    const dayExps = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.shopId===shopId && e.date===d);
+    // Exclude 40% "Savings" set-asides — shown separately under Savings, not as spending.
+    const dayExps = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.shopId===shopId && e.date===d && !(e.desc || '').startsWith('Savings (40%'));
 
     m += `*• Cash in Counter : ${fmt(dc.counterCash)}*\n`;
     m += `*• To Home : ${fmt(dc.cashHome)}*\n`;
@@ -8120,11 +8156,11 @@ function buildShopDailySummary(shopId, dateStr) {
     }
 
     const hcParts = [];
-    if (s.homeExp > 0) hcParts.push(`Home Exp : ${fmt(s.homeExp)}`);
+    if (s.homeExpReal > 0) hcParts.push(`Home Exp : ${fmt(s.homeExpReal)}`);
     if ((dc.expense || 0) > 0) hcParts.push(`Counter Exp : ${fmt(dc.expense)}`);
-    if (hcParts.length || s.gpExp > 0) m += `\n`;
+    if (hcParts.length || s.gpExpReal > 0) m += `\n`;
     if (hcParts.length) m += `*• ${hcParts.join(' / ')}*\n`;
-    if (s.gpExp > 0) m += `*• GPay Exp : ${fmt(s.gpExp)}*\n`;
+    if (s.gpExpReal > 0) m += `*• GPay Exp : ${fmt(s.gpExpReal)}*\n`;
     if (dc.note) m += `Note: ${dc.note}\n`;
 
     m += `\n*_Today's Savings_*\n`;
@@ -8557,7 +8593,7 @@ function confirmReminderPaid() {
       if (available < amt) {
         showConfirm({
           title:'Low Balance!',
-          msg:`<strong>${sh.name}</strong> spendable <strong>${useGpay?'GPay':'Cash'}</strong> is only <strong>${fmt(available)}</strong> (40% savings reserve already deducted). Log anyway?`,
+          msg:`<strong>${sh.name}</strong> current <strong>${useGpay?'GPay':'Cash'}</strong> is only <strong>${fmt(available)}</strong>. Log anyway?`,
           icon:'!',yesText:'Log Anyway',yesCls:'btn-bad',
           onYes:()=>_logPayment(sh, useGpay)
         }); return;
@@ -9160,6 +9196,8 @@ function navigateTo(ev, url, label, icon){
   });
 })();
 </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
 </body>
 </html>
