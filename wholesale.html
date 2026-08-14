@@ -278,6 +278,14 @@ select:focus {
 }
 .inp:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139,108,255,0.12); }
 .inp::placeholder { color: #3a3a58; }
+.settings-lockbar { display:flex; align-items:center; gap:10px; background:rgba(255,180,60,0.10); border:1px solid rgba(255,180,60,0.35); border-radius:10px; padding:10px 12px; margin-bottom:12px; }
+.settings-lockbar i { color:#e0a020; font-size:16px; }
+.settings-lockbar .lockmsg { flex:1; font-size:12.5px; font-weight:700; color:#c98a10; }
+.settings-lockbar input { width:110px; }
+.settings-locked-fields { position:relative; }
+.settings-locked-fields.is-locked input,
+.settings-locked-fields.is-locked select { opacity:0.5; pointer-events:none; cursor:not-allowed; background:#f0f0f3; }
+.settings-locked-fields.is-locked { filter:grayscale(0.15); }
 
 /* ===== Custom Select — replaces the native <select> popup with a themed
    floating panel (desktop) / bottom sheet (mobile). The original <select>
@@ -1328,6 +1336,42 @@ kbd.kbd {
   </div>
 </div>
 
+<!-- Custom Order Item Modal — for one-off items not in the product catalogue,
+     e.g. packing, delivery, or something a customer asked for that isn't
+     stocked. Goes straight onto the bill, no inventory/stock impact. -->
+<div class="modal-overlay" id="modal-custom-item">
+  <div class="modal-box">
+    <div class="modal-title">
+      <span id="custom-item-title"><i class="fa-solid fa-box-open" style="color:var(--accent2);margin-right:8px;"></i>Custom Item</span>
+      <button class="modal-close" onclick="closeModal('modal-custom-item')">&times;</button>
+    </div>
+    <input type="hidden" id="custom-item-index" value="-1">
+    <div style="font-size:10.5px;color:var(--muted);margin-bottom:10px;line-height:1.5;">
+      <i class="fa-solid fa-circle-info" style="color:var(--accent2);"></i> Yeh item inventory me nahi banega — sirf isi bill me add hoga. Packing, delivery charge, ya koi aisi cheez jo stock me nahi hai.
+    </div>
+    <div class="form-grid" style="gap:10px;">
+      <div><label class="field-label">Item / Charge Name *</label><input class="inp" id="custom-item-name" placeholder="e.g. Packing Charge, Extra Item"></div>
+      <div class="form-row">
+        <div class="form-col"><label class="field-label">Qty</label><input type="number" class="inp" id="custom-item-qty" value="1" onfocus="clearIfZero(this)"></div>
+        <div class="form-col"><label class="field-label">Rate ₹ *</label><input type="number" class="inp" id="custom-item-rate" value="0" onfocus="clearIfZero(this)"></div>
+        <div class="form-col"><label class="field-label">GST %</label>
+          <select class="inp" id="custom-item-gst">
+            <option value="0" selected>0%</option>
+            <option value="5">5%</option>
+            <option value="12">12%</option>
+            <option value="18">18%</option>
+            <option value="28">28%</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-custom-item')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCustomOrderItem()"><i class="fa-solid fa-check"></i> Add to Bill</button>
+    </div>
+  </div>
+</div>
+
 <!-- Product Modal -->
 <div class="modal-overlay" id="modal-product">
   <div class="modal-box">
@@ -1347,10 +1391,10 @@ kbd.kbd {
         </div>
         <div class="form-col"><label class="field-label">GST %</label>
           <select class="inp" id="prod-gst" onchange="updateProductSummary()">
-            <option value="0">0%</option>
+            <option value="0" selected>0%</option>
             <option value="5">5%</option>
             <option value="12">12%</option>
-            <option value="18" selected>18%</option>
+            <option value="18">18%</option>
             <option value="28">28%</option>
           </select>
         </div>
@@ -1395,17 +1439,24 @@ kbd.kbd {
     <div style="padding:10px 12px;background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.22);border-radius:10px;margin-bottom:12px;">
       <div style="font-size:10px;font-weight:700;color:var(--warn);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">One line per bill row</div>
       <div class="mono" style="font-size:11px;color:var(--muted);line-height:1.7;">
-        Item Name , Qty , Rate , Wholesale Rate , MRP<br>
-        <span style="color:var(--text);">Aasan Plain 3x4 , 100 , 23 , 30 , 45</span>
+        Item Name , Qty , Rate , Wholesale Rate , MRP , Unit<br>
+        <span style="color:var(--text);">Aasan Plain 3x4 , 100 , 23 , 30 , 45 , Pcs</span><br>
+        <span style="color:var(--text);">Moli , 50 , 40 , 45 , 60 , Kg</span>
       </div>
+      <div style="font-size:9.5px;color:var(--muted);margin-top:6px;">Unit column optional hai — Pcs/Kg/Gram/Ltr/Mtr/Box/Ctn/Dozen/Pack me se koi likho. Naya product bina unit ke Pcs me banega; existing product ka unit tabhi badlega jab yahan likha ho.</div>
       <div style="font-size:10.5px;color:var(--muted);margin-top:7px;">
         Naam se product dhoonda jayega. Jo mile nahi, wo <strong style="color:var(--good);">naya banega</strong> is rate pe — Wholesale Rate aur MRP bhi set hoga. Tick hata do to skip ho jayega.
       </div>
     </div>
 
-    <label class="field-label">Paste bill rows</label>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+      <label class="field-label" style="margin-bottom:0;">Paste bill rows</label>
+      <button type="button" class="btn btn-ghost btn-sm" id="pur-bulk-gen-btn" onclick="generatePurBulkFromCurrent()" title="Is purchase ke abhi wale items se text bana do, copy karne ke liye">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Generate se items
+      </button>
+    </div>
     <textarea class="inp no-titlecase" id="pur-bulk-text" rows="8" spellcheck="false"
-      placeholder="Aasan Plain 3x4 , 100 , 23&#10;Aasan Plain 4x6 , 15 , 32&#10;Aasan Plain 5x8 , 25 , 50"
+      placeholder="Aasan Plain 3x4 , 100 , 23 , 30 , 45 , Pcs&#10;Aasan Plain 4x6 , 15 , 32&#10;Moli , 50 , 40 , 45 , 60 , Kg"
       style="font-family:var(--mono,monospace);font-size:12px;line-height:1.7;resize:vertical;min-height:150px;"
       oninput="parsePurBulk()"></textarea>
 
@@ -1493,10 +1544,15 @@ kbd.kbd {
     <div class="section-title"><span class="accent-bar"></span> Items</div>
     
     <!-- Add Item Input -->
-    <div style="position:relative;margin-bottom:12px;">
-      <input class="inp" id="order-new-item" placeholder="Search product to add…" autocomplete="off" oninput="onNewOrderItemInput(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();selectNewOrderItem();}" onblur="setTimeout(()=>document.getElementById('new-item-drop')?.classList.remove('show'),200)" style="padding-right:40px;">
-      <button onclick="document.getElementById('order-new-item').focus()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--accent);cursor:pointer;font-size:16px;"><i class="fa-solid fa-search"></i></button>
-      <div class="autocomplete-dropdown" id="new-item-drop"></div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;align-items:flex-start;">
+      <div style="position:relative;flex:1;">
+        <input class="inp" id="order-new-item" placeholder="Search product to add…" autocomplete="off" oninput="onNewOrderItemInput(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();selectNewOrderItem();}" onblur="setTimeout(()=>document.getElementById('new-item-drop')?.classList.remove('show'),200)" style="padding-right:40px;">
+        <button onclick="document.getElementById('order-new-item').focus()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--accent);cursor:pointer;font-size:16px;"><i class="fa-solid fa-search"></i></button>
+        <div class="autocomplete-dropdown" id="new-item-drop"></div>
+      </div>
+      <button type="button" class="btn btn-ghost btn-sm" style="white-space:nowrap;flex-shrink:0;" onclick="openCustomItemModal()" title="Kuch aisa add karo jo inventory me nahi hai — packing, delivery, ek-baar ka item">
+        <i class="fa-solid fa-plus"></i> Custom Item
+      </button>
     </div>
     
     <!-- Items List -->
@@ -2068,6 +2124,19 @@ kbd.kbd {
 <div class="modal-overlay" id="modal-settings">
   <div class="modal-box wide">
     <div class="modal-title"><span><i class="fa-solid fa-gear" style="color:var(--accent);margin-right:8px;"></i>Business Settings</span><button class="modal-close" onclick="closeModal('modal-settings')">&times;</button></div>
+
+    <div class="settings-lockbar" id="settings-lockbar" style="display:none;">
+      <i class="fa-solid fa-lock"></i>
+      <span class="lockmsg">Locked — enter PIN to edit</span>
+      <input class="inp no-titlecase" id="set-pin-entry" type="password" inputmode="numeric" placeholder="PIN" maxlength="8" onkeydown="if(event.key==='Enter')unlockSettings()">
+      <button class="btn btn-primary" style="padding:8px 14px;" onclick="unlockSettings()">Unlock</button>
+    </div>
+    <div class="settings-lockbar" id="settings-firsttime" style="display:none;background:rgba(139,108,255,0.10);border-color:rgba(139,108,255,0.35);">
+      <i class="fa-solid fa-shield-halved" style="color:var(--accent);"></i>
+      <span class="lockmsg" style="color:var(--accent);">No PIN set yet — set one below so only you can edit these details.</span>
+    </div>
+
+    <div class="settings-locked-fields" id="settings-locked-fields">
     <div class="form-grid" style="gap:10px;">
       <div style="grid-column:1/-1;"><label class="field-label">Business Name</label><input class="inp" id="set-bizname" placeholder="JMD Wholesale"></div>
       <div style="grid-column:1/-1;"><label class="field-label">Address</label><input class="inp" id="set-bizaddress" placeholder="Shop address"></div>
@@ -2088,18 +2157,24 @@ kbd.kbd {
       </div>
       <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">Bank Details</div>
       <div class="form-row">
+        <div class="form-col"><label class="field-label">Account Holder Name</label><input class="inp" id="set-bizaccname" placeholder="Name as per bank account"></div>
         <div class="form-col"><label class="field-label">Bank Name</label><input class="inp" id="set-bizbank" placeholder="Bank name"></div>
         <div class="form-col"><label class="field-label">Branch</label><input class="inp" id="set-bizbranch" placeholder="Branch name"></div>
-        <div class="form-col"><label class="field-label">Account No.</label><input class="inp no-titlecase" id="set-bizaccno" placeholder="50100123456789"></div>
       </div>
       <div class="form-row">
+        <div class="form-col"><label class="field-label">Account No.</label><input class="inp no-titlecase" id="set-bizaccno" placeholder="50100123456789"></div>
         <div class="form-col"><label class="field-label">IFSC</label><input class="inp no-titlecase" id="set-bizifsc" placeholder="ABCD0123456"></div>
         <div class="form-col"><label class="field-label">Authorised Signatory</label><input class="inp" id="set-bizsignatory" placeholder="Name of signatory"></div>
       </div>
+      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">Edit Lock</div>
+      <div class="form-row">
+        <div class="form-col"><label class="field-label">Set / Change PIN</label><input class="inp no-titlecase" id="set-bizpin" type="password" inputmode="numeric" maxlength="8" placeholder="4-8 digit PIN"></div>
+      </div>
+    </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-settings')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveSettings()"><i class="fa-solid fa-check"></i> Save Settings</button>
+      <button class="btn btn-primary" id="settings-save-btn" onclick="saveSettings()"><i class="fa-solid fa-check"></i> Save Settings</button>
     </div>
   </div>
 </div>
@@ -2121,8 +2196,38 @@ kbd.kbd {
   </div>
 </div>
 
+<!-- Cash Balance Correction Modal — fixes drift between the stored Cash/Bank-UPI
+     balance and what the recorded entries (payments, investors, loans, etc.)
+     actually add up to, without deleting or altering any of those entries. -->
+<div class="modal-overlay" id="modal-cash-correct">
+  <div class="modal-box">
+    <div class="modal-title">
+      <span><i class="fa-solid fa-wrench" style="color:var(--warn);margin-right:8px;"></i>Cash Balance Thik Karo</span>
+      <button class="modal-close" onclick="closeModal('modal-cash-correct')">&times;</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Yeh sirf cash-in-hand ka stored balance set karta hai — koi entry (investor, purchase, expense waghera) delete ya edit nahi hoti.</div>
+    <div id="cash-correct-hint" style="font-size:11px;color:var(--muted);margin-bottom:12px;padding:9px 10px;background:var(--panel2);border-radius:8px;line-height:1.6;"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div>
+        <label class="field-label">Cash ₹</label>
+        <input type="number" class="inp" id="cash-correct-cash" step="0.01">
+      </div>
+      <div>
+        <label class="field-label">Bank/UPI ₹</label>
+        <input type="number" class="inp" id="cash-correct-bank" step="0.01">
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-sm" style="margin-top:10px;" onclick="applyCashCorrectSuggestion()"><i class="fa-solid fa-wand-magic-sparkles"></i> Suggested values bhar do</button>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-cash-correct')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCashCorrection()"><i class="fa-solid fa-check"></i> Save Balance</button>
+    </div>
+  </div>
+</div>
+
 <!-- Reminder Preview Modal -->
 <div class="modal-overlay" id="modal-reminder-preview">
+
   <div class="modal-box wide">
     <div class="modal-title"><span><i class="fa-brands fa-whatsapp" style="color:var(--good);margin-right:8px;"></i>WhatsApp Reminder</span><button class="modal-close" onclick="closeModal('modal-reminder-preview')">&times;</button></div>
     <input type="hidden" id="reminder-preview-cust-id">
@@ -2186,7 +2291,7 @@ function defaultState(){
     cash: 0,
     cashBalances: null,
     counters: { order: 1, invoice: 1, purchase: 1, expense: 1, cn: 1, return: 1, supPay: 1 },
-    settings: { bizName:'JMD Wholesale', bizAddress:'', bizGSTIN:'', bizPAN:'', bizEmail:'', bizUPI:'', bizPhone:'', bizBank:'', bizBranch:'', bizIFSC:'', bizAccNo:'', bizSignatory:'', gstState:'Rajasthan' },
+    settings: { bizName:'JMD Wholesale', bizAddress:'', bizGSTIN:'', bizPAN:'', bizEmail:'', bizUPI:'', bizPhone:'', bizBank:'', bizBranch:'', bizAccName:'', bizAccNo:'', bizIFSC:'', bizSignatory:'', gstState:'Maharashtra', bizPin:'' },
     rateMemory: {},
     meta: { createdAt: Date.now(), version: 1, lastBackup: null }
   };
@@ -2212,35 +2317,86 @@ function saveState(){
    If a Web App URL is configured, changes are also pushed to a Google Sheet
    (debounced) so the same data is reachable from any device/browser. */
 const SYNC_CFG_KEY = 'jmd_sheets_sync_cfg';
+const SYNC_REV_KEY = 'jmd_sheets_sync_rev';      // last revision this device knows the server has
+const SYNC_PENDING_KEY = 'jmd_sheets_sync_pending'; // '1' while this device has unpushed local changes
 let syncCfg = { url: '', key: '' };
 let syncTimer = null;
 let syncInFlight = false;
+let syncRevision = 0;      // last-known server revision (0 = never synced)
+let syncPending = false;   // true = local changes exist that the server hasn't confirmed yet
+let syncConflictState = null; // server's state when a push is rejected as a conflict, held for export/reload
 
 function loadSyncCfg(){
   // Sync target comes straight from the code (DEFAULT_SYNC_URL/KEY above) —
   // no per-device UI override, so every device always talks to the same sheet.
   syncCfg = { url: DEFAULT_SYNC_URL || '', key: DEFAULT_SYNC_KEY || '' };
   if(syncCfg.url === 'PASTE_YOUR_WEB_APP_URL_HERE') syncCfg.url = '';
+  try { syncRevision = parseInt(localStorage.getItem(SYNC_REV_KEY), 10) || 0; } catch(e){ syncRevision = 0; }
+  try { syncPending = localStorage.getItem(SYNC_PENDING_KEY) === '1'; } catch(e){ syncPending = false; }
+  window.addEventListener('online', () => { if(syncPending) pushToSheets(false); });
+  // Belt-and-braces retry: some devices don't fire 'online' reliably
+  setInterval(() => { if(syncPending && !syncInFlight && navigator.onLine !== false) pushToSheets(false); }, 45000);
+}
+
+function setSyncRevision(rev){
+  syncRevision = Number(rev) || 0;
+  try { localStorage.setItem(SYNC_REV_KEY, String(syncRevision)); } catch(e){}
+}
+function setSyncPending(pending){
+  syncPending = !!pending;
+  try { localStorage.setItem(SYNC_PENDING_KEY, syncPending ? '1' : '0'); } catch(e){}
 }
 
 function openSyncSettings(){
   const status = $('sync-modal-status');
   if(status){
-    status.innerHTML = syncCfg.url
-      ? '<i class="fa-solid fa-circle-check" style="color:var(--good);"></i> Connected to the shared sheet built into this app.'
-      : '<i class="fa-solid fa-triangle-exclamation" style="color:var(--warn);"></i> No sheet configured in the code — data is only saved on this device.';
+    if(!syncCfg.url){
+      status.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:var(--warn);"></i> No sheet configured in the code — data is only saved on this device.';
+    } else if(syncConflictState){
+      status.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:var(--bad);"></i> Sync conflict: another device saved first. Your unsaved changes are kept on this device — export them, then reload to get the latest data.'
+        + '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">'
+        + '<button class="btn btn-ghost btn-sm" onclick="exportConflictData()"><i class="fa-solid fa-download"></i> Export my changes</button>'
+        + '<button class="btn btn-ghost btn-sm" onclick="reloadFromServer()"><i class="fa-solid fa-rotate"></i> Discard mine &amp; reload latest</button>'
+        + '</div>';
+    } else if(syncPending){
+      status.innerHTML = '<i class="fa-solid fa-clock" style="color:var(--warn);"></i> Changes saved on this device, waiting to sync (offline or last push failed). Will retry automatically.';
+    } else {
+      status.innerHTML = '<i class="fa-solid fa-circle-check" style="color:var(--good);"></i> Connected to the shared sheet built into this app. Revision ' + syncRevision + '.';
+    }
   }
   openModal('modal-sync');
+}
+
+// Server rejected our push because someone else saved first. Keep local data
+// intact (never silently overwrite it) and let the user decide what to do.
+function exportConflictData(){
+  try {
+    const blob = new Blob([JSON.stringify(STATE, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'jmd_unsaved_changes_' + Date.now() + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    toast('Your unsaved changes were exported','success');
+  } catch(e){ toast('Export failed','error'); }
+}
+
+function reloadFromServer(){
+  if(!confirm('This discards any changes made on this device since the last successful sync and loads the latest data from the sheet. Continue?')) return;
+  syncConflictState = null;
+  setSyncPending(false);
+  pullFromSheets(true);
 }
 
 function updateSyncIndicator(status){
   const icon = $('sync-icon'), label = $('sync-label');
   if(!icon || !label) return;
   const map = {
-    nocfg:   {i:'fa-cloud',                  c:'var(--muted)', t:'Sync'},
-    idle:    {i:'fa-cloud-arrow-up',         c:'var(--good)',  t:'Synced'},
-    syncing: {i:'fa-cloud-arrow-up fa-fade', c:'var(--accent2)', t:'Syncing…'},
-    error:   {i:'fa-triangle-exclamation',   c:'var(--bad)',   t:'Sync error'}
+    nocfg:    {i:'fa-cloud',                  c:'var(--muted)',   t:'Sync'},
+    idle:     {i:'fa-cloud-arrow-up',         c:'var(--good)',    t:'Synced'},
+    syncing:  {i:'fa-cloud-arrow-up fa-fade', c:'var(--accent2)', t:'Syncing…'},
+    pending:  {i:'fa-clock',                  c:'var(--warn)',    t:'Pending sync'},
+    conflict: {i:'fa-triangle-exclamation',   c:'var(--bad)',     t:'Sync conflict'},
+    error:    {i:'fa-triangle-exclamation',   c:'var(--bad)',     t:'Sync error'}
   };
   const m = map[status] || map.nocfg;
   icon.className = 'fa-solid ' + m.i;
@@ -2250,14 +2406,28 @@ function updateSyncIndicator(status){
 
 // Debounce so rapid edits (e.g. typing) don't fire a network call per keystroke
 function queueSheetsPush(){
-  if(!syncCfg.url) return;
+  setSyncPending(true);
+  if(!syncCfg.url){ updateSyncIndicator('nocfg'); return; }
+  updateSyncIndicator('pending');
   clearTimeout(syncTimer);
   syncTimer = setTimeout(() => pushToSheets(false), 1500);
 }
 
 async function pushToSheets(manual){
   if(!syncCfg.url) return;
+  if(syncConflictState){
+    // Don't push over an unresolved conflict — that would be the exact
+    // silent-overwrite bug this sync was built to prevent.
+    updateSyncIndicator('conflict');
+    if(manual) openSyncSettings();
+    return;
+  }
   if(syncInFlight){ clearTimeout(syncTimer); syncTimer = setTimeout(() => pushToSheets(manual), 1500); return; }
+  if(navigator.onLine === false){
+    updateSyncIndicator('pending');
+    if(manual) toast('Offline — will sync automatically once back online','info');
+    return;
+  }
   syncInFlight = true;
   updateSyncIndicator('syncing');
   try {
@@ -2265,16 +2435,30 @@ async function pushToSheets(manual){
     const res = await fetch(syncCfg.url, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ key: syncCfg.key, state: STATE })
+      body: JSON.stringify({ key: syncCfg.key, state: STATE, baseRevision: syncRevision })
     });
     const data = await res.json();
+    if(data.conflict){
+      // Someone else saved since we last pulled. Keep OUR local copy exactly
+      // as-is (never overwrite it), hold the server's version for the user
+      // to export/compare, and stop auto-pushing until they resolve it.
+      syncConflictState = data.state || null;
+      if(data.revision !== undefined) setSyncRevision(data.revision);
+      updateSyncIndicator('conflict');
+      toast('Sync conflict: another device saved first. Open Sync to resolve.','error');
+      return;
+    }
     if(!data.ok) throw new Error(data.error || 'Sync failed');
+    if(data.revision !== undefined) setSyncRevision(data.revision);
+    setSyncPending(false);
     updateSyncIndicator('idle');
     if(manual) toast('Pushed to Google Sheets','success');
   } catch(e){
     console.error('pushToSheets', e);
-    updateSyncIndicator('error');
-    if(manual) toast('Could not reach Google Sheets — check the URL/key','error');
+    // Local save already happened (saveState wrote to localStorage first),
+    // so nothing is lost — just mark it unsynced and let retry logic handle it.
+    updateSyncIndicator(syncPending ? 'pending' : 'error');
+    if(manual) toast('Could not reach Google Sheets — will retry automatically','error');
   } finally {
     syncInFlight = false;
   }
@@ -2296,14 +2480,45 @@ async function pullFromSheets(manual){
     } else if(manual){
       toast('Sheet is empty — nothing to pull yet','info');
     }
+    if(data.revision !== undefined) setSyncRevision(data.revision);
+    syncConflictState = null;
+    setSyncPending(false);
     updateSyncIndicator('idle');
     if(manual) $('sync-modal-status').textContent = 'Last pulled just now.';
   } catch(e){
     console.error('pullFromSheets', e);
-    updateSyncIndicator('error');
+    updateSyncIndicator(syncPending ? 'pending' : 'error');
     if(manual) toast('Could not reach Google Sheets — check the URL/key','error');
   }
 }
+// Returns null when this device's data is confirmed synced with the shared
+// sheet, otherwise a short label to stamp on generated PDFs so staff don't
+// hand out a document built from stale/local-only settings without knowing it.
+function pdfSyncStatusLabel(){
+  if(!syncCfg.url) return 'LOCAL COPY';                 // no shared sheet configured at all
+  if(navigator.onLine === false) return 'OFFLINE';       // definitely can't have the latest
+  if(syncConflictState) return 'LOCAL COPY';             // unresolved conflict — server has a different version
+  if(syncPending) return 'LOCAL COPY';                   // local changes not yet confirmed by the server
+  return null;
+}
+
+// Stamps every page of a jsPDF doc with a small sync-status label. Call this
+// right before doc.save() so it sits on top of the finished content.
+function stampPdfSyncStatus(doc, pageWidth, pageHeight){
+  const label = pdfSyncStatusLabel();
+  if(!label) return;
+  const pages = doc.internal.getNumberOfPages();
+  for(let i = 1; i <= pages; i++){
+    doc.setPage(i);
+    doc.saveGraphicsState && doc.saveGraphicsState();
+    doc.setFontSize(7.5);
+    doc.setTextColor(190, 60, 60);
+    doc.setFont(undefined, 'bold');
+    doc.text(label + ' — not yet synced to server', pageWidth - 8, pageHeight - 6, { align: 'right' });
+    doc.restoreGraphicsState && doc.restoreGraphicsState();
+  }
+}
+
 /* ============ UTILITIES ============ */
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).substr(2,5); }
 function fmt(n){ return '₹' + (n||0).toLocaleString('en-IN'); }
@@ -2781,7 +2996,10 @@ function updateInvestorPreview(){
     targetDate = addMonthsClamped(dateInputValue(maturityDate), -1);
   }
   const daysTotal = Math.max(1, Math.round((targetDate - new Date(date)) / 86400000));
-  const rawDaily = interest / daysTotal;
+  // Reserve target is the FULL payable (principal + interest) — that's what
+  // actually gets set aside day by day (same basis as the Investor card's
+  // "Set aside" button and the per-day pending list), not interest alone.
+  const rawDaily = maturity / daysTotal;
   const dailySet = Math.ceil(rawDaily / 50) * 50;
   
   const preview = $('inv-preview');
@@ -2794,7 +3012,7 @@ function updateInvestorPreview(){
       </div>
       <div style="text-align:center;font-size:10.5px;color:var(--muted);margin-top:8px;">Matures on: ${fmtDate(maturityDate.toISOString().split('T')[0])} · ${months} months${reserveMode==='early' ? ' · reserve 1 mahina pehle ready' : ''}</div>
       <div style="text-align:center;font-size:11px;color:var(--warn);font-weight:600;margin-top:6px;padding:6px 8px;background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.15);border-radius:6px;">
-        Interest cover karne ke liye: <strong class="mono">${fmt(dailySet)}</strong> / din side karna hoga<br>
+        Poora payable (${fmt(maturity)}) cover karne ke liye: <strong class="mono">${fmt(dailySet)}</strong> / din side karna hoga<br>
         <span style="font-size:9.5px;color:var(--muted);font-weight:400;">(Total ${daysTotal} din · actual amount daily target me adjust hoga)</span>
       </div>
     `;
@@ -2822,7 +3040,8 @@ function migrateState(s){
   if(typeof s.cashBalances.Cash !== 'number') s.cashBalances.Cash = 0;
   if(typeof s.cashBalances['Bank/UPI'] !== 'number') s.cashBalances['Bank/UPI'] = 0;
   s.cash = round2(s.cashBalances.Cash + s.cashBalances['Bank/UPI']);
-  if(!s.settings) s.settings = { bizName:'JMD Wholesale', bizAddress:'', bizGSTIN:'', bizPAN:'', bizEmail:'', bizUPI:'', bizPhone:'', bizBank:'', bizBranch:'', bizIFSC:'', bizAccNo:'', bizSignatory:'', gstState:'Rajasthan' };
+  if(!s.settings) s.settings = { bizName:'JMD Wholesale', bizAddress:'', bizGSTIN:'', bizPAN:'', bizEmail:'', bizUPI:'', bizPhone:'', bizBank:'', bizBranch:'', bizAccName:'', bizAccNo:'', bizIFSC:'', bizSignatory:'', gstState:'Maharashtra', bizPin:'' };
+  if(s.settings.bizPin === undefined) s.settings.bizPin = '';
   if(!s.rateMemory) s.rateMemory = {};
   if(!s.reminderLog) s.reminderLog = [];
   // Delivery tracking was added later. Existing orders have no flag — treat
@@ -3238,11 +3457,11 @@ function renderDashboard(){
     </div>
 
     <!-- Cash Position at a glance -->
-    <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px;">
+    <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px;">
       <div class="stat-tile ${STATE.cash>=0?'good':'bad'}" style="cursor:pointer;" onclick="document.getElementById('dash-cash-card')?.scrollIntoView({behavior:'smooth'})">
-        <div class="st-label"><i class="fa-solid fa-wallet"></i> Cash-in-Hand</div>
+        <div class="st-label"><i class="fa-solid fa-wallet"></i> Amount in Hand</div>
         <div class="st-val" style="color:${STATE.cash<0?'var(--bad)':''};">${fmt(STATE.cash)}</div>
-        <div class="st-sub">total balance</div>
+        <div class="st-sub">Cash + Bank/UPI</div>
       </div>
       <div class="stat-tile warn" style="cursor:pointer;" onclick="switchTab('investors')">
         <div class="st-label"><i class="fa-solid fa-piggy-bank"></i> Reserved (Investors)</div>
@@ -3254,6 +3473,11 @@ function renderDashboard(){
         <div class="st-val" style="color:${netFreeCash>=0?'var(--accent2)':'var(--bad)'};">${fmt(netFreeCash)}</div>
         <div class="st-sub">abhi use karne layak</div>
       </div>
+      <div class="stat-tile ${netProfitAll>=0?'good':'bad'}" style="cursor:pointer;" onclick="document.getElementById('dash-cash-card')?.scrollIntoView({behavior:'smooth'})">
+        <div class="st-label"><i class="fa-solid fa-chart-line"></i> Net Profit</div>
+        <div class="st-val" style="color:${netProfitAll>=0?'var(--good)':'var(--bad)'};">${fmt(netProfitAll)}</div>
+        <div class="st-sub">Sales − COGS − Expenses</div>
+      </div>
     </div>
 
     ${reminders.length > 0 ? `
@@ -3262,7 +3486,7 @@ function renderDashboard(){
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--line);">
           <i class="fa-solid fa-piggy-bank" style="color:var(--warn);font-size:11px;"></i>
            <div style="font-size:11px;font-weight:700;">Savings Pending
-             <div style="font-size:8.5px;font-weight:500;color:var(--muted);margin-top:2px;">Quick Set aside = catch-up rate · per-day Done = fixed ideal rate</div>
+             <div style="font-size:8.5px;font-weight:500;color:var(--muted);margin-top:2px;">Set aside rate = same everywhere (Cash, Bank/UPI, per-day list, history)</div>
            </div>
           <span style="margin-left:auto;font-size:9px;color:var(--muted);font-weight:600;">${pendingCount} pending</span>
         </div>
@@ -3413,10 +3637,10 @@ function renderDashboard(){
       <div class="card-body">
         <div class="section-title"><span class="accent-bar"></span> Cash Position</div>
         <div style="text-align:center;padding:12px 0 8px;">
-          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Wholesale Cash-in-Hand</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Total Amount in Hand <span style="opacity:0.7;">(Cash + Bank/UPI)</span></div>
           <div class="mono" style="font-size:28px;font-weight:700;color:${STATE.cash < 0 ? 'var(--bad)' : 'var(--accent)'};">${fmt(STATE.cash)}</div>
           ${STATE.cash < 0 ? `<div style="font-size:10.5px;color:var(--bad);margin-top:4px;">Minus me hai — jitna aaya usse zyada kharch/payment ho chuka hai.</div>` : ''}
-           <div style="font-size:10.5px;color:var(--muted);margin-top:6px;line-height:1.5;">Investor reserve pehle hi is balance se side ho chuka hai — freely use layak <span class="mono" style="color:${netFreeCash>=0?'var(--good)':'var(--bad)'};font-weight:700;">${fmt(netFreeCash)}</span></div>
+           <div style="font-size:10.5px;color:var(--muted);margin-top:6px;line-height:1.5;">Isme dono shaamil hain — neeche "Balance by Mode" me Cash aur Bank/UPI alag-alag bhi dikhte hain. Investor reserve pehle hi is balance se side ho chuka hai — freely use layak <span class="mono" style="color:${netFreeCash>=0?'var(--good)':'var(--bad)'};font-weight:700;">${fmt(netFreeCash)}</span></div>
         </div>
         <div style="border-top:1px solid var(--line);padding-top:10px;">
           <div style="font-size:9.5px;font-weight:700;color:var(--muted);letter-spacing:0.08em;margin-bottom:6px;">MONEY IN</div>
@@ -3438,6 +3662,7 @@ function renderDashboard(){
             <div style="margin-top:9px;padding:8px 10px;background:var(--panel2);border-radius:8px;font-size:10.5px;color:var(--muted);line-height:1.55;">
               <i class="fa-solid fa-circle-info" style="color:var(--warn);"></i>
               Cash-in-hand aur ye net movement <strong>${fmt(Math.abs(netFlow - STATE.cash))}</strong> se alag hai — matlab shuruaati opening cash tha, ya koi entry seedhe cash me adjust hui thi.
+              <div style="margin-top:6px;"><button class="btn btn-warn btn-xs" onclick="openCashCorrectModal()"><i class="fa-solid fa-wrench"></i> Balance thik karo</button></div>
             </div>` : ''}
         </div>
 
@@ -3493,7 +3718,7 @@ function renderDashboard(){
             <div style="flex:1;min-width:0;">
               <div style="font-size:12px;font-weight:600;">${escHtml(inv.name)}</div>
                <div style="font-size:10px;color:var(--muted);margin-top:2px;">
-                 Catch-up rate: ${fmt(info.dailyTarget)}/din · Pending (fixed ideal rate): <span class="mono" style="color:var(--warn);cursor:pointer;text-decoration:underline dotted;" title="Fixed ideal rate ke hisaab se din-wise pending dekhein" onclick="openPendingDays('${inv.id}')">${fmt(round2(info.toReserve))} <i class="fa-solid fa-list-ul" style="font-size:8px;"></i></span> · Reserved: <span class="mono" style="color:var(--good);">${fmt(info.reserved)}</span>/${fmt(info.outstanding)}
+                 Set aside rate: ${fmt(info.dailyTarget)}/din · Pending: <span class="mono" style="color:var(--warn);cursor:pointer;text-decoration:underline dotted;" title="Din-wise pending dekhein" onclick="openPendingDays('${inv.id}')">${fmt(round2(info.toReserve))} <i class="fa-solid fa-list-ul" style="font-size:8px;"></i></span> · Reserved: <span class="mono" style="color:var(--good);">${fmt(info.reserved)}</span>/${fmt(info.outstanding)}
               </div>
             </div>
              <button class="btn ${info.savedToday?'btn-ghost':'btn-good'} btn-xs" title="Quick action: remaining days ke hisaab se ₹50 step me upar rounded catch-up rate" ${info.savedToday?'disabled':''} onclick="saveTodayReserve('${inv.id}')">
@@ -3503,7 +3728,7 @@ function renderDashboard(){
         `).join('')}
         <div style="font-size:9.5px;color:var(--muted);margin-top:8px;line-height:1.4;">
           <i class="fa-solid fa-circle-info" style="color:var(--accent2);margin-right:3px;"></i>
-           Quick "Set aside" catch-up rate ko remaining days ke hisaab se ₹50 step me upar round karta hai. Per-day Pending list ka "Done" fixed ideal rate (poore tenure par spread) use karta hai, isliye dono amounts alag ho sakte hain. Dono hi cash se investor reserve me jaate hain.
+           Set aside rate remaining days ke hisaab se ₹50 step me upar round hota hai — Investor card, per-day Pending list, aur history sab jagah yehi same rate use hota hai. Jaise-jaise din baaki kam hote hain rate thoda badh sakta hai.
         </div>
       </div>
     </div>`;
@@ -5600,7 +5825,7 @@ function renderPendingDays(){
   if(!inv){ closeModal('modal-pending-days'); return; }
   const info = investorPayable(inv);
   const missed = computeMissedDays(inv);
-  const perDay = round2(info.idealDailyRate);
+  const perDay = info.dailyTarget;
 
   $('pdays-title').innerHTML = `<i class="fa-solid fa-piggy-bank" style="color:var(--warn);margin-right:8px;"></i>${escHtml(inv.name)} — Pending Reserve`;
 
@@ -5621,7 +5846,7 @@ function renderPendingDays(){
         <div class="mono" style="font-size:16px;font-weight:700;color:var(--warn);">${fmt(round2(info.toReserve))}</div>
       </div>
       <div style="text-align:right;">
-       <div style="font-size:10px;color:var(--muted);">${missed.length} din baaki · Fixed ideal rate: ${fmt(perDay)}/din</div>
+       <div style="font-size:10px;color:var(--muted);">${missed.length} din baaki · Set aside rate: ${fmt(perDay)}/din</div>
         <div style="font-size:10px;color:var(--muted);">Reserved <span class="mono" style="color:var(--good);">${fmt(info.reserved)}</span>/${fmt(info.outstanding)}</div>
       </div>
     </div>
@@ -5629,7 +5854,7 @@ function renderPendingDays(){
     ${renderPendingDayRows(inv, missed, perDay, _pdaysExpanded, 'pdaysToggleExpand')}
     <div style="font-size:9.5px;color:var(--muted);margin-top:10px;line-height:1.4;">
       <i class="fa-solid fa-circle-info" style="color:var(--accent2);margin-right:3px;"></i>
-       Per-day list ka "Done" fixed ideal rate (${fmt(perDay)}/din) cash se investor reserve me bhejta hai. Yeh Investors card ke rounded catch-up rate se alag ho sakta hai; aakhri din ka amount bacha hua pending ke hisaab se kam ho sakta hai.
+       Per-day list ka "Done" wahi set aside rate (${fmt(perDay)}/din) use karta hai jo Investor card pe dikhta hai — sab jagah same. Aakhri din ka amount bacha hua pending ke hisaab se kam ho sakta hai.
     </div>`;
 }
 
@@ -5647,7 +5872,7 @@ function renderPendingDayRows(inv, missed, perDay, expanded, rerenderFn){
     return `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);">
       <div style="flex:1;min-width:0;">
         <div style="font-size:12px;font-weight:600;">${fmtDate(ds)}${isToday?' <span style="font-size:9px;color:var(--accent2);">(aaj)</span>':''}</div>
-        <div style="font-size:10px;color:var(--muted);">Fixed ideal daily rate</div>
+        <div style="font-size:10px;color:var(--muted);">Set aside rate</div>
       </div>
       <div class="mono" style="font-size:13px;font-weight:700;color:var(--warn);min-width:64px;text-align:right;">${fmt(perDay)}</div>
       <button class="btn btn-good btn-xs" onclick="savePendingDay('${inv.id}','${ds}')"><i class="fa-solid fa-check"></i> Done</button>
@@ -5685,7 +5910,7 @@ function reserveInvestorDay(invId, dateStr, mode, notes){
   if(info.toReserve <= 0){ toast('Kuch reserve karne ko baki nahi hai','info'); return false; }
   // Guard against double-saving the same date
   if((inv.savingsLog||[]).some(l => l.date === dateStr)){ toast('Is din ka already set ho chuka hai','info'); return false; }
-  const amt = round2(Math.min(info.idealDailyRate, info.toReserve));
+  const amt = round2(Math.min(info.dailyTarget, info.toReserve));
   if(amt <= 0){ return false; }
   // Low-cash: warn but do NOT block (user asked for a low alert only, not a hard stop)
   if(STATE.cash < amt){
@@ -5757,6 +5982,7 @@ function renderReserveCalendar(){
   (inv.savingsLog||[]).forEach(l => { savedByDate[l.date] = (savedByDate[l.date]||0) + (l.amount||0); });
 
   const monthSaved = Object.entries(savedByDate).filter(([d]) => d.startsWith(_rescalYM)).reduce((s,[,a])=>s+a,0);
+  const lastLog = lastReserveLog(_rescalInvId);
   let savedDays = 0, missedDays = 0;
 
   let cells = '';
@@ -5797,7 +6023,48 @@ function renderReserveCalendar(){
     </div>
     <div style="font-size:10px;color:var(--muted);margin-top:8px;line-height:1.5;">
       Green = us din set aside hua · Red = miss ho gaya. Tracking ${startDate ? fmtDate(startDate) : '—'} se shuru hai, aaj tak.
-    </div>`;
+    </div>
+    ${lastLog ? `
+    <div style="margin-top:12px;padding:10px 12px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+      <div style="font-size:11px;color:var(--muted);">
+        Last reserved: <span class="mono" style="color:var(--text);font-weight:600;">${fmt(lastLog.amount)}</span> on ${fmtDate(lastLog.date)}
+      </div>
+      <button class="btn btn-bad btn-sm" onclick="undoLastReserveDay('${inv.id}')"><i class="fa-solid fa-rotate-left"></i> Undo Last Entry</button>
+    </div>` : ''}`;
+}
+
+// Most recently logged day-wise reserve entry for an investor.
+function lastReserveLog(invId){
+  const inv = STATE.investors.find(x=>x.id===invId);
+  if(!inv || !(inv.savingsLog||[]).length) return null;
+  return inv.savingsLog.slice().sort((a,b) => (b.date||'').localeCompare(a.date||''))[0];
+}
+
+// Reverses the most recent day-wise reserve entry for an investor — for when
+// a day got marked "set aside" by mistake. Restores the cash, reduces the
+// reserved total, and removes the matching savingsLog + reminderLog entries.
+function undoLastReserveDay(invId){
+  const inv = STATE.investors.find(x=>x.id===invId);
+  if(!inv) return;
+  const last = lastReserveLog(invId);
+  if(!last){ toast('Undo karne ke liye koi reserve entry nahi mili','info'); return; }
+  showConfirm('Undo Last Reserve Entry', `${fmtDate(last.date)} ka <strong>${fmt(last.amount)}</strong> reserve undo karein? Yeh cash wapas add ho jaayega.`, () => {
+    snapshotUndo();
+    adjustCash(last.amount||0, last.mode || 'Cash');
+    inv.reserved = round2(Math.max(0, (inv.reserved||0) - (last.amount||0)));
+    const idx = inv.savingsLog.findIndex(l => l.date===last.date && l.amount===last.amount);
+    if(idx>=0) inv.savingsLog.splice(idx,1);
+    if(STATE.reminderLog){
+      const rlIdx = STATE.reminderLog.findIndex(r => r.type==='investor' && r.refId===invId && r.amount===last.amount && r.date===last.date);
+      if(rlIdx>=0) STATE.reminderLog.splice(rlIdx,1);
+    }
+    saveState();
+    renderInvestors();
+    renderDashboard();
+    if($('modal-reserve-cal') && $('modal-reserve-cal').classList.contains('open')) renderReserveCalendar();
+    if($('modal-pending-days') && $('modal-pending-days').classList.contains('open')) renderPendingDays();
+    toast('Last reserve entry undo ho gayi','success');
+  });
 }
 
 /* ============ REMINDERS TAB ============ */
@@ -5824,7 +6091,7 @@ function buildReminderList(){
     const startDate = inv.date ? new Date(inv.date) : todayD;
     if(startDate > todayD) return;
 
-    const perDay = round2(info.idealDailyRate);
+    const perDay = info.dailyTarget;
     const missed = computeMissedDays(inv); // oldest -> newest, includes today if unsaved
     if(missed.length === 0) return;
 
@@ -5998,7 +6265,7 @@ function renderReminderCard(r){
           <div class="rem-name"><i class="fa-solid fa-layer-group" style="font-size:8px;color:var(--warn);margin-right:3px;"></i>${escHtml(r.name)}</div>
           <div class="rem-sub">${r.sub}</div>
         </div>
-       <div class="rem-amt" title="${r.type==='investor'?'Fixed ideal per-day amount':'Due amount'}">${fmt(r.amount)}</div>
+       <div class="rem-amt" title="${r.type==='investor'?'Set aside rate (same everywhere)':'Due amount'}">${fmt(r.amount)}</div>
         <button class="rem-done-btn" onclick="event.stopPropagation();openPendingDays('${r.id}')">
           <i class="fa-solid fa-list-ul" style="font-size:8px;"></i> View
         </button>
@@ -6020,7 +6287,7 @@ function renderReminderCard(r){
         <div class="rem-name"><i class="fa-solid ${typeIcon}" style="font-size:8px;color:${typeColor};margin-right:3px;"></i>${escHtml(r.name)}</div>
         <div class="rem-sub">${r.sub}</div>
       </div>
-      <div class="rem-amt" title="${r.type==='investor'?'Fixed ideal per-day amount':'Due amount'}">${fmt(r.amount)}</div>
+      <div class="rem-amt" title="${r.type==='investor'?'Set aside rate (same everywhere)':'Due amount'}">${fmt(r.amount)}</div>
       <button class="rem-done-btn ${r.done?'is-done':''}" onclick="event.stopPropagation();openReminderDone('${r.type}','${r.id}',${r.amount},'${r.date}')">
         <i class="fa-solid ${r.done?'fa-check':'fa-circle-check'}" style="font-size:8px;"></i> Done
       </button>
@@ -6045,11 +6312,11 @@ function openReminderDone(type, id, amount, reminderDate){
     <div style="display:flex;justify-content:space-between;align-items:center;">
       <div>
         <div style="font-size:13px;font-weight:700;">${escHtml(item.name)}</div>
-         <div style="font-size:10.5px;color:var(--muted);margin-top:2px;">${typeLabel}${type==='investor'?' · Fixed ideal per-day rate':''} · ${dateLabel}</div>
+         <div style="font-size:10.5px;color:var(--muted);margin-top:2px;">${typeLabel}${type==='investor'?' · Set aside rate':''} · ${dateLabel}</div>
       </div>
       <div class="mono" style="font-size:18px;font-weight:800;color:var(--accent2);">${fmt(amount)}</div>
     </div>
-     ${type==='investor' ? `<div style="margin-top:10px;padding:7px 9px;background:rgba(139,108,255,0.06);border:1px solid rgba(139,108,255,0.14);border-radius:6px;font-size:10px;color:var(--muted);line-height:1.45;"><i class="fa-solid fa-circle-info" style="color:var(--accent2);margin-right:4px;"></i>Is per-day Done ka fixed ideal rate <strong class="mono" style="color:var(--accent2);">${fmt(round2(investorPayable(item).idealDailyRate))}/din</strong> hai. Investor card ka quick Set aside rounded catch-up rate use karta hai, isliye uska amount alag ho sakta hai.</div>` : ''}
+     ${type==='investor' ? `<div style="margin-top:10px;padding:7px 9px;background:rgba(139,108,255,0.06);border:1px solid rgba(139,108,255,0.14);border-radius:6px;font-size:10px;color:var(--muted);line-height:1.45;"><i class="fa-solid fa-circle-info" style="color:var(--accent2);margin-right:4px;"></i>Yeh wahi catch-up rate <strong class="mono" style="color:var(--accent2);">${fmt(investorPayable(item).dailyTarget)}/din</strong> hai jo Investor card ke "Set aside" button me dikhta hai — sab jagah same amount use hota hai.</div>` : ''}
   `;
 
   openModal('modal-reminder-done');
@@ -6137,14 +6404,14 @@ function openReminderHistory(type, id){
     const log = (item.savingsLog||[]).slice().sort((a,b) => new Date(b.date) - new Date(a.date));
     const totalReserved = log.reduce((s,l)=>s+(l.amount||0), 0);
     const missed = computeMissedDays(item);
-    const perDay = round2(info.idealDailyRate);
+    const perDay = info.dailyTarget;
 
     const pendingHtml = (info.toReserve > 0.5 && missed.length > 0) ? `
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
         <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">
           <i class="fa-solid fa-clock" style="color:var(--warn);"></i> Pending Din (Set Aside Baaki)
         </div>
-         <div style="font-size:10px;color:var(--muted);">${missed.length} din · Fixed ideal rate: ${fmt(perDay)}/din</div>
+         <div style="font-size:10px;color:var(--muted);">${missed.length} din · Set aside rate: ${fmt(perDay)}/din</div>
       </div>
       ${renderPendingDayRows(item, missed, perDay, _histPdaysExpanded, 'histToggleExpand')}
       <div style="height:16px;"></div>
@@ -6408,7 +6675,7 @@ function amountInWords(n){
 
 // CGST/SGST split helper
 function calcTaxSplit(taxableAmount, gstRate, customerState){
-  const bizState = STATE.settings?.gstState || 'Rajasthan';
+  const bizState = STATE.settings?.gstState || 'Maharashtra';
   const isInterState = customerState !== bizState;
   const totalTax = taxableAmount * gstRate / 100;
   if(isInterState){
@@ -6419,6 +6686,7 @@ function calcTaxSplit(taxableAmount, gstRate, customerState){
 
 // Party-wise rate memory
 function rememberRate(customerId, productId, rate){
+  if(!productId) return; // custom (non-inventory) line items have no product to remember a rate against
   if(!STATE.rateMemory) STATE.rateMemory = {};
   // Never remember a zero/blank rate. Once 0 is stored it silently auto-fills
   // every future order for this party, so one mistake keeps repeating itself.
@@ -6873,6 +7141,39 @@ function openPurBulkModal(){
   setTimeout(()=>$('pur-bulk-text')?.focus(), 80);
 }
 
+// "Generate se items" — jab purchase modal already kuch items ke saath khula ho
+// (edit karte waqt, ya kisi ne update kar diya ho), Paste Bill box khaali hi
+// dikhta tha kyunki wo hamesha blank khulta hai. Yeh button currentPurchaseItems
+// ko wapas usi "Name , Qty , Rate , WRate , MRP" text format me likh deta hai
+// taaki dekh bhi sako aur copy karke agli nayi entry me paste bhi kar sako.
+function generatePurBulkFromCurrent(){
+  if(!currentPurchaseItems.length){ toast('Is purchase me abhi koi item nahi hai', 'info'); return; }
+  const lines = currentPurchaseItems.map(it => {
+    const p = STATE.products.find(x => x.id === it.productId);
+    const name = p ? p.name : (it.name || 'Unknown');
+    const qty = it.qty || 0;
+    const rate = it.rate || 0;
+    const wrate = p ? (p.wrate || 0) : 0;
+    const mrp = p ? (p.mrp || 0) : 0;
+    const unit = p ? (p.unit || '') : '';
+    // Only tack on WRate/MRP/Unit columns if there's something worth writing —
+    // keeps the line short when a product doesn't have them set.
+    let parts = [name, qty, rate];
+    if(wrate > 0 || mrp > 0 || unit) parts = [name, qty, rate, wrate, mrp, unit];
+    return parts.join(' , ');
+  });
+  const text = lines.join('\n');
+  $('pur-bulk-text').value = text;
+  parsePurBulk();
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text)
+      .then(() => toast(lines.length + ' item(s) generate + copy ho gaye', 'success'))
+      .catch(() => toast(lines.length + ' item(s) generate ho gaye — copy manually kar lo', 'info'));
+  } else {
+    toast(lines.length + ' item(s) generate ho gaye — copy manually kar lo', 'info');
+  }
+}
+
 function parsePurBulk(){
   const raw = $('pur-bulk-text').value || '';
   const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
@@ -6886,11 +7187,20 @@ function parsePurBulk(){
     const rate = bulkNum(c[2]);
     const wrate = bulkNum(c[3]); // Wholesale Rate (optional)
     const mrp   = bulkNum(c[4]); // MRP (optional)
-    const row = { name, qty, rate, wrate, mrp, productId: null, status: 'new', note: '' };
+    let unit = ''; // Unit (optional) — only set when explicitly given, else falls back per-row below
+    if(c[5]){
+      const u = BULK_UNITS.find(x => x.toLowerCase() === c[5].trim().toLowerCase());
+      unit = u || '';
+    }
+    const row = { name, qty, rate, wrate, mrp, unit, unitRaw: c[5]||'', productId: null, status: 'new', note: '' };
 
-    if(c.length > 5){
+    if(c.length > 6){
       row.status = 'error';
-      row.note = c.length + ' columns — expected 3-5 (Name, Qty, Rate [, WRate [, MRP]]). Remove commas inside numbers.';
+      row.note = c.length + ' columns — expected 3-6 (Name, Qty, Rate [, WRate [, MRP [, Unit]]]). Remove commas inside numbers.';
+    }
+    else if(c[5] && !unit){
+      row.status = 'error';
+      row.note = 'unit "' + c[5] + '" not known — use ' + BULK_UNITS.join('/');
     }
     else if(!name){ row.status = 'error'; row.note = 'no name'; }
     else if(qty <= 0){ row.status = 'error'; row.note = 'qty missing'; }
@@ -6913,9 +7223,10 @@ function parsePurBulk(){
         // If wrate/mrp provided, show what will be updated
         if(wrate > 0 && Math.abs((p.wrate||0) - wrate) >= 0.01) notes.push('wrate will → ' + fmt(wrate));
         if(mrp > 0 && Math.abs((p.mrp||0) - mrp) >= 0.01) notes.push('MRP will → ' + fmt(mrp));
+        if(unit && unit !== p.unit) notes.push('unit will → ' + unit);
         if(notes.length) row.note = notes.join(' · ');
       } else if(row.status !== 'error'){
-        if(create){ row.status = 'new'; row.note = 'naya product banega' + (wrate > 0 ? ' @ wrate ' + fmt(wrate) : '') + (mrp > 0 ? ' · MRP ' + fmt(mrp) : ''); }
+        if(create){ row.status = 'new'; row.note = 'naya product banega (' + (unit||'Pcs') + ')' + (wrate > 0 ? ' @ wrate ' + fmt(wrate) : '') + (mrp > 0 ? ' · MRP ' + fmt(mrp) : ''); }
         else { row.status = 'skip'; row.note = 'product nahi mila'; }
       }
     }
@@ -7009,24 +7320,25 @@ function applyPurBulk(){
       // New product: use billed rate as cost, set wrate and mrp if provided
       const np = {
         id: uid(), createdAt: now + i,
-        name: r.name, unit: 'Pcs', gst: 18,
+        name: r.name, unit: r.unit || 'Pcs', gst: 0,
         prate: r.rate,
         wrate: r.wrate || 0,
         mrp: r.mrp || 0,
-        wsMinQty: 0, wsRate: 0,
+        wsMinQty: 25, wsRate: 0,
         hsn: '',
-        minStock: 0, openingStock: 0, trackStock: true
+        minStock: 5, openingStock: 0, trackStock: true
       };
       STATE.products.push(np);
       pid = np.id;
       created++;
     } else {
-      // Existing product: update wrate and mrp if provided in the bill
+      // Existing product: update wrate, mrp and unit if provided in the bill
       const p = STATE.products.find(x => x.id === pid);
       if(p){
         let updated = false;
         if(r.wrate > 0 && Math.abs((p.wrate||0) - r.wrate) >= 0.01){ p.wrate = r.wrate; updated = true; }
         if(r.mrp > 0 && Math.abs((p.mrp||0) - r.mrp) >= 0.01){ p.mrp = r.mrp; updated = true; }
+        if(r.unit && r.unit !== p.unit){ p.unit = r.unit; updated = true; }
         if(updated) saveState();
       }
     }
@@ -7408,7 +7720,8 @@ function openReturnModal(orderId){
   const returnedQtys = {};
   existingCNs.forEach(cn => {
     (cn.items||[]).forEach(it => {
-      returnedQtys[it.productId] = (returnedQtys[it.productId]||0) + (it.qty||0);
+      const key = it.productId || it.customId;
+      returnedQtys[key] = (returnedQtys[key]||0) + (it.qty||0);
     });
   });
 
@@ -7419,8 +7732,9 @@ function openReturnModal(orderId){
 
   // Build return items from order items
   returnItems = (o.items||[]).map(it => {
-    const maxReturn = (it.qty||0) - (returnedQtys[it.productId]||0);
-    return { productId: it.productId, qty: 0, maxQty: Math.max(0, maxReturn), rate: it.rate, gst: itemGst(it), disc: itemDisc(it) };
+    const key = it.productId || it.customId;
+    const maxReturn = (it.qty||0) - (returnedQtys[key]||0);
+    return { productId: it.productId, customId: it.customId, name: it.name, qty: 0, maxQty: Math.max(0, maxReturn), rate: it.rate, gst: itemGst(it), disc: itemDisc(it) };
   }).filter(it => it.maxQty > 0);
 
   renderReturnItems();
@@ -7435,7 +7749,7 @@ function renderReturnItems(){
     const lineAmt = (it.qty||0) * (it.rate||0) * (1 - it.disc/100) * (1 + it.gst/100);
     return `<div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--panel2);border-radius:8px;margin-bottom:6px;border-left:3px solid var(--warn);">
       <div style="flex:1;min-width:0;">
-        <div style="font-size:12px;font-weight:600;">${escHtml(p?.name)||'Unknown'}</div>
+        <div style="font-size:12px;font-weight:600;">${escHtml(p?.name || it.name)||'Unknown'}</div>
         <div style="font-size:9px;color:var(--muted);">Max return: ${it.maxQty} · Rate: ${fmt(it.rate)}</div>
       </div>
       <div style="display:flex;align-items:center;gap:4px;">
@@ -7470,7 +7784,7 @@ function saveReturn(){
     customerId: o.customerId,
     date: val('ret-date'),
     reason: val('ret-reason'),
-    items: items.map(it => ({ productId: it.productId, qty: it.qty, rate: it.rate, gst: it.gst, disc: it.disc })),
+    items: items.map(it => ({ productId: it.productId, customId: it.customId, name: it.name, qty: it.qty, rate: it.rate, gst: it.gst, disc: it.disc })),
     amount: creditAmount,
     createdAt: Date.now()
   };
@@ -7626,7 +7940,7 @@ async function downloadCreditNote(cnId){
       setClr(26,26,26); setFont('normal', 8.5);
       txt(String(idx+1), colX[0]+2, y+5.5, {align:'left'});
       setFont('bold', 8.5);
-      txt((p?.name||'Unknown').substring(0,38), colX[1]+2, y+5.5, {align:'left'});
+      txt((p?.name||it.name||'Unknown').substring(0,38), colX[1]+2, y+5.5, {align:'left'});
       setFont('normal', 8.5);
       txt(String(it.qty), colX[2]+colW[2]-2, y+5.5, {align:'right'});
       txt(fmtMM(it.rate), colX[3]+colW[3]-2, y+5.5, {align:'right'});
@@ -7649,6 +7963,7 @@ async function downloadCreditNote(cnId){
     txt('This is a computer-generated Credit Note.', M, y+4);
     txt('Generated ' + new Date().toLocaleString('en-IN'), W/2, H-10, {align:'center'});
 
+    stampPdfSyncStatus(doc, W, H);
     doc.save('CreditNote-CN-' + String(cn.cnNo).padStart(4,'0') + '-' + (c?.name||'Customer') + '.pdf');
     toast('Credit Note PDF downloaded', 'success');
   } catch(err) {
@@ -7658,6 +7973,8 @@ async function downloadCreditNote(cnId){
 }
 
 /* ============ SETTINGS MODAL ============ */
+let settingsUnlocked = false;
+
 function openSettingsModal(){
   const s = STATE.settings || {};
   $('set-bizname').value = s.bizName || '';
@@ -7669,23 +7986,73 @@ function openSettingsModal(){
   $('set-bizphone').value = s.bizPhone || '';
   $('set-bizbank').value = s.bizBank || '';
   $('set-bizbranch').value = s.bizBranch || '';
+  $('set-bizaccname').value = s.bizAccName || '';
   $('set-bizaccno').value = s.bizAccNo || '';
   $('set-bizifsc').value = s.bizIFSC || '';
   $('set-bizsignatory').value = s.bizSignatory || '';
+  $('set-bizpin').value = '';
   const sel = $('set-gststate');
-  sel.innerHTML = Object.keys(GST_STATE_CODES).map(st => `<option value="${st}"${st===(s.gstState||'Rajasthan')?' selected':''}>${st} (${GST_STATE_CODES[st]})</option>`).join('');
+  sel.innerHTML = Object.keys(GST_STATE_CODES).map(st => `<option value="${st}"${st===(s.gstState||'Maharashtra')?' selected':''}>${st} (${GST_STATE_CODES[st]})</option>`).join('');
+
+  // Lock state: if a PIN is already set, open locked (view-only) until unlocked.
+  // If no PIN exists yet, open unlocked so the owner can set one for the first time.
+  settingsUnlocked = !(s.bizPin && s.bizPin.length);
+  $('set-pin-entry').value = '';
+  applySettingsLockUI();
+
   openModal('modal-settings');
 }
 
+function applySettingsLockUI(){
+  const s = STATE.settings || {};
+  const hasPin = !!(s.bizPin && s.bizPin.length);
+  const fields = $('settings-locked-fields');
+  const lockbar = $('settings-lockbar');
+  const firsttime = $('settings-firsttime');
+  const saveBtn = $('settings-save-btn');
+
+  if(settingsUnlocked){
+    fields.classList.remove('is-locked');
+    saveBtn.disabled = false;
+    saveBtn.style.opacity = '1';
+    saveBtn.style.cursor = 'pointer';
+    lockbar.style.display = 'none';
+    firsttime.style.display = hasPin ? 'none' : 'flex';
+  } else {
+    fields.classList.add('is-locked');
+    saveBtn.disabled = true;
+    saveBtn.style.opacity = '0.5';
+    saveBtn.style.cursor = 'not-allowed';
+    lockbar.style.display = 'flex';
+    firsttime.style.display = 'none';
+  }
+}
+
+function unlockSettings(){
+  const s = STATE.settings || {};
+  const entered = val('set-pin-entry');
+  if(!entered){ toast('Enter the PIN first','error'); return; }
+  if(entered !== (s.bizPin || '')){ toast('Wrong PIN','error'); return; }
+  settingsUnlocked = true;
+  applySettingsLockUI();
+  toast('Unlocked','success');
+}
+
 function saveSettings(){
+  if(!settingsUnlocked){ toast('Unlock with PIN first','error'); return; }
+  const s = STATE.settings || {};
+  const pinEntered = val('set-bizpin');
   STATE.settings = {
     bizName: val('set-bizname'), bizAddress: val('set-bizaddress'),
     bizGSTIN: val('set-bizgstin'), bizPAN: val('set-bizpan'), bizEmail: val('set-bizemail'),
     bizUPI: val('set-bizupi'), bizPhone: val('set-bizphone'),
-    bizBank: val('set-bizbank'), bizBranch: val('set-bizbranch'), bizAccNo: val('set-bizaccno'), bizIFSC: val('set-bizifsc'),
+    bizBank: val('set-bizbank'), bizBranch: val('set-bizbranch'), bizAccName: val('set-bizaccname'), bizAccNo: val('set-bizaccno'), bizIFSC: val('set-bizifsc'),
     bizSignatory: val('set-bizsignatory'),
-    gstState: val('set-gststate')
+    gstState: val('set-gststate'),
+    // Leave the PIN unchanged unless the owner typed a new one in the PIN field.
+    bizPin: pinEntered ? pinEntered : (s.bizPin || '')
   };
+  settingsUnlocked = false;
   saveState(); closeModal('modal-settings');
   toast('Settings saved','success');
   renderTab(activeTab);
@@ -7797,15 +8164,16 @@ function openProductModal(id){
   $('prod-id').value = p?.id || '';
   $('prod-name').value = p?.name || '';
   $('prod-unit').value = p?.unit || 'Pcs';
-  // Use nullish check so a saved 0% GST is not silently reset to 18%
-  $('prod-gst').value = (p && p.gst !== undefined && p.gst !== null && p.gst !== '') ? p.gst : 18;
+  // Use nullish check so a saved GST/min-qty/min-stock value of 0 is not silently
+  // reset to the default — defaults only apply when adding a brand-new product.
+  $('prod-gst').value = (p && p.gst !== undefined && p.gst !== null && p.gst !== '') ? p.gst : 0;
   $('prod-prate').value = p?.prate || 0;
   $('prod-wrate').value = p?.wrate || 0;
   $('prod-mrp').value = p?.mrp || 0;
-  $('prod-wsq-minqty').value = p?.wsMinQty || 0;
+  $('prod-wsq-minqty').value = (p && p.wsMinQty !== undefined && p.wsMinQty !== null && p.wsMinQty !== '') ? p.wsMinQty : 25;
   $('prod-ws-rate').value = p?.wsRate || 0;
   $('prod-hsn').value = p?.hsn || '';
-  $('prod-minstock').value = p?.minStock || 0;
+  $('prod-minstock').value = (p && p.minStock !== undefined && p.minStock !== null && p.minStock !== '') ? p.minStock : 5;
   $('prod-openingstock').value = p?.openingStock || 0;
   $('prod-trackstock').value = (p && p.trackStock !== undefined) ? (p.trackStock ? '1' : '0') : '1';
   openModal('modal-product');
@@ -7953,7 +8321,7 @@ function parseBulkImport(){
       mrp:   bulkNum(c[3]),
       openingStock: bulkNum(c[4]),
       unit: 'Pcs',
-      gst: 18,
+      gst: 0,
       status: 'ok',
       note: ''
     };
@@ -7964,11 +8332,11 @@ function parseBulkImport(){
       if(u) row.unit = u;
       else { row.note = 'unit "' + c[5] + '" not known, using Pcs'; }
     }
-    // GST — snap to the nearest legal slab so "5%" or "05" both work
+    // GST — snap to the nearest legal slab so "5%" or "05" both work; default 0%
     if(c[6] !== undefined && c[6] !== ''){
       const g = bulkNum(c[6]);
       if(BULK_GST.indexOf(g) >= 0) row.gst = g;
-      else { row.gst = 18; row.note = (row.note ? row.note + '; ' : '') + 'GST "' + c[6] + '" invalid, using 18%'; }
+      else { row.gst = 0; row.note = (row.note ? row.note + '; ' : '') + 'GST "' + c[6] + '" invalid, using 0%'; }
     }
 
     const key = name.toLowerCase();
@@ -8075,7 +8443,9 @@ function saveBulkImport(){
       wrate: r.wrate,
       mrp: r.mrp,
       hsn: '',
-      minStock: 0,
+      wsMinQty: 25,
+      wsRate: 0,
+      minStock: 5,
       openingStock: r.openingStock,
       trackStock: track
     });
@@ -8155,23 +8525,30 @@ function renderOrderItems(){
   
   mobContainer.innerHTML = currentOrderItems.map((it,i) => {
     const p = STATE.products.find(x=>x.id===it.productId);
+    const isCustom = !it.productId;
+    const displayName = p?.name || it.name || 'Unknown Product';
     const color = colors[i % colors.length];
     const amount = lineAmount(it);
     const rate = +it.rate || 0;
     const cost = p ? (productCostRate(p.id) || +p.prate || 0) : 0;
     const noRate    = rate <= 0;
     const belowCost = rate > 0 && cost > 0 && rate < cost;
-    const flagCol   = noRate ? 'var(--bad)' : belowCost ? 'var(--warn)' : color;
+    const flagCol   = noRate ? 'var(--bad)' : belowCost ? 'var(--warn)' : (isCustom ? 'var(--accent2)' : color);
 
     return `<div style="background:var(--panel2);border-left:3px solid ${flagCol};border-radius:8px;padding:8px 10px;margin-bottom:6px;position:relative;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
         <div style="flex:1;min-width:0;">
-          <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(p?.name)||'Unknown Product'}</div>
-          <div style="font-size:9px;color:var(--muted);margin-top:1px;">GST: ${itemGst(it)}%${itemDisc(it) ? ' · Disc: '+itemDisc(it)+'%' : ''}${(p && rate>0 && rate !== p.wrate) ? ' · <span style="color:var(--accent2);">party rate</span>' : ''}${cost>0 ? ' · Cost '+fmt(cost) : ''}</div>
+          <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(displayName)}${isCustom ? ' <span style="font-size:9px;font-weight:600;color:var(--accent2);background:rgba(34,211,238,0.12);padding:1px 5px;border-radius:4px;">CUSTOM</span>' : ''}</div>
+          <div style="font-size:9px;color:var(--muted);margin-top:1px;">GST: ${itemGst(it)}%${itemDisc(it) ? ' · Disc: '+itemDisc(it)+'%' : ''}${(p && rate>0 && rate !== p.wrate) ? ' · <span style="color:var(--accent2);">party rate</span>' : ''}${cost>0 ? ' · Cost '+fmt(cost) : ''}${isCustom ? ' · <span style="color:var(--accent2);">inventory me nahi hai</span>' : ''}</div>
         </div>
-        <button onclick="removeOrderLine(${i})" style="background:rgba(248,113,113,0.15);border:none;color:var(--bad);width:22px;height:22px;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-left:6px;flex-shrink:0;">
-          <i class="fa-solid fa-times" style="font-size:9px;"></i>
-        </button>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:6px;">
+          ${isCustom ? `<button onclick="openCustomItemModal(${i})" style="background:rgba(139,108,255,0.12);border:none;color:var(--accent);width:22px;height:22px;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+            <i class="fa-solid fa-pen" style="font-size:9px;"></i>
+          </button>` : ''}
+          <button onclick="removeOrderLine(${i})" style="background:rgba(248,113,113,0.15);border:none;color:var(--bad);width:22px;height:22px;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+            <i class="fa-solid fa-times" style="font-size:9px;"></i>
+          </button>
+        </div>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
         <div style="display:flex;align-items:center;gap:4px;">
@@ -8222,9 +8599,18 @@ function onNewOrderItemInput(val){
       </div>
     </div>`;
   }).join('');
-  html += `<div class="autocomplete-item" onclick="addNewProductFromOrder('${escJsAttr(val)}')" style="color:var(--accent);border-top:1px solid var(--line);margin-top:4px;padding-top:8px;"><i class="fa-solid fa-plus" style="margin-right:6px;"></i>Add New: "${escHtml(val)}"</div>`;
+  html += `<div class="autocomplete-item" onclick="addNewProductFromOrder('${escJsAttr(val)}')" style="color:var(--accent);border-top:1px solid var(--line);margin-top:4px;padding-top:8px;"><i class="fa-solid fa-plus" style="margin-right:6px;"></i>Add New Product: "${escHtml(val)}"</div>`;
+  html += `<div class="autocomplete-item" onclick="openCustomItemFromSearch('${escJsAttr(val)}')" style="color:var(--accent2);"><i class="fa-solid fa-box-open" style="margin-right:6px;"></i>Custom Item (not in inventory): "${escHtml(val)}"</div>`;
   drop.innerHTML = html;
   drop.classList.add('show');
+}
+
+// Opens the Custom Item modal prefilled with whatever was typed in the
+// product search box — used by the "Custom Item: ..." dropdown option.
+function openCustomItemFromSearch(name){
+  $('new-item-drop').classList.remove('show');
+  openCustomItemModal();
+  $('custom-item-name').value = name || '';
 }
 
 // Open the product modal prefilled with the typed name and collect real
@@ -8275,6 +8661,48 @@ function addNewOrderItem(productId){
 }
 
 // addOrderLine() removed — handled by search input now
+
+// ---------- Custom (non-inventory) order line item ----------------------
+// For a one-off charge or item that isn't in the product catalogue — packing,
+// delivery, or something a customer asked for that isn't stocked. Goes
+// straight onto the bill with productId:null, so it never touches stock,
+// cost/COGS, or party-rate memory.
+function openCustomItemModal(index){
+  const editing = (index !== undefined && index !== null && index >= 0);
+  const it = editing ? currentOrderItems[index] : null;
+  $('custom-item-index').value = editing ? index : -1;
+  $('custom-item-title').innerHTML = `<i class="fa-solid fa-box-open" style="color:var(--accent2);margin-right:8px;"></i>${editing ? 'Edit' : ''} Custom Item`;
+  $('custom-item-name').value = it?.name || '';
+  $('custom-item-qty').value = it?.qty || 1;
+  $('custom-item-rate').value = it?.rate || 0;
+  $('custom-item-gst').value = (it && it.gst !== undefined && it.gst !== null) ? it.gst : 0;
+  $('new-item-drop')?.classList.remove('show');
+  openModal('modal-custom-item');
+  setTimeout(()=>$('custom-item-name')?.focus(), 60);
+}
+
+function saveCustomOrderItem(){
+  const name = val('custom-item-name').trim();
+  const qty = numVal('custom-item-qty') || 1;
+  const rate = numVal('custom-item-rate');
+  const gst = numVal('custom-item-gst') || 0;
+  if(!name){ toast('Item ka naam likho','error'); return; }
+  if(rate <= 0){ toast('Rate daalo','error'); return; }
+
+  const idx = parseInt($('custom-item-index').value);
+  const data = { productId: null, isCustom: true, name, qty, rate, gst, disc: 0 };
+  if(idx >= 0){
+    // Preserve an existing customId (used to track returns) when editing
+    data.customId = currentOrderItems[idx].customId || uid();
+    currentOrderItems[idx] = data;
+  } else {
+    data.customId = uid();
+    currentOrderItems.push(data);
+  }
+
+  closeModal('modal-custom-item');
+  renderOrderItems();
+}
 
 function removeOrderLine(i){
   currentOrderItems.splice(i,1);
@@ -8367,7 +8795,7 @@ function saveOrder(){
   if(zeroLines.length){
     const names = zeroLines.map(it => {
       const p = STATE.products.find(x => x.id === it.productId);
-      return escHtml(p?.name || 'Item');
+      return escHtml(it.name || p?.name || 'Item');
     });
     toast(`Rate daalo: ${names.slice(0,3).join(', ')}${names.length>3?' +'+(names.length-3):''}`, 'error');
     // Put the cursor on the first empty rate box so it can be fixed right away
@@ -8613,8 +9041,17 @@ function openOrderDetailModal(id){
         <tbody>
           ${(o.items||[]).map(it => {
             const p = STATE.products.find(x=>x.id===it.productId);
+            // Tiny per-item profit — same cost logic as orderCost(), just per line.
+            // Owner-only (this modal never feeds the PDF/WhatsApp bill).
+            const ratio = 1 - (o.overallDisc||0)/100;
+            const taxableLine = (it.qty||0)*(it.rate||0)*(1 - itemDisc(it)/100) * ratio;
+            const costRate = (parseFloat(it.cost) || 0) || productCostRate(it.productId) || (p?.prate || 0);
+            const lineProfit = round2(taxableLine - costRate*(it.qty||0));
+            const lineIsProfit = lineProfit >= 0;
             return `<tr>
-              <td>${escHtml(p?.name)||'Unknown'}</td>
+              <td>${escHtml(p?.name || it.name)||'Unknown'}${!p ? ' <span style="font-size:9px;color:var(--accent2);">· custom</span>' : ''}
+                <div style="font-size:9px;margin-top:1px;color:${lineIsProfit?'var(--good)':'var(--bad)'};"><i class="fa-solid fa-eye-slash" style="font-size:7px;opacity:0.6;"></i> ${lineIsProfit?'+':''}${fmt(lineProfit)}</div>
+              </td>
               <td class="mono">${it.qty}</td>
               <td class="mono">${fmt(it.rate)}</td>
               <td class="mono">${itemDisc(it)}%</td>
@@ -8643,6 +9080,21 @@ function openOrderDetailModal(id){
       <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="color:var(--muted);">Received</span><strong class="mono" style="color:var(--good);">${fmt(received)}</strong></div>
       <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--line);"><span style="font-weight:700;">Balance</span><strong class="mono" style="color:${balance>0?'var(--bad)':'var(--good)'};">${fmt(balance)}</strong></div>
     </div>
+    ${o.status!=='Cancelled' ? (() => {
+      // Owner-only margin view — never appears on the PDF/WhatsApp bill, only here.
+      const cost = orderCost(o);
+      const taxableVal = orderTaxableValue(o);
+      const profit = round2(taxableVal - cost);
+      const margin = taxableVal > 0 ? (profit / taxableVal * 100) : 0;
+      const isProfit = profit >= 0;
+      return `<div class="card2" style="padding:12px 14px;margin-top:10px;border:1px dashed ${isProfit?'rgba(74,222,128,0.35)':'rgba(248,113,113,0.35)'};background:${isProfit?'rgba(74,222,128,0.04)':'rgba(248,113,113,0.04)'};">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span style="font-size:10px;color:var(--muted);"><i class="fa-solid fa-eye-slash" style="margin-right:4px;"></i>Sirf tumhe dikh raha hai — customer bill/WhatsApp me nahi jaata</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:11.5px;"><span style="color:var(--muted);">Cost (COGS)</span><span class="mono">${fmt(cost)}</span></div>
+        <div style="display:flex;justify-content:space-between;padding-top:6px;border-top:1px solid var(--line);"><span style="font-weight:700;">Profit</span><span style="display:flex;align-items:center;gap:6px;"><strong class="mono" style="color:${isProfit?'var(--good)':'var(--bad)'};">${isProfit?'+':''}${fmt(profit)}</strong><span class="mono" style="font-size:10px;color:${isProfit?'var(--good)':'var(--bad)'};">(${margin.toFixed(1)}%)</span></span></div>
+      </div>`;
+    })() : ''}
     ${o.notes ? `<div style="margin-top:12px;padding:10px;background:var(--panel2);border-radius:8px;font-size:12px;color:var(--muted);"><strong>Notes:</strong> ${escHtml(o.notes)}</div>` : ''}
   `;
   openModal('modal-order-detail');
@@ -8684,7 +9136,7 @@ function shareOrderWhatsApp(orderId){
   msg += `*Items:*\n`;
   (o.items||[]).forEach((it,i) => {
     const p = STATE.products.find(x=>x.id===it.productId);
-    msg += `${i+1}. ${p?.name||'Unknown'} × ${it.qty} @ ${fmt(it.rate)}`;
+    msg += `${i+1}. ${p?.name||it.name||'Unknown'} × ${it.qty} @ ${fmt(it.rate)}`;
     if(itemDisc(it)) msg += ` (-${itemDisc(it)}%)`;
     if(itemGst(it)) msg += ` (+${itemGst(it)}% GST)`;
     msg += ` = ${fmt(lineAmount(it, o.overallDisc))}\n`;
@@ -8697,12 +9149,59 @@ function shareOrderWhatsApp(orderId){
 }
 
 // Download GST Tax Invoice as PDF
+// ===================== BRAND LOGO LOADER =====================
+// The logo lives at assets/logo.png next to this page. It is loaded once and
+// cached as a data-URL, because jsPDF needs raw image data (not a live <img>)
+// to embed it reliably. Two strategies are tried, then it degrades to a
+// text-only watermark so a missing file can never break bill generation.
+const JMD_LOGO_SRC = 'assets/logo.png';
+let _jmdLogoCache = null; // null = untried | false = unavailable | string = dataURL
+
+async function getBrandLogo(){
+  if(_jmdLogoCache !== null) return _jmdLogoCache;
+  // Strategy 1: fetch + FileReader (works when served over http/https)
+  try {
+    const res = await fetch(JMD_LOGO_SRC, { cache: 'force-cache' });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const blob = await res.blob();
+    _jmdLogoCache = await new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => resolve(fr.result);
+      fr.onerror = reject;
+      fr.readAsDataURL(blob);
+    });
+    return _jmdLogoCache;
+  } catch(e) { /* fall through */ }
+  // Strategy 2: <img> + canvas (covers cases where fetch is blocked)
+  try {
+    _jmdLogoCache = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        try {
+          const cv = document.createElement('canvas');
+          cv.width = img.naturalWidth; cv.height = img.naturalHeight;
+          cv.getContext('2d').drawImage(img, 0, 0);
+          resolve(cv.toDataURL('image/png'));
+        } catch(err){ reject(err); }
+      };
+      img.onerror = reject;
+      img.src = JMD_LOGO_SRC;
+    });
+  } catch(e2) {
+    _jmdLogoCache = false;
+    console.warn('Logo not loaded from ' + JMD_LOGO_SRC + ' — using text watermark.');
+  }
+  return _jmdLogoCache;
+}
+
 async function downloadBill(orderId){
   const o = STATE.orders.find(x=>x.id===orderId);
   if(!o) return;
   const c = STATE.customers.find(x=>x.id===o.customerId);
   const s = STATE.settings || {};
   const bizName = s.bizName || 'JMD Wholesale';
+  const bizTagline = s.bizTagline || 'Religious & Pooja Products — Wholesale & Retail Supplier';
   const bizAddr = s.bizAddress || '';
   const bizGSTIN = s.bizGSTIN || '';
   const bizPAN = s.bizPAN || '';
@@ -8711,6 +9210,7 @@ async function downloadBill(orderId){
   const bizPhone = s.bizPhone || '';
   const bizBank = s.bizBank || '';
   const bizBranch = s.bizBranch || '';
+  const bizAccName = s.bizAccName || '';
   const bizAccNo = s.bizAccNo || '';
   const bizIFSC = s.bizIFSC || '';
   const bizSignatory = s.bizSignatory || '';
@@ -8727,317 +9227,555 @@ async function downloadBill(orderId){
   const ratio = 1 - (overallDisc / 100);
 
   const taxByRate = {};
+  const taxByHsn = {};
   items.forEach(it => {
+    const p = STATE.products.find(x=>x.id===it.productId);
     const gstRate = itemGst(it);
     const taxable = (it.qty||0)*(it.rate||0)*(1 - itemDisc(it)/100) * ratio;
     if(!taxByRate[gstRate]) taxByRate[gstRate] = { taxable: 0, tax: 0 };
     taxByRate[gstRate].taxable += taxable;
     taxByRate[gstRate].tax += taxable * gstRate / 100;
+    // HSN-wise breakup — what an actual GSTR-1 filing needs, since two products
+    // can share a GST rate but sit under different HSN codes.
+    const hsn = p?.hsn || '-';
+    const hsnKey = hsn + '|' + gstRate;
+    if(!taxByHsn[hsnKey]) taxByHsn[hsnKey] = { hsn, rate: gstRate, taxable: 0, tax: 0 };
+    taxByHsn[hsnKey].taxable += taxable;
+    taxByHsn[hsnKey].tax += taxable * gstRate / 100;
   });
 
-  const bizState = s.gstState || 'Rajasthan';
+  const bizState = s.gstState || 'Maharashtra';
   // Customer state not tracked yet — default to intra-state.
   // TODO: Add a state field to customers for proper IGST detection.
   const custState = c?.state || bizState;
   const isInterState = custState !== bizState;
-  const upiQRData = bizUPI ? `upi://pay?pa=${encodeURIComponent(bizUPI)}&pn=${encodeURIComponent(bizName)}&am=${balance > 0 ? balance.toFixed(2) : total.toFixed(2)}&cu=INR&tn=ORD-${o.orderNo}` : '';
+  const upiQRData = (bizUPI && balance > 0.004) ? `upi://pay?pa=${encodeURIComponent(bizUPI)}&pn=${encodeURIComponent(bizName)}&am=${balance.toFixed(2)}&cu=INR&tn=ORD-${o.orderNo}` : '';
   const invoiceNo = 'INV-' + String(o.orderNo).padStart(4, '0');
 
   toast('Generating PDF...', 'info');
 
   try {
+    const logoData = await getBrandLogo();
+
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'mm', 'a4');
-    const W = 210, H = 297, M = 15;
-    const cw = W - 2*M;
+    const W = 210, H = 297, M = 14;
+    const cw = W - 2*M;              // 182mm usable width
+    const RX = W - M;                // right edge for right-aligned text
     let y = M;
 
-    // Helper functions
-    const txt = (text, x, yy, opts={}) => doc.text(text, x, yy, opts);
+    // Brand palette — maroon + gold, matching the JMD logo.
+    const BRAND = [114, 20, 34];
+    const INK   = [26, 26, 26];
+    const MUTED = [110, 110, 110];
+
+    // ---- tiny drawing helpers ----
+    const txt = (text, x, yy, opts={}) => doc.text(String(text), x, yy, opts);
     const line = (x1,y1,x2,y2) => doc.line(x1,y1,x2,y2);
     const rect = (x,yy,w,h,style) => doc.rect(x,yy,w,h,style||'S');
     const filledRect = (x,yy,w,h,r,g,b) => { doc.setFillColor(r,g,b); doc.rect(x,yy,w,h,'F'); };
     const setFont = (style,size) => doc.setFont('helvetica',style||'normal').setFontSize(size||10);
     const setClr = (r,g,b) => doc.setTextColor(r,g,b);
-    const setDrawColor = (r,g,b) => doc.setDrawColor(r,g,b);
-    const fmtMM = (n) => 'Rs. ' + (n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const setDraw = (r,g,b) => doc.setDrawColor(r,g,b);
 
-    // ===== HEADER BANNER =====
-    filledRect(M, y, cw, 12, 35, 47, 62);
-    setFont('bold', 18); setClr(255,255,255);
-    txt('TAX INVOICE', W/2, y+8.5, {align:'center'});
-    y += 16;
+    // Rupee amounts. jsPDF's built-in Helvetica has no Rupee glyph, so the
+    // symbol would silently print as garbage — "Rs. " with a trailing space is
+    // used everywhere instead, always with 2 decimals and Indian digit grouping.
+    const num   = (n) => (Number(n)||0).toLocaleString('en-IN', { minimumFractionDigits:2, maximumFractionDigits:2 });
+    const money = (n) => 'Rs. ' + num(n);
 
-    // ===== COMPANY INFO + INVOICE META =====
-    setFont('bold', 16); setClr(35,47,62);
-    txt(bizName, M, y+6);
-    setFont('italic', 9); setClr(100,100,100);
-    txt('Kirana & General Merchant', M, y+11);
-    setFont('normal', 9); setClr(85,85,85);
-    let coY = y+16;
-    if(bizAddr){ txt(bizAddr, M, coY); coY+=4; }
-    let contactLine = '';
-    if(bizPhone) contactLine += 'Mob: '+bizPhone;
-    if(bizEmail) contactLine += (contactLine?' | ':'')+bizEmail;
-    if(contactLine){ txt(contactLine, M, coY); coY+=4; }
-    if(bizGSTIN){ setFont('bold', 9); setClr(26,26,26); txt('GSTIN: ', M, coY); setFont('normal', 9); setClr(85,85,85); const gw = doc.getTextWidth('GSTIN: '); txt(bizGSTIN, M+gw, coY); coY+=4; }
-    if(bizPAN){ setFont('bold', 9); setClr(26,26,26); txt('PAN: ', M, coY); setFont('normal', 9); setClr(85,85,85); const pw = doc.getTextWidth('PAN: '); txt(bizPAN, M+pw, coY); coY+=4; }
+    // ================= PER-PAGE FURNITURE =================
+    // Watermark, top contact bar and footer rule — repeated on every single
+    // page so page 2+ never looks like a bare, unbranded sheet.
+    const drawWatermark = () => {
+      doc.saveGraphicsState();
+      if(logoData){
+        if(doc.GState) doc.setGState(new doc.GState({ opacity: 0.06 }));
+        const size = 150;
+        try { doc.addImage(logoData, 'PNG', (W-size)/2, (H-size)/2, size, size); } catch(e){}
+      } else {
+        if(doc.GState) doc.setGState(new doc.GState({ opacity: 0.05 }));
+        setFont('bold', 54); setClr(BRAND[0], BRAND[1], BRAND[2]);
+        doc.text(bizName, W/2, H/2, { align:'center', angle: 35 });
+      }
+      doc.restoreGraphicsState();
+    };
 
-    // Invoice meta (right side)
-    const rx = W - M;
-    setFont('bold', 13); setClr(35,47,62);
-    txt(invoiceNo, rx, y+6, {align:'right'});
-    setFont('normal', 9); setClr(85,85,85);
-    let metaY = y+12;
-    setFont('bold', 9); setClr(26,26,26); txt('Date: ', rx-40, metaY); setFont('normal', 9); setClr(85,85,85); txt(fmtDate(o.date), rx, metaY, {align:'right'}); metaY+=4.5;
-    setFont('bold', 9); setClr(26,26,26); txt('Place of Supply: ', rx-40, metaY); setFont('normal', 9); setClr(85,85,85); txt(bizState, rx, metaY, {align:'right'}); metaY+=4.5;
-    setFont('bold', 9); setClr(26,26,26); txt('Supply Type: ', rx-40, metaY); setFont('normal', 9); setClr(85,85,85); txt(isInterState?'Inter-State (IGST)':'Intra-State (CGST+SGST)', rx, metaY, {align:'right'}); metaY+=4.5;
-    if(o.deliveredOn){ setFont('bold', 9); setClr(26,26,26); txt('Delivered: ', rx-40, metaY); setFont('normal', 9); setClr(85,85,85); txt(fmtDate(o.deliveredOn), rx, metaY, {align:'right'}); metaY+=4.5; }
+    const drawTopBar = () => {
+      filledRect(M, 8, cw, 5, BRAND[0], BRAND[1], BRAND[2]);
+      setFont('bold', 7.5); setClr(255,255,255);
+      if(bizPhone) txt('Ph: ' + bizPhone, M+3, 11.4);
+      if(bizEmail) txt('Email: ' + bizEmail, RX-3, 11.4, { align:'right' });
+      else txt(bizName, RX-3, 11.4, { align:'right' });
+    };
 
-    y = Math.max(coY, metaY) + 4;
-    setDrawColor(35,47,62); doc.setLineWidth(0.6); line(M, y, W-M, y); doc.setLineWidth(0.2);
+    // Footer tag centred inside a split rule — mirrors the reference bill.
+    const drawFooterTag = () => {
+      setFont('normal', 7.5); setClr(BRAND[0], BRAND[1], BRAND[2]);
+      const tag = invoiceNo + '  |  ' + bizName + '  |  Computer generated invoice';
+      const tw = doc.getTextWidth(tag);
+      setDraw(BRAND[0], BRAND[1], BRAND[2]); doc.setLineWidth(0.2);
+      line(M, 288, W/2 - tw/2 - 3, 288);
+      line(W/2 + tw/2 + 3, 288, RX, 288);
+      txt(tag, W/2, 288.7, { align:'center' });
+    };
+
+    const decoratePage = () => { drawWatermark(); drawTopBar(); drawFooterTag(); };
+    // Starts a fresh page already carrying all brand furniture.
+    const newPage = () => { doc.addPage(); decoratePage(); return 18; };
+
+    decoratePage();
+
+    // ================= HEADER: LOGO + IDENTITY + INVOICE META =================
+    y = 15;
+    setFont('italic', 8); setClr(MUTED[0], MUTED[1], MUTED[2]);
+    txt(bizTagline, W/2, y + 2.5, { align:'center' });
+
+    const headTop = y + 5;
+    if(logoData){
+      try { doc.addImage(logoData, 'PNG', M, headTop, 26, 26); } catch(e){}
+    }
+    const idX = M + 30;
+
+    setFont('bold', 21); setClr(BRAND[0], BRAND[1], BRAND[2]);
+    txt(bizName, idX, headTop + 9);
+
+    setFont('normal', 8.5); setClr(100,100,100);
+    let coY = headTop + 14;
+    if(bizAddr){
+      doc.splitTextToSize(bizAddr, 86).forEach(ln => { txt(ln, idX, coY); coY += 4; });
+    }
+    if(bizPhone){ txt('Mob: ' + bizPhone, idX, coY); coY += 4; }
+    if(bizGSTIN){
+      setFont('bold', 8.5); setClr(INK[0], INK[1], INK[2]);
+      txt('GSTIN: ', idX, coY);
+      const gw = doc.getTextWidth('GSTIN: ');
+      setFont('normal', 8.5); setClr(100,100,100);
+      txt(bizGSTIN, idX + gw, coY); coY += 4;
+    }
+
+    // Invoice meta block (right side)
+    setFont('bold', 15); setClr(BRAND[0], BRAND[1], BRAND[2]);
+    txt('TAX INVOICE', RX, headTop + 8, { align:'right' });
+    let metaY = headTop + 14;
+    const metaRow = (label, value) => {
+      setFont('normal', 9); setClr(70,70,70);
+      txt(label + ' ' + value, RX, metaY, { align:'right' });
+      metaY += 4.6;
+    };
+    metaRow('Invoice No:', '#' + invoiceNo);
+    metaRow('Date:', fmtDate(o.date));
+    metaRow('Place of Supply:', bizState);
+    if(o.deliveredOn) metaRow('Delivered:', fmtDate(o.deliveredOn));
+
+    y = Math.max(coY, metaY) + 2;
+
+    // Thin separator between the business-identity block above and the
+    // Bill To block below — same brand-thin-rule treatment as the divider
+    // under Bill To, just lighter, so the two sections read distinctly.
+    setDraw(BRAND[0], BRAND[1], BRAND[2]); doc.setLineWidth(0.15);
+    line(M, y, RX, y);
+    doc.setLineWidth(0.2);
+    y += 5;
+
+    // ================= BILL TO =================
+    setFont('bold', 10.5); setClr(INK[0], INK[1], INK[2]);
+    txt('Bill To :', M, y);
+    const btW = doc.getTextWidth('Bill To :');
+    setFont('bold', 11);
+    txt((c?.name || 'Customer') + ' Ji', M + btW + 3, y);
+    if(c?.mobile){
+      setFont('normal', 9.5); setClr(70,70,70);
+      txt('Contact: ' + formatPhoneDisplay(c.mobile), RX, y, { align:'right' });
+    }
+    let subY = y + 4.5;
+    setFont('normal', 9); setClr(90,90,90);
+    if(c?.firm){ txt(c.firm, M, subY); subY += 4.2; }
+    if(c?.address){
+      doc.splitTextToSize('Address: ' + c.address, 120).forEach(ln => { txt(ln, M, subY); subY += 4.2; });
+    }
+    if(c?.gst){
+      setFont('bold', 9); setClr(INK[0], INK[1], INK[2]);
+      txt('GSTIN: ' + c.gst, M, subY); subY += 4.2;
+    }
+    setFont('normal', 8.5); setClr(120,120,120);
+    txt(isInterState ? 'Supply: Inter-State (IGST)' : 'Supply: Intra-State (CGST + SGST)', RX, subY - 4.2, { align:'right' });
+
+    y = subY + 1;
+    setDraw(BRAND[0], BRAND[1], BRAND[2]); doc.setLineWidth(0.5);
+    line(M, y, RX, y);
+    doc.setLineWidth(0.2);
     y += 6;
 
-    // ===== BILLED TO / SHIPPED TO =====
-    const halfW = (cw - 6) / 2;
-    // Billed To box
-    filledRect(M, y, halfW, 28, 249,249,249);
-    rect(M, y, halfW, 28);
-    setFont('bold', 8); setClr(100,100,100);
-    txt('BILLED TO', M+4, y+5);
-    setFont('bold', 11); setClr(26,26,26);
-    txt(c?.name||'', M+4, y+10);
-    setFont('normal', 9); setClr(85,85,85);
-    let btY = y+14.5;
-    if(c?.firm){ txt(c.firm, M+4, btY); btY+=4; }
-    if(c?.address){ txt(c.address, M+4, btY); btY+=4; }
-    if(c?.mobile){ txt('Mob: '+formatPhoneDisplay(c.mobile), M+4, btY); btY+=4; }
-    if(c?.gst){ setFont('bold', 9); setClr(26,26,26); txt('GSTIN: '+c.gst, M+4, btY); }
+    // ================= ITEMS TABLE =================
+    // Columns of a standard GST invoice. Widths sum to exactly 182mm so the
+    // grid always closes flush with the page margins.
+    const cols = [
+      { key:'sr',   label:'Sr.',                  w:10,  align:'center' },
+      { key:'desc', label:'Item Description',     w:62,  align:'left'   },
+      { key:'hsn',  label:'HSN',                  w:16,  align:'center' },
+      { key:'mrp',  label:'MRP',                  w:16,  align:'right'  },
+      { key:'qty',  label:'Qty',                  w:14,  align:'center' },
+      { key:'unit', label:'Unit',                 w:12,  align:'center' },
+      { key:'rate', label:'Rate',                 w:18,  align:'right'  },
+      { key:'gst',  label:'GST',                  w:18,  align:'right'  },
+      { key:'amt',  label:'Amount',               w:16,  align:'right'  }
+      // Money columns print bare numbers — the "Rs." unit is stated once in the
+      // sub-head below, so narrow cells never overflow on large amounts.
+    ];
+    // Absolute x for each column edge.
+    const cx = [];
+    cols.reduce((acc, cdef) => { cx.push(acc); return acc + cdef.w; }, M);
 
-    // Shipped To box
-    const sx = M + halfW + 6;
-    filledRect(sx, y, halfW, 28, 249,249,249);
-    rect(sx, y, halfW, 28);
-    setFont('bold', 8); setClr(100,100,100);
-    txt('SHIPPED TO', sx+4, y+5);
-    setFont('bold', 11); setClr(26,26,26);
-    txt(c?.name||'', sx+4, y+10);
-    setFont('normal', 9); setClr(85,85,85);
-    let stY = y+14.5;
-    if(c?.firm){ txt(c.firm, sx+4, stY); stY+=4; }
-    if(c?.address){ txt(c.address, sx+4, stY); stY+=4; }
-    if(c?.mobile){ txt('Mob: '+formatPhoneDisplay(c.mobile), sx+4, stY); stY+=4; }
-    if(c?.gst){ setFont('bold', 9); setClr(26,26,26); txt('GSTIN: '+c.gst, sx+4, stY); }
+    const cellX = (i, align) => align === 'left' ? cx[i] + 2
+                              : align === 'right' ? cx[i] + cols[i].w - 2
+                              : cx[i] + cols[i].w / 2;
 
-    y += 33;
+    const drawTableHead = (yy) => {
+      const hh = 8;
+      filledRect(M, yy, cw, hh, BRAND[0], BRAND[1], BRAND[2]);
+      setFont('bold', 8); setClr(255,255,255);
+      cols.forEach((cdef, i) => {
+        // Money columns get a "(Rs.)" unit hint right in the header.
+        const isMoney = cdef.key === 'mrp' || cdef.key === 'rate' || cdef.key === 'gst' || cdef.key === 'amt';
+        if(isMoney){
+          txt(cdef.label, cellX(i, cdef.align), yy + 3.9, { align: cdef.align });
+          setFont('normal', 5.6);
+          txt('(Rs.)', cellX(i, cdef.align), yy + 6.8, { align: cdef.align });
+          setFont('bold', 8);
+        } else {
+          txt(cdef.label, cellX(i, cdef.align), yy + 5.4, { align: cdef.align });
+        }
+      });
+      // Light separators inside the maroon head.
+      setDraw(255,255,255); doc.setLineWidth(0.1);
+      cx.forEach((x,i) => { if(i>0) line(x, yy, x, yy + hh); });
+      doc.setLineWidth(0.2);
+      return yy + hh;
+    };
 
-    // ===== ITEMS TABLE =====
-    const colX = [M, M+8, M+80, M+110, M+122, M+140, M+152, M+170, M+182];
-    const colW = [8, 72, 30, 12, 18, 12, 18, 12, 23];
-    const headers = ['#','Description of Goods','HSN','Qty','Rate','Disc','Taxable','GST','Amount'];
-    const rowH = 8;
+    y = drawTableHead(y);
 
-    // Table header
-    filledRect(M, y, cw, rowH, 245,245,245);
-    rect(M, y, cw, rowH);
-    setFont('bold', 7.5); setClr(60,60,60);
-    headers.forEach((h,i) => {
-      const align = i===0||i===1||i===2 ? 'left' : 'right';
-      const xp = i===0||i===1||i===2 ? colX[i]+2 : colX[i]+colW[i]-2;
-      txt(h.toUpperCase(), xp, y+5.5, {align});
-    });
-    // Draw column separators in header
-    setClr(200,200,200);
-    colX.forEach(x => { if(x>M) line(x, y, x, y+rowH); });
-    y += rowH;
+    // Vertical grid lines are drawn per band, so a page break never leaves
+    // dangling rules hanging past the last row.
+    let bandStart = y;
+    const closeBand = (endY) => {
+      if(endY <= bandStart) return;
+      setDraw(205,205,205); doc.setLineWidth(0.1);
+      cx.forEach((x,i) => { if(i>0) line(x, bandStart, x, endY); });
+      line(M, bandStart, M, endY);
+      line(RX, bandStart, RX, endY);
+      doc.setLineWidth(0.2);
+    };
 
-    // Table rows
-    setFont('normal', 8.5);
+    const BODY_LIMIT = H - 26; // keep clear of the footer rule at 288
+
     items.forEach((it, idx) => {
       const p = STATE.products.find(x=>x.id===it.productId);
       const taxable = (it.qty||0)*(it.rate||0)*(1 - itemDisc(it)/100) * ratio;
-      const discText = itemDisc(it) > 0 ? itemDisc(it)+'%' : '-';
-      const rh = p?.unit ? 10 : 8;
+      const gstAmt = taxable * itemGst(it) / 100;
+      const discText = itemDisc(it) > 0 ? (itemDisc(it) + '% disc') : '';
+      const nameLines = doc.splitTextToSize(String(p?.name || it.name || 'Unknown'), cols[1].w - 4);
+      const rh = Math.max(8, 5.5 + nameLines.length * 4 + (discText ? 3.6 : 0));
 
-      if(y + rh > H - 40){ doc.addPage(); y = M; }
+      // Page break: close the current band, start a fresh page, repeat the head.
+      if(y + rh > BODY_LIMIT){
+        closeBand(y);
+        y = drawTableHead(newPage());
+        bandStart = y;
+      }
 
-      rect(M, y, cw, rh);
-      setClr(26,26,26);
-      setFont('normal', 8.5);
-      txt(String(idx+1), colX[0]+2, y+5.5, {align:'left'});
+      // Zebra striping keeps long item lists readable.
+      if(idx % 2 === 1) filledRect(M, y, cw, rh, 250, 248, 249);
+      setDraw(215,215,215); doc.setLineWidth(0.1);
+      line(M, y + rh, RX, y + rh); // row underline
+      doc.setLineWidth(0.2);
+
+      const baseY = y + 5.4;
+      setClr(INK[0], INK[1], INK[2]); setFont('normal', 8.5);
+      txt(idx+1, cellX(0,'center'), baseY, { align:'center' });
+
+      // Description (wraps) + optional discount note under it.
       setFont('bold', 8.5);
-      txt((p?.name||'Unknown').substring(0,35), colX[1]+2, y+5, {align:'left'});
-      if(p?.unit){ setFont('normal', 7); setClr(120,120,120); txt('Unit: '+(p.unit||'Pcs'), colX[1]+2, y+9); }
-      setClr(26,26,26); setFont('normal', 8.5);
-      txt(p?.hsn||'-', colX[2]+2, y+5.5, {align:'left'});
-      txt(String(it.qty), colX[3]+colW[3]-2, y+5.5, {align:'right'});
-      txt(fmt(it.rate), colX[4]+colW[4]-2, y+5.5, {align:'right'});
-      txt(discText, colX[5]+colW[5]-2, y+5.5, {align:'right'});
-      txt(fmt(taxable), colX[6]+colW[6]-2, y+5.5, {align:'right'});
-      txt(itemGst(it)+'%', colX[7]+colW[7]-2, y+5.5, {align:'right'});
-      setFont('bold', 8.5);
-      txt(fmt(lineAmount(it, o.overallDisc)), colX[8]+colW[8]-2, y+5.5, {align:'right'});
+      let dY = baseY;
+      nameLines.forEach(ln => { txt(ln, cellX(1,'left'), dY, { align:'left' }); dY += 4; });
+      if(discText){
+        setFont('normal', 7); setClr(180, 90, 0);
+        txt(discText, cellX(1,'left'), dY - 0.4, { align:'left' });
+      }
 
-      // Column separators
-      setClr(220,220,220);
-      colX.forEach(x => { if(x>M) line(x, y, x, y+rh); });
+      setClr(INK[0], INK[1], INK[2]); setFont('normal', 8.5);
+      txt(p?.hsn || '-', cellX(2,'center'), baseY, { align:'center' });
+      txt(p?.mrp ? num(p.mrp) : '-', cellX(3,'right'), baseY, { align:'right' });
+      txt(fmtQty(it.qty), cellX(4,'center'), baseY, { align:'center' });
+      txt(p?.unit || it.unit || 'Pcs', cellX(5,'center'), baseY, { align:'center' });
+      txt(num(it.rate), cellX(6,'right'), baseY, { align:'right' });
+
+      setFont('normal', 8);
+      txt(num(gstAmt), cellX(7,'right'), baseY - 0.8, { align:'right' });
+      setFont('normal', 6.5); setClr(130,130,130);
+      txt('(' + itemGst(it) + '%)', cellX(7,'right'), baseY + 2.6, { align:'right' });
+
+      setClr(INK[0], INK[1], INK[2]); setFont('bold', 8.5);
+      txt(num(lineAmount(it, o.overallDisc)), cellX(8,'right'), baseY, { align:'right' });
+
       y += rh;
     });
 
+    closeBand(y);
+    // Solid rule closing the table body.
+    setDraw(BRAND[0], BRAND[1], BRAND[2]); doc.setLineWidth(0.4);
+    line(M, y, RX, y); doc.setLineWidth(0.2);
     y += 6;
 
-    // ===== BOTTOM SECTION: Left (Words + Tax Table + Bank) | Right (Summary) =====
-    const leftW = cw * 0.6;
-    const rightW = cw * 0.38;
-    const rightX = M + cw - rightW;
+    // ================= BOTTOM: LEFT COLUMN | SUMMARY =================
+    // The whole bottom block is measured first and moved to a fresh page as a
+    // unit if it cannot fit — so the summary is never orphaned from the table.
+    const roundedTotal = Math.round(total);
+    const roundOff = round2(roundedTotal - total);
+    const hsnRows = Object.values(taxByHsn);
+    const summaryRows = 1
+      + (overallDisc > 0 ? 1 : 0)
+      + Object.keys(taxByRate).length * (isInterState ? 1 : 2)
+      + (Math.abs(roundOff) >= 0.005 ? 1 : 0);
+    const summaryH = 8 + summaryRows * 5 + 9 + (received > 0 ? 5 : 0) + (balance > 0 ? 8 : 0);
+    const leftH = 17 + 7 + hsnRows.length * 6 + 6 + (bizBank ? 29 : 0);
+    const bottomH = Math.max(summaryH, leftH);
 
-    // --- Amount in Words ---
-    filledRect(M, y, leftW, 12, 249,249,249);
-    rect(M, y, leftW, 12);
-    setFont('bold', 7); setClr(100,100,100);
+    if(y + bottomH > BODY_LIMIT){ y = newPage(); }
+
+    const rightW = 62;
+    const rightX = RX - rightW;
+    const leftW  = cw - rightW - 6;
+    const blockTop = y;
+
+    // ---- Amount in words + payment status ----
+    filledRect(M, y, leftW, 15, 250, 248, 249);
+    setDraw(220,215,215); rect(M, y, leftW, 15);
+    setFont('bold', 7); setClr(MUTED[0], MUTED[1], MUTED[2]);
     txt('AMOUNT IN WORDS', M+3, y+4.5);
-    setFont('italic', 8.5); setClr(26,26,26);
-    txt(amountInWords(total), M+3, y+9.5);
-    y += 15;
+    setFont('bold', 8.5); setClr(INK[0], INK[1], INK[2]);
+    doc.splitTextToSize(amountInWords(roundedTotal), leftW - 6).slice(0,2)
+       .forEach((ln,i) => txt(ln, M+3, y + 9 + i*3.8));
+    let leftY = y + 19;
 
-    // --- Tax Breakdown Table ---
-    const taxCols = [M, M+35, M+55, M+72, M+90, M+108];
-    const taxHeaders = ['Taxable Value','CGST Rate','CGST Amt','SGST Rate','SGST Amt','Total Tax'];
-    const taxColW = [35,20,17,18,18,27];
+    setFont('bold', 7); setClr(MUTED[0], MUTED[1], MUTED[2]);
+    txt('PAYMENT STATUS', M, leftY);
+    setFont('bold', 8.5);
+    if(balance <= 0.004) setClr(0, 130, 90); else setClr(190, 80, 0);
+    txt(balance <= 0.004 ? 'PAID' : (received > 0 ? 'PARTIAL (CREDIT)' : 'CREDIT'), M + 28, leftY);
+    leftY += 6;
 
-    filledRect(M, y, leftW, 7, 245,245,245);
-    rect(M, y, leftW, 7);
-    setFont('bold', 6.5); setClr(60,60,60);
-    taxHeaders.forEach((h,i) => {
-      const align = i===0 ? 'left' : 'right';
-      const xp = i===0 ? taxCols[i]+2 : taxCols[i]+taxColW[i]-2;
-      txt(h.toUpperCase(), xp, y+5, {align});
+    // ---- HSN-wise tax breakup (needed for GST filing) ----
+    // Inter-state sales are taxed as a single IGST line; intra-state splits
+    // the same total into CGST + SGST halves. Showing CGST/SGST on an
+    // inter-state bill would be an invalid GST invoice, so the columns
+    // themselves switch based on isInterState rather than just the label.
+    // Rate % and amount share one column ("9% (120.00)") instead of two —
+    // narrower CGST/SGST amount columns were overlapping the header text.
+    const tCols = isInterState ? [
+      { label:'HSN/SAC',       w:16, align:'left'  },
+      { label:'Taxable',       w:26, align:'right' },
+      { label:'IGST',          w:34, align:'right' },
+      { label:'Total Tax',     w:leftW - 76, align:'right' }
+    ] : [
+      { label:'HSN/SAC',       w:14, align:'left'  },
+      { label:'Taxable',       w:22, align:'right' },
+      { label:'CGST',          w:28, align:'right' },
+      { label:'SGST',          w:28, align:'right' },
+      { label:'Total Tax',     w:leftW - 92, align:'right' }
+    ];
+    const totalTaxColIdx = tCols.length - 1;
+    const tx = [];
+    tCols.reduce((acc,cd) => { tx.push(acc); return acc + cd.w; }, M);
+    const tCellX = (i) => tCols[i].align === 'left' ? tx[i] + 2
+                        : tCols[i].align === 'right' ? tx[i] + tCols[i].w - 2
+                        : tx[i] + tCols[i].w / 2;
+
+    filledRect(M, leftY, leftW, 6.5, 238, 232, 234);
+    setDraw(205,200,200); rect(M, leftY, leftW, 6.5);
+    setFont('bold', 6.5); setClr(70,70,70);
+    tCols.forEach((cd,i) => txt(cd.label.toUpperCase(), tCellX(i), leftY + 4.4, { align: cd.align }));
+    leftY += 6.5;
+
+    setFont('normal', 7.5); setClr(INK[0], INK[1], INK[2]);
+    hsnRows.forEach(data => {
+      rect(M, leftY, leftW, 6);
+      txt(String(data.hsn).substring(0,14), tCellX(0), leftY+4.1, { align:'left' });
+      txt(num(data.taxable), tCellX(1), leftY+4.1, { align:'right' });
+      if(isInterState){
+        txt(data.rate + '% (' + num(data.tax) + ')', tCellX(2), leftY+4.1, { align:'right' });
+      } else {
+        txt((data.rate/2) + '% (' + num(data.tax/2) + ')', tCellX(2), leftY+4.1, { align:'right' });
+        txt((data.rate/2) + '% (' + num(data.tax/2) + ')', tCellX(3), leftY+4.1, { align:'right' });
+      }
+      setFont('bold', 7.5);
+      txt(num(data.tax), tCellX(totalTaxColIdx), leftY+4.1, { align:'right' });
+      setFont('normal', 7.5);
+      leftY += 6;
     });
-    y += 7;
+    const totTax = hsnRows.reduce((s,d)=>s+d.tax, 0);
+    filledRect(M, leftY, leftW, 6, 240, 238, 238);
+    rect(M, leftY, leftW, 6);
+    setFont('bold', 7.5); setClr(INK[0], INK[1], INK[2]);
+    txt('Total', tCellX(0), leftY+4.1, { align:'left' });
+    txt(num(afterDisc), tCellX(1), leftY+4.1, { align:'right' });
+    if(isInterState){
+      txt(num(totTax), tCellX(2), leftY+4.1, { align:'right' });
+    } else {
+      txt(num(totTax/2), tCellX(2), leftY+4.1, { align:'right' });
+      txt(num(totTax/2), tCellX(3), leftY+4.1, { align:'right' });
+    }
+    txt(num(totTax), tCellX(totalTaxColIdx), leftY+4.1, { align:'right' });
+    leftY += 10;
 
-    setFont('normal', 8); setClr(26,26,26);
-    Object.entries(taxByRate).forEach(([rate, data]) => {
-      const halfRate = rate/2;
-      const halfAmt = data.tax/2;
-      rect(M, y, leftW, 6);
-      txt(fmt(data.taxable), taxCols[0]+2, y+4.2, {align:'left'});
-      txt(halfRate+'%', taxCols[1]+taxColW[1]-2, y+4.2, {align:'right'});
-      txt(fmt(halfAmt), taxCols[2]+taxColW[2]-2, y+4.2, {align:'right'});
-      txt(halfRate+'%', taxCols[3]+taxColW[3]-2, y+4.2, {align:'right'});
-      txt(fmt(halfAmt), taxCols[4]+taxColW[4]-2, y+4.2, {align:'right'});
-      setFont('bold', 8);
-      txt(fmt(data.tax), taxCols[5]+taxColW[5]-2, y+4.2, {align:'right'});
-      setFont('normal', 8);
-      y += 6;
-    });
-    // Total row
-    filledRect(M, y, leftW, 6, 240,240,240);
-    rect(M, y, leftW, 6);
-    setFont('bold', 8); setClr(26,26,26);
-    txt(fmt(afterDisc), taxCols[0]+2, y+4.2, {align:'left'});
-    txt(fmt(Object.values(taxByRate).reduce((s,d)=>s+d.tax/2,0)), taxCols[2]+taxColW[2]-2, y+4.2, {align:'right'});
-    txt(fmt(Object.values(taxByRate).reduce((s,d)=>s+d.tax/2,0)), taxCols[4]+taxColW[4]-2, y+4.2, {align:'right'});
-    txt(fmt(Object.values(taxByRate).reduce((s,d)=>s+d.tax,0)), taxCols[5]+taxColW[5]-2, y+4.2, {align:'right'});
-    y += 9;
-
-    // --- Bank Details ---
+    // ---- Bank details ----
     if(bizBank){
-      setFont('bold', 7); setClr(100,100,100);
-      txt('BANK DETAILS', M, y+4);
-      y += 7;
-      setFont('normal', 8.5); setClr(26,26,26);
-      txt('Bank: '+bizBank+(bizBranch?', '+bizBranch:''), M, y+3); y+=4.5;
-      if(bizAccNo){ txt('A/c: '+bizAccNo, M, y+3); y+=4.5; }
-      if(bizIFSC){ txt('IFSC: '+bizIFSC, M, y+3); y+=4.5; }
-      y += 3;
+      leftY += 2;
+      setFont('bold', 7); setClr(MUTED[0], MUTED[1], MUTED[2]);
+      txt('BANK DETAILS', M, leftY);
+      leftY += 5.5;
+      const bankRow = (label, value) => {
+        setFont('bold', 8); setClr(80,80,80);
+        txt(label, M, leftY);
+        const lw = doc.getTextWidth(label);
+        setFont('normal', 8.5); setClr(INK[0], INK[1], INK[2]);
+        txt(value, M + lw + 2.5, leftY);
+        leftY += 5;
+      };
+      bankRow('Bank:', bizBank + (bizBranch ? ', ' + bizBranch : ''));
+      if(bizAccName) bankRow('A/c Holder:', bizAccName);
+      if(bizAccNo) bankRow('A/c No:', bizAccNo);
+      if(bizIFSC) bankRow('IFSC:', bizIFSC);
     }
 
-    // --- Financial Summary (Right Side) ---
-    const sumY = y - (bizBank ? 40 : 20);
-    const sumStartY = Math.max(sumY, M + 33 + 10 + items.length * 8 + 6 + 15 + 7 + Object.keys(taxByRate).length * 6 + 9);
-    const fsY = sumStartY;
+    // ---- Summary box (right) ----
+    let sy = blockTop;
+    filledRect(rightX, sy, rightW, 7, BRAND[0], BRAND[1], BRAND[2]);
+    setFont('bold', 9); setClr(255,255,255);
+    txt('Sub Total', rightX + 3, sy + 4.8);
+    txt(money(subtotal), RX - 3, sy + 4.8, { align:'right' });
+    sy += 7;
 
-    filledRect(rightX, fsY-3, rightW, 48, 249,249,249);
-    rect(rightX, fsY-3, rightW, 48);
-    let fy = fsY+2;
-    setFont('normal', 8.5); setClr(26,26,26);
-    txt('Taxable Value:', rightX+3, fy+3); txt(fmt(afterDisc), rightX+rightW-3, fy+3, {align:'right'}); fy+=5;
-    if(overallDisc > 0){ setClr(0,139,139); txt('Discount ('+overallDisc+'%):', rightX+3, fy+3); txt('- '+fmt(discAmount), rightX+rightW-3, fy+3, {align:'right'}); fy+=5; setClr(26,26,26); }
+    const sBoxTop = sy;
+    setFont('normal', 8); setClr(INK[0], INK[1], INK[2]);
+    const sRow = (label, value, opts={}) => {
+      if(opts.sep){ setDraw(215,210,210); line(rightX, sy, rightX + rightW, sy); }
+      setFont(opts.bold ? 'bold' : 'normal', opts.size || 8);
+      if(opts.color) setClr(opts.color[0], opts.color[1], opts.color[2]);
+      else setClr(INK[0], INK[1], INK[2]);
+      txt(label, rightX + 3, sy + 5);
+      txt(value, RX - 3, sy + 5, { align:'right' });
+      sy += opts.h || 7;
+    };
+
+    sRow('Discount (' + overallDisc + '%)', '- ' + money(discAmount), { color:[0,130,90] });
     Object.entries(taxByRate).forEach(([rate, data]) => {
-      txt('CGST @ '+(rate/2)+'%:', rightX+3, fy+3); txt(fmt(data.tax/2), rightX+rightW-3, fy+3, {align:'right'}); fy+=5;
-      txt('SGST @ '+(rate/2)+'%:', rightX+3, fy+3); txt(fmt(data.tax/2), rightX+rightW-3, fy+3, {align:'right'}); fy+=5;
+      if(isInterState){
+        sRow('IGST ' + rate + '%', money(data.tax), { sep:true, h:6 });
+      } else {
+        sRow('CGST ' + (rate/2) + '%', money(data.tax/2), { sep:true, h:6 });
+        sRow('SGST ' + (rate/2) + '%', money(data.tax/2), { h:6 });
+      }
     });
-    // Grand Total
-    setDrawColor(35,47,62); doc.setLineWidth(0.5); line(rightX+3, fy+1, rightX+rightW-3, fy+1); doc.setLineWidth(0.2);
-    fy += 3;
-    setFont('bold', 12); setClr(35,47,62);
-    txt('Grand Total:', rightX+3, fy+3); txt(fmt(total), rightX+rightW-3, fy+3, {align:'right'}); fy+=6;
-    if(received > 0){ setFont('normal', 8.5); setClr(0,139,139); txt('Received:', rightX+3, fy+3); txt('- '+fmt(received), rightX+rightW-3, fy+3, {align:'right'}); fy+=5; }
-    if(balance > 0){
-      filledRect(rightX+2, fy, rightW-4, 7, 255,240,240);
-      setFont('bold', 9); setClr(211,47,47);
-      txt('Balance Due:', rightX+3, fy+5); txt(fmt(balance), rightX+rightW-3, fy+5, {align:'right'});
-      fy += 9;
+    if(Math.abs(roundOff) >= 0.005){
+      sRow('Round Off', (roundOff >= 0 ? '+ ' : '- ') + money(Math.abs(roundOff)), { sep:true, color:[110,110,110], h:6 });
     }
 
-    y = Math.max(y, fy + 6);
+    // Grand total — emphasised band.
+    setDraw(BRAND[0], BRAND[1], BRAND[2]); doc.setLineWidth(0.4);
+    line(rightX, sy, rightX + rightW, sy); doc.setLineWidth(0.2);
+    setFont('bold', 10); setClr(BRAND[0], BRAND[1], BRAND[2]);
+    txt('Total Amount', rightX + 3, sy + 5.6);
+    txt(money(roundedTotal), RX - 3, sy + 5.6, { align:'right' });
+    sy += 8.5;
 
-    // ===== FOOTER: Terms | QR | Signature =====
-    setDrawColor(200,200,200); line(M, y, W-M, y);
+    if(received > 0){
+      setDraw(215,210,210); line(rightX, sy, rightX + rightW, sy);
+      setFont('normal', 8); setClr(0,130,90);
+      txt('Received', rightX + 3, sy + 4.8);
+      txt('- ' + money(received), RX - 3, sy + 4.8, { align:'right' });
+      sy += 6.5;
+    }
+    if(balance > 0){
+      filledRect(rightX, sy, rightW, 8, 253, 240, 240);
+      setFont('bold', 9); setClr(200, 40, 40);
+      txt('Balance Due', rightX + 3, sy + 5.4);
+      txt(money(balance), RX - 3, sy + 5.4, { align:'right' });
+      sy += 8;
+    }
+    // Outline around the whole numeric stack.
+    setDraw(200,195,195);
+    rect(rightX, sBoxTop, rightW, sy - sBoxTop);
+
+    y = Math.max(leftY, sy) + 6;
+
+    // ================= FOOTER: TERMS | QR | SIGNATURE =================
+    // Reserve the full footer height up-front; if it does not fit, move the
+    // entire block to a new page rather than splitting it.
+    const footerH = 46;
+    if(y + footerH > BODY_LIMIT){ y = newPage(); }
+
+    setDraw(200,200,200); line(M, y, RX, y);
     y += 5;
 
-    // Terms (left)
-    setFont('bold', 7); setClr(100,100,100);
-    txt('TERMS & CONDITIONS', M, y+3);
+    // ---- Terms (left) ----
+    setFont('bold', 7); setClr(MUTED[0], MUTED[1], MUTED[2]);
+    txt('TERMS & CONDITIONS', M, y + 3);
     setFont('normal', 7.5); setClr(85,85,85);
-    txt('1. Goods once sold will not be taken back.', M, y+8);
-    txt('2. Interest @18% p.a. on overdue bills.', M, y+12.5);
+    const terms = [
+      '1. Goods once sold will not be taken back or exchanged.',
+      '2. Interest @18% p.a. is charged on all overdue bills.',
+      '3. Please verify goods at the time of delivery.',
+      '4. Subject to ' + bizState + ' jurisdiction only.'
+    ];
+    terms.forEach((t,i) => txt(t, M, y + 8 + i*4));
     setFont('italic', 7); setClr(150,150,150);
-    txt('This is a computer-generated invoice.', M, y+18);
+    txt('This is a computer-generated invoice.', M, y + 8 + terms.length*4 + 1);
 
-    // QR Code (center)
-    if(bizUPI && upiQRData){
-      const qrSize = 22;
-      const qrX = W/2 - qrSize/2;
-      const qrY = y;
-
-      // Generate QR as canvas
+    // ---- UPI QR (centre) ----
+    if(bizUPI && upiQRData && typeof QRCode !== 'undefined'){
+      const qrSize = 24;
+      const qrX = W/2 - qrSize/2 + 6;
+      const qrY = y + 2;
       const qrDiv = document.createElement('div');
       qrDiv.style.cssText = 'position:fixed;left:-9999px;top:0;';
       document.body.appendChild(qrDiv);
-      new QRCode(qrDiv, { text: upiQRData, width: 200, height: 200, colorDark:'#000000', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M });
-      await new Promise(r => setTimeout(r, 200));
-      const qrCanvas = qrDiv.querySelector('canvas');
-      if(qrCanvas){
-        const qrImg = qrCanvas.toDataURL('image/png');
-        doc.addImage(qrImg, 'PNG', qrX, qrY, qrSize, qrSize);
-      }
-      document.body.removeChild(qrDiv);
-
-      setFont('normal', 7); setClr(85,85,85);
-      txt('Scan & Pay', W/2, qrY+qrSize+4, {align:'center'});
-      setFont('bold', 8); setClr(35,47,62);
-      txt(balance > 0 ? fmt(balance) : fmt(total), W/2, qrY+qrSize+8.5, {align:'center'});
-      setFont('normal', 7); setClr(85,85,85);
-      txt(bizUPI, W/2, qrY+qrSize+12.5, {align:'center'});
+      try {
+        new QRCode(qrDiv, { text: upiQRData, width: 220, height: 220, colorDark:'#000000', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M });
+        await new Promise(r => setTimeout(r, 220));
+        const qrCanvas = qrDiv.querySelector('canvas');
+        if(qrCanvas){
+          doc.addImage(qrCanvas.toDataURL('image/png'), 'PNG', qrX, qrY, qrSize, qrSize);
+          setFont('bold', 7.5); setClr(BRAND[0], BRAND[1], BRAND[2]);
+          txt('Scan to Pay', qrX + qrSize/2, qrY + qrSize + 4, { align:'center' });
+          setFont('bold', 8); setClr(INK[0], INK[1], INK[2]);
+          txt(money(balance), qrX + qrSize/2, qrY + qrSize + 8, { align:'center' });
+          setFont('normal', 6.5); setClr(120,120,120);
+          txt(bizUPI, qrX + qrSize/2, qrY + qrSize + 11.5, { align:'center' });
+        }
+      } catch(e){ console.warn('QR generation skipped:', e); }
+      finally { document.body.removeChild(qrDiv); }
     }
 
-    // Signature (right)
-    const sigX = W - M - 45;
-    setDrawColor(50,50,50); line(sigX, y+22, sigX+40, y+22);
-    setFont('bold', 8); setClr(35,47,62);
-    txt('For '+bizName, sigX+20, y+26, {align:'center'});
-    if(bizSignatory){ setFont('normal', 8); setClr(50,50,50); txt(bizSignatory, sigX+20, y+30, {align:'center'}); }
-    setFont('normal', 7); setClr(100,100,100);
-    txt('Authorised Signatory', sigX+20, y+34 + (bizSignatory?4:0), {align:'center'});
+    // ---- Signature (right) ----
+    const sigW = 46;
+    const sigX = RX - sigW;
+    setFont('bold', 8.5); setClr(BRAND[0], BRAND[1], BRAND[2]);
+    txt('For, ' + bizName, RX, y + 6, { align:'right' });
+    setDraw(90,90,90); doc.setLineWidth(0.3);
+    line(sigX, y + 28, RX, y + 28);
+    doc.setLineWidth(0.2);
+    if(bizSignatory){
+      setFont('normal', 8); setClr(60,60,60);
+      txt(bizSignatory, RX, y + 32.5, { align:'right' });
+    }
+    setFont('bold', 8); setClr(INK[0], INK[1], INK[2]);
+    txt('Authorized Signatory', RX, y + (bizSignatory ? 36.5 : 32.5), { align:'right' });
 
-    y += 40;
 
-    // Generated timestamp
-    setFont('normal', 7); setClr(150,150,150);
-    txt('Generated '+new Date().toLocaleString('en-IN'), W/2, H-10, {align:'center'});
-
-    doc.save('Invoice-'+invoiceNo+'-'+(c?.name||'Customer')+'.pdf');
+    stampPdfSyncStatus(doc, W, H);
+    doc.save('Invoice-' + invoiceNo + '-' + (c?.name || 'Customer') + '.pdf');
     toast('PDF Invoice downloaded', 'success');
   } catch(err) {
     console.error('PDF generation error:', err);
@@ -9200,6 +9938,7 @@ async function downloadCustomerStatement(custId){
     setFont('normal', 7); setClr(150,150,150);
     txt('Generated '+new Date().toLocaleString('en-IN')+' · '+bizName, W/2, H-10, {align:'center'});
 
+    stampPdfSyncStatus(doc, W, H);
     doc.save('Statement-'+(c.name||'Customer')+'.pdf');
     toast('Statement PDF downloaded', 'success');
   } catch(err) {
@@ -9656,6 +10395,7 @@ function openEmiSchedule(loanId){
   if(!loan) return;
   const sched = loanEmiSchedule(loan);
   const intInfo = loanInterestInfo(loan);
+  const lastPaid = lastEmiPayment(loanId);
   $('emi-sched-title').innerHTML = `<i class="fa-solid fa-calendar-days" style="color:var(--accent);margin-right:8px;"></i>${escHtml(loan.name)} — EMI Schedule`;
   if(!sched){
     $('emi-sched-body').innerHTML = '<div class="empty-state"><i class="fa-solid fa-calendar-xmark"></i><div class="msg">EMI amount ya next EMI date set nahi hai</div><div class="sub">Loan edit karke EMI aur EMI date bharein, phir schedule yahan dikhega.</div></div>';
@@ -9698,7 +10438,14 @@ function openEmiSchedule(loanId){
     </div>
     <div style="font-size:9.5px;color:var(--muted);margin-top:8px;line-height:1.5;">
       <i class="fa-solid fa-circle-info" style="color:var(--accent2);"></i> Paid installments repaid amount se calculate hote hain — manual repayment bhi schedule ko aage badhata hai. Dates "Next EMI Date" ke hisaab se hain.
-    </div>`;
+    </div>
+    ${sched.paidCount > 0 && lastPaid ? `
+    <div style="margin-top:12px;padding:10px 12px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+      <div style="font-size:11px;color:var(--muted);">
+        Last paid: EMI #${sched.paidCount} · <span class="mono" style="color:var(--text);font-weight:600;">${fmt(lastPaid.amount)}</span> on ${fmtDate(lastPaid.date)}
+      </div>
+      <button class="btn btn-bad btn-sm" onclick="undoLastEmiPayment('${loan.id}')"><i class="fa-solid fa-rotate-left"></i> Undo Last EMI</button>
+    </div>` : ''}`;
   openModal('modal-emi-schedule');
 }
 
@@ -9728,6 +10475,42 @@ function markEmiPaid(id){
   saveState();
   renderLoans();
   toast(`EMI ${fmt(applyAmt)} via ${mode} paid`, 'success');
+}
+
+// Finds the most recent EMI-flagged repayment for a loan — used to show
+// "last paid" info and as the target for undoLastEmiPayment.
+function lastEmiPayment(loanId){
+  return (STATE.repayments||[])
+    .filter(r => r.kind==='loan' && r.refId===loanId && r.isEmi)
+    .sort((a,b) => (b.createdAt||0) - (a.createdAt||0))[0] || null;
+}
+
+// Reverses the most recently recorded EMI payment for this loan — for when an
+// EMI got marked paid by mistake (double-click, wrong loan, etc.). Restores
+// the cash, rolls loan.repaid and "Next EMI Date" back, and removes the
+// matching repayment + reminderLog entries.
+function undoLastEmiPayment(loanId){
+  const loan = STATE.loans.find(x=>x.id===loanId);
+  if(!loan) return;
+  const last = lastEmiPayment(loanId);
+  if(!last){ toast('Undo karne ke liye koi EMI payment nahi mili','info'); return; }
+  showConfirm('Undo Last EMI', `<strong>${fmt(last.amount)}</strong> ki EMI (${fmtDate(last.date)}) undo karein? Yeh cash wapas add ho jaayega aur schedule ek installment peeche chala jaayega.`, () => {
+    snapshotUndo();
+    adjustCash(last.amount||0, last.mode || loan.mode || 'Cash');
+    loan.repaid = round2(Math.max(0, (loan.repaid||0) - (last.amount||0)));
+    if(loan.status==='Closed') loan.status = 'Active';
+    // Roll "Next EMI Date" back by 1 month so the schedule realigns.
+    if(loan.emiDate) loan.emiDate = dateInputValue(addMonthsClamped(loan.emiDate, -1));
+    STATE.repayments = STATE.repayments.filter(r => r.id !== last.id);
+    if(STATE.reminderLog){
+      const idx = STATE.reminderLog.findIndex(r => r.type==='loan' && r.refId===loanId && r.amount===last.amount && r.date===last.date);
+      if(idx>=0) STATE.reminderLog.splice(idx,1);
+    }
+    saveState();
+    renderLoans();
+    if($('modal-emi-schedule') && $('modal-emi-schedule').classList.contains('open')) openEmiSchedule(loanId);
+    toast('Last EMI undo ho gayi','success');
+  });
 }
 
 function openRepayModal(kind,refId){
@@ -9880,6 +10663,48 @@ function openResetDataModal(){
     </label>
   `;
   openModal('modal-reset-data');
+}
+
+// ---- Cash Balance Correction ----------------------------------------------
+// The big Cash-in-Hand number comes from STATE.cashBalances (a running ledger
+// updated by every adjustCash() call), separate from the "Money In / Money
+// Out" figures on the dashboard which are freshly recomputed from the actual
+// records (payments, investors, loans, purchases...). They normally agree,
+// but a partial "Reset Data" (cash cleared, records kept), a restored old
+// backup, or a manual edit can leave them out of sync. This lets the person
+// set the stored balance directly — no entries are touched.
+function openCashCorrectModal(){
+  const balances = ensureCashBalances();
+  $('cash-correct-cash').value = balances.Cash || 0;
+  $('cash-correct-bank').value = balances['Bank/UPI'] || 0;
+  const mb = cashByMode();
+  const sc = mb.modes.find(m=>m.mode==='Cash') || {in:0,out:0};
+  const sb = mb.modes.find(m=>m.mode==='Bank/UPI') || {in:0,out:0};
+  $('cash-correct-hint').innerHTML =
+    `Records ke hisaab se (sab entries jod ke): Cash <strong class="mono">${fmt(round2(sc.in-sc.out))}</strong> · Bank/UPI <strong class="mono">${fmt(round2(sb.in-sb.out))}</strong>. `
+    + `Abhi stored balance: Cash <strong class="mono">${fmt(balances.Cash||0)}</strong> · Bank/UPI <strong class="mono">${fmt(balances['Bank/UPI']||0)}</strong>.`;
+  openModal('modal-cash-correct');
+}
+
+function applyCashCorrectSuggestion(){
+  const mb = cashByMode();
+  const sc = mb.modes.find(m=>m.mode==='Cash') || {in:0,out:0};
+  const sb = mb.modes.find(m=>m.mode==='Bank/UPI') || {in:0,out:0};
+  $('cash-correct-cash').value = round2(sc.in - sc.out);
+  $('cash-correct-bank').value = round2(sb.in - sb.out);
+}
+
+function saveCashCorrection(){
+  const cash = numVal('cash-correct-cash');
+  const bank = numVal('cash-correct-bank');
+  const balances = ensureCashBalances();
+  balances.Cash = round2(cash);
+  balances['Bank/UPI'] = round2(bank);
+  STATE.cash = round2(balances.Cash + balances['Bank/UPI']);
+  saveState();
+  closeModal('modal-cash-correct');
+  renderDashboard();
+  toast('Cash balance updated', 'success');
 }
 
 function selectiveReset(){
@@ -10143,6 +10968,8 @@ function navigateTo(ev, url, label, icon){
   });
 })();
 </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
 </body>
