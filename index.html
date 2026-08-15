@@ -1011,6 +1011,73 @@ hr.divider { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
   .rem-card>div:first-of-type{width:100%;}
 }
 
+/* ── Festival Calendar / Prep Checklist ─────────────────────────── */
+@keyframes festGlow {
+  0%,100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.0), 0 8px 24px rgba(0,0,0,0.35); }
+  50% { box-shadow: 0 0 0 6px rgba(251,191,36,0.06), 0 8px 24px rgba(0,0,0,0.35); }
+}
+@keyframes festSparkle {
+  0%,100% { transform: scale(1) rotate(0deg); opacity:1; }
+  50% { transform: scale(1.12) rotate(-6deg); opacity:0.85; }
+}
+.fest-banner-wrap { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+.fest-banner-card {
+  position: relative; overflow: hidden; cursor: pointer;
+  display:flex; align-items:center; gap:14px;
+  background: linear-gradient(120deg, rgba(251,191,36,0.14), rgba(139,108,255,0.10) 55%, rgba(248,113,113,0.08));
+  border: 1px solid rgba(251,191,36,0.35);
+  border-radius: 14px; padding: 14px 16px;
+  animation: festGlow 3.2s ease-in-out infinite;
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+.fest-banner-card:hover { transform: translateY(-2px); border-color: rgba(251,191,36,0.6); }
+.fest-banner-card::after {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background: radial-gradient(circle at 85% -10%, rgba(251,191,36,0.18), transparent 55%);
+}
+.fest-banner-icon {
+  font-size: 34px; line-height:1; flex-shrink:0; filter: drop-shadow(0 3px 10px rgba(251,191,36,0.35));
+  animation: festSparkle 2.4s ease-in-out infinite;
+}
+.fest-banner-body { flex:1; min-width:0; position:relative; z-index:1; }
+.fest-banner-title { font-size:14px; font-weight:800; color:var(--jtext); letter-spacing:-0.01em; }
+.fest-banner-title .tag { font-size:9.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; padding:2px 8px; border-radius:20px; margin-left:8px; vertical-align:middle; background:rgba(251,191,36,0.18); color:var(--warn); }
+.fest-banner-title .tag.today { background:rgba(248,113,113,0.2); color:var(--bad); }
+.fest-banner-sub { font-size:11.5px; color:var(--muted); margin-top:3px; }
+.fest-banner-arrow { font-size:14px; color:var(--muted); flex-shrink:0; position:relative; z-index:1; }
+@media(max-width:480px){ .fest-banner-card{padding:12px;gap:10px;} .fest-banner-icon{font-size:27px;} .fest-banner-title{font-size:12.5px;} .fest-banner-sub{font-size:10.5px;} }
+
+/* Festival calendar list (Home Expenses tab) */
+.fest-cal-card {
+  display:flex; align-items:center; gap:11px;
+  background: var(--panel2); border:1px solid var(--line); border-radius:10px;
+  padding:9px 12px; margin-bottom:6px; cursor:pointer; transition: all 0.15s;
+}
+.fest-cal-card:hover { border-color: rgba(251,191,36,0.4); transform: translateX(2px); }
+.fest-cal-card.past { opacity:0.55; }
+.fest-cal-icon { font-size:22px; flex-shrink:0; }
+.fest-cal-name { font-size:12.5px; font-weight:700; }
+.fest-cal-meta { font-size:10.5px; color:var(--muted); margin-top:2px; }
+.fest-cal-badge { font-size:9.5px; font-weight:800; padding:2px 8px; border-radius:6px; letter-spacing:0.03em; text-transform:uppercase; flex-shrink:0; }
+.fest-cal-actions { display:flex; gap:6px; flex-shrink:0; }
+.fest-cal-actions button { background:none; border:none; color:var(--muted); cursor:pointer; font-size:12px; padding:4px 6px; }
+.fest-cal-actions button:hover { color:var(--jtext); }
+
+/* Checklist modal */
+.fest-chk-progress { height:6px; border-radius:4px; background:var(--panel2); overflow:hidden; margin:4px 0 14px; }
+.fest-chk-progress-bar { height:100%; background:linear-gradient(90deg,var(--warn),var(--good)); border-radius:4px; transition:width 0.25s ease; }
+.fest-chk-cat { margin-bottom:14px; }
+.fest-chk-cat-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:7px; }
+.fest-chk-cat-name { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; color:var(--accent2); }
+.fest-chk-item { display:flex; align-items:center; gap:9px; background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:7px 10px; margin-bottom:5px; }
+.fest-chk-item input[type=checkbox] { width:16px; height:16px; accent-color: var(--good); flex-shrink:0; cursor:pointer; }
+.fest-chk-item .nm { flex:1; font-size:12.5px; }
+.fest-chk-item.done .nm { color:var(--muted); text-decoration:line-through; }
+.fest-chk-item .rm { background:none; border:none; color:var(--muted); cursor:pointer; font-size:12px; padding:2px 4px; flex-shrink:0; }
+.fest-chk-item .rm:hover { color:var(--bad); }
+.fest-chk-add-row { display:flex; gap:7px; margin-top:2px; }
+.fest-chk-add-row input { flex:1; }
+
 /* ── Responsive Overflow Fixes ──────────────────────────────────── */
 html,body{overflow-x:hidden;max-width:100%;}
 #main{overflow-x:hidden;}
@@ -1130,6 +1197,7 @@ html,body{overflow-x:hidden;max-width:100%;}
         <!-- Savings Pending Reminder -->
         <div id="savings-pending-banner" style="display:none;"></div>
         <div id="graphics-swap-banner" style="display:none;"></div>
+        <div id="festival-reminder-banner" style="display:none;"></div>
         <div id="dashboard-alerts-banner" style="display:none;"></div>
         <!-- Net Worth Hero -->
         <div class="nw-hero">
@@ -1513,6 +1581,23 @@ html,body{overflow-x:hidden;max-width:100%;}
         </div>
         <div id="reminder-summary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;"></div>
         <div id="reminder-list" style="margin-bottom:26px;"></div>
+
+        <!-- Festival Calendar / Stock-Prep Checklist -->
+        <div class="section-hd">
+          <div>
+            <h2><i class="fa-solid fa-calendar-days" style="margin-right:5px;color:var(--warn);"></i>Festival Calendar</h2>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">Upcoming poojas &amp; festivals — a reminder shows up 15 days before, tap any festival for its stock checklist. Dates shift every year (lunar calendar) — edit them here whenever needed.</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div class="filter-bar">
+              <button class="filter-btn on" id="fcv-list" onclick="setFestivalView('list')"><i class="fa-solid fa-list"></i> List</button>
+              <button class="filter-btn" id="fcv-cal" onclick="setFestivalView('calendar')"><i class="fa-solid fa-calendar"></i> Calendar</button>
+            </div>
+            <button class="btn btn-warn btn-sm" onclick="openFestivalModal()"><i class="fa-solid fa-plus"></i> Add Festival</button>
+          </div>
+        </div>
+        <div id="festival-cal-list" style="margin-bottom:26px;"></div>
+        <div id="festival-cal-grid" style="display:none;margin-bottom:26px;"></div>
 
         <!-- Expense list header -->
         <div class="section-hd">
@@ -2176,6 +2261,35 @@ html,body{overflow-x:hidden;max-width:100%;}
   </div>
 </div>
 
+<!-- Festival — Add/Edit + Stock Prep Checklist -->
+<div class="modal-overlay" id="modal-festival" onclick="modalBgClose(event,'modal-festival')">
+  <div class="modal-box" style="max-width:480px;max-height:88vh;overflow-y:auto;">
+    <div class="modal-title" id="fest-modal-title">Festival <button class="modal-close" onclick="closeModal('modal-festival')">×</button></div>
+    <input type="hidden" id="fest-id">
+    <div style="display:grid;grid-template-columns:70px 1fr;gap:10px;">
+      <div class="fg"><div class="lbl">Icon</div><input class="inp" id="fest-icon" maxlength="2" style="text-align:center;font-size:18px;" placeholder="🎉"></div>
+      <div class="fg"><div class="lbl">Festival Name</div><input class="inp" id="fest-name" placeholder="e.g. Ganesh Chaturthi"></div>
+    </div>
+    <div class="fg"><div class="lbl">Date</div><input class="inp" id="fest-date" type="date"></div>
+    <div id="fest-countdown" style="font-size:11.5px;color:var(--muted);margin:-6px 0 12px;"></div>
+
+    <div id="fest-checklist-wrap"></div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <button class="btn btn-ghost btn-sm" style="flex:1;" id="fest-ai-btn" onclick="generateFestivalChecklistAI()"><i class="fa-solid fa-wand-magic-sparkles"></i> Auto-fill checklist with AI</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <input class="inp" id="fest-new-cat" placeholder="New category name, e.g. Sweets" style="flex:1;">
+      <button class="btn btn-ghost btn-sm" onclick="festTempAddCategory()"><i class="fa-solid fa-plus"></i> Add Category</button>
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-ghost" style="flex:1;" onclick="closeModal('modal-festival')">Cancel</button>
+      <button class="btn btn-primary" style="flex:2;" onclick="saveFestival()"><i class="fa-solid fa-check"></i> Save Festival</button>
+    </div>
+    <button class="btn btn-bad btn-sm" id="fest-delete-btn" style="width:100%;margin-top:10px;display:none;" onclick="deleteFestival($('fest-id').value)"><i class="fa-solid fa-trash"></i> Delete Festival</button>
+  </div>
+</div>
+
 <!-- WhatsApp Share Modal -->
 <div class="modal-overlay" id="modal-wa-share" onclick="modalBgClose(event,&#39;modal-wa-share&#39;)">
   <div class="modal-box" style="max-width:380px;">
@@ -2249,7 +2363,7 @@ html,body{overflow-x:hidden;max-width:100%;}
 // The Settings URL field will be hidden/locked automatically.
 //
 // Leave empty if each user should manually enter the URL in Settings.
-const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbzcqu43djuAIYPts3hjFaGFRZ9LX2StxWCxtvrobn49Jv8Xw3WX2HC4IqmbO_Dczb8N/exec'
+const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbyDgaL-UPxihZrX9WGVk2kUiKK3zvzeHzUoECZT6JqaXh5hElqkMWdhL8iEn3mJqs8A/exec'
 // ═══════════════════════════════════════════════════════════════════
 
 // ─── Initial State ──────────────────────────────────────────────
@@ -2258,6 +2372,81 @@ const DEFAULT_SHOPS = [
   { id:'SHOP02', name:'SMS Pooja',  galla:0, online:0, profitPct:40, homeTransfer:0 },
   { id:'SHOP03', name:'Stall',      galla:0, online:0, profitPct:40, homeTransfer:0 },
   { id:'SHOP04', name:'Graphics',   galla:0, online:0, profitPct:40, homeTransfer:0 },
+];
+
+// ─── Festival Calendar — default seed (dates are lunar/tithi-based and shift every
+// year, so these are meant to be edited each year from the Festival Calendar screen;
+// item checklists below are grouped for a pooja/religious-items store's stock prep) ───
+const DEFAULT_FESTIVALS = [
+  { id:'FEST-rakhi26', name:'Raksha Bandhan', date:'2026-08-28', icon:'🎀', checklist:[
+    { category:'Pooja Items', items:[ {name:'Rakhi threads (assorted)',done:false}, {name:'Roli-Chawal (kumkum-rice) pack',done:false}, {name:'Small diya',done:false}, {name:'Cotton wicks',done:false}, {name:'Mishri / Batasha',done:false} ]},
+    { category:'Utensils', items:[ {name:'Pooja thali',done:false}, {name:'Small diya stand',done:false} ]},
+    { category:'Sweets & Gifting', items:[ {name:'Mithai boxes',done:false}, {name:'Gift wrap paper',done:false}, {name:'Greeting cards',done:false} ]},
+    { category:'Flowers & Fruits', items:[ {name:'Fresh flower garlands',done:false} ]}
+  ]},
+  { id:'FEST-janmashtami26', name:'Krishna Janmashtami', date:'2026-09-04', icon:'🦚', checklist:[
+    { category:'Pooja Items', items:[ {name:'Bal Gopal idol / photo',done:false}, {name:'Agarbatti',done:false}, {name:'Dhoop batti',done:false}, {name:'Kapoor',done:false}, {name:'Panchamrit items',done:false}, {name:'Tulsi leaves',done:false}, {name:'Makhan-mishri ingredients',done:false} ]},
+    { category:'Utensils', items:[ {name:'Bal Gopal utensil set',done:false}, {name:'Pooja thali',done:false}, {name:'Kalash',done:false} ]},
+    { category:'Flowers & Fruits', items:[ {name:'Flower garlands',done:false}, {name:'Fresh fruits basket',done:false} ]},
+    { category:'Decoration', items:[ {name:'Jhula (cradle) decoration cloth',done:false}, {name:'Fairy lights',done:false}, {name:'Peacock feathers',done:false} ]}
+  ]},
+  { id:'FEST-ganesh26', name:'Ganesh Chaturthi', date:'2026-09-14', icon:'🐘', checklist:[
+    { category:'Pooja Items', items:[ {name:'Ganesh idol (various sizes)',done:false}, {name:'Agarbatti',done:false}, {name:'Dhoop batti',done:false}, {name:'Kapoor',done:false}, {name:'Diya',done:false}, {name:'Cotton wicks (baati)',done:false}, {name:'Pooja oil / ghee',done:false}, {name:'Kumkum, Haldi, Chandan',done:false}, {name:'Akshat (rice)',done:false}, {name:'Janeu',done:false}, {name:'Modak mould',done:false}, {name:'Coconut & Supari',done:false} ]},
+    { category:'Utensils', items:[ {name:'Aarti thali',done:false}, {name:'Kalash',done:false}, {name:'Panchpatra & spoon',done:false}, {name:'Bell (ghanti)',done:false}, {name:'Aarti lamp stand',done:false} ]},
+    { category:'Flowers & Fruits', items:[ {name:'Marigold garlands',done:false}, {name:'Durva grass',done:false}, {name:'Red hibiscus',done:false}, {name:'Banana leaves',done:false}, {name:'Seasonal fruits',done:false} ]},
+    { category:'Decoration', items:[ {name:'Mandap decoration set',done:false}, {name:'Torans',done:false}, {name:'Rangoli colors',done:false}, {name:'LED string lights',done:false}, {name:'Backdrop cloth',done:false} ]}
+  ]},
+  { id:'FEST-navratri26', name:'Navratri (Ghatasthapana)', date:'2026-10-11', icon:'🌺', checklist:[
+    { category:'Pooja Items', items:[ {name:'Durga / Devi idol or photo',done:false}, {name:'Kalash',done:false}, {name:'Agarbatti',done:false}, {name:'Dhoop batti',done:false}, {name:'Kapoor',done:false}, {name:'Chunri (red cloth)',done:false}, {name:'Coconut',done:false}, {name:'Akshat',done:false}, {name:'Kumkum',done:false}, {name:'Moli / Kalava thread',done:false} ]},
+    { category:'Utensils', items:[ {name:'Kalash set',done:false}, {name:'Pooja thali',done:false}, {name:'Panchpatra',done:false} ]},
+    { category:'Flowers & Fruits', items:[ {name:'Marigold garlands',done:false}, {name:'Red flowers',done:false}, {name:'Fruits for prasad',done:false} ]},
+    { category:'Garba / Kanya Pujan', items:[ {name:'Dandiya sticks',done:false}, {name:'Ghagra-choli accessories',done:false}, {name:'Bangles & bindis',done:false}, {name:'Small plates/bowls (Kanya pujan)',done:false} ]}
+  ]},
+  { id:'FEST-dussehra26', name:'Dussehra', date:'2026-10-20', icon:'🏹', checklist:[
+    { category:'Pooja Items', items:[ {name:'Shami patra',done:false}, {name:'Apta leaves',done:false}, {name:'Agarbatti',done:false}, {name:'Kapoor',done:false}, {name:'Diya',done:false} ]},
+    { category:'Utensils', items:[ {name:'Pooja thali',done:false}, {name:'Diya stand',done:false} ]},
+    { category:'Decoration', items:[ {name:'Ravan effigy decor items',done:false}, {name:'Bow-arrow toy sets',done:false} ]},
+    { category:'Flowers & Fruits', items:[ {name:'Marigold garlands',done:false}, {name:'Fruits',done:false} ]}
+  ]},
+  { id:'FEST-karvachauth26', name:'Karva Chauth', date:'2026-10-29', icon:'🌕', checklist:[
+    { category:'Pooja Items', items:[ {name:'Karva (small pot)',done:false}, {name:'Chalni (sieve)',done:false}, {name:'Mehendi cones',done:false}, {name:'Sindoor',done:false}, {name:'Bangles',done:false}, {name:'Diya & cotton wicks',done:false} ]},
+    { category:'Utensils', items:[ {name:'Karva pot set',done:false}, {name:'Pooja thali',done:false} ]},
+    { category:'Sargi & Gifting', items:[ {name:'Sargi thali items',done:false}, {name:'Dry fruits',done:false}, {name:'Sweet boxes',done:false} ]},
+    { category:'Flowers & Fruits', items:[ {name:'Fresh flowers (thali decoration)',done:false} ]}
+  ]},
+  { id:'FEST-dhanteras26', name:'Dhanteras', date:'2026-11-06', icon:'🪙', checklist:[
+    { category:'Pooja Items', items:[ {name:'Laxmi-Kuber idol / photo',done:false}, {name:'Diya',done:false}, {name:'Cotton wicks',done:false}, {name:'Ghee / oil',done:false}, {name:'Agarbatti',done:false}, {name:'Dhoop batti',done:false}, {name:'Kapoor',done:false}, {name:'Kumkum & Akshat',done:false} ]},
+    { category:'Utensils', items:[ {name:'New brass / steel utensils (for sale)',done:false}, {name:'Kalash',done:false}, {name:'Pooja thali',done:false} ]},
+    { category:'Flowers & Fruits', items:[ {name:'Marigold garlands',done:false}, {name:'Fruits',done:false} ]},
+    { category:'Decoration', items:[ {name:'Rangoli colors',done:false}, {name:'Torans',done:false}, {name:'LED lights',done:false} ]}
+  ]},
+  { id:'FEST-diwali26', name:'Diwali (Lakshmi Puja)', date:'2026-11-08', icon:'🪔', checklist:[
+    { category:'Pooja Items', items:[ {name:'Laxmi-Ganesh idols',done:false}, {name:'Diya (clay, assorted sizes)',done:false}, {name:'Cotton wicks',done:false}, {name:'Ghee / oil',done:false}, {name:'Agarbatti',done:false}, {name:'Dhoop batti',done:false}, {name:'Kapoor',done:false}, {name:'Kumkum, Haldi, Chandan',done:false}, {name:'Akshat',done:false}, {name:'Pooja coins',done:false} ]},
+    { category:'Utensils', items:[ {name:'Aarti thali',done:false}, {name:'Kalash',done:false}, {name:'Panchpatra',done:false}, {name:'Bell (ghanti)',done:false}, {name:'Aarti lamp',done:false} ]},
+    { category:'Flowers & Fruits', items:[ {name:'Marigold garlands',done:false}, {name:'Lotus flowers',done:false}, {name:'Fruits basket',done:false} ]},
+    { category:'Decoration', items:[ {name:'Rangoli colors',done:false}, {name:'Torans',done:false}, {name:'String lights',done:false}, {name:'Lanterns (kandeel)',done:false}, {name:'Candles',done:false} ]}
+  ]},
+  { id:'FEST-govardhan26', name:'Govardhan Puja', date:'2026-11-09', icon:'⛰️', checklist:[
+    { category:'Pooja Items', items:[ {name:'Govardhan idol material',done:false}, {name:'Agarbatti',done:false}, {name:'Diya',done:false}, {name:'Kapoor',done:false} ]},
+    { category:'Utensils', items:[ {name:'Pooja thali',done:false}, {name:'Small diya stand',done:false} ]},
+    { category:'Flowers & Fruits', items:[ {name:'Flowers',done:false}, {name:'Annakut prasad fruits/veggies basket',done:false} ]}
+  ]},
+  { id:'FEST-bhaidooj26', name:'Bhai Dooj', date:'2026-11-10', icon:'🎊', checklist:[
+    { category:'Pooja Items', items:[ {name:'Roli-Chawal',done:false}, {name:'Diya & cotton wicks',done:false}, {name:'Mishri',done:false} ]},
+    { category:'Utensils', items:[ {name:'Pooja thali',done:false} ]},
+    { category:'Sweets & Gifting', items:[ {name:'Mithai boxes',done:false}, {name:'Gift items',done:false} ]}
+  ]},
+  { id:'FEST-chhath26', name:'Chhath Puja', date:'2026-11-18', icon:'🌅', checklist:[
+    { category:'Pooja Items', items:[ {name:'Soop (winnowing basket)',done:false}, {name:'Diya',done:false}, {name:'Agarbatti',done:false}, {name:'Kapoor',done:false}, {name:'Sindoor',done:false} ]},
+    { category:'Utensils', items:[ {name:'Bamboo basket set',done:false}, {name:'Brass lota',done:false} ]},
+    { category:'Flowers & Fruits', items:[ {name:'Sugarcane',done:false}, {name:'Seasonal fruits (banana, coconut, orange)',done:false}, {name:'Thekua ingredients (wheat flour, jaggery)',done:false} ]}
+  ]},
+  { id:'FEST-sankranti27', name:'Makar Sankranti', date:'2027-01-14', icon:'🪁', checklist:[
+    { category:'Pooja Items', items:[ {name:'Til (sesame seeds)',done:false}, {name:'Gud (jaggery)',done:false}, {name:'Diya',done:false}, {name:'Agarbatti',done:false} ]},
+    { category:'Utensils', items:[ {name:'Pooja thali',done:false}, {name:'Kalash',done:false} ]},
+    { category:'Sweets & Gifting', items:[ {name:'Til-gud laddoo packs',done:false}, {name:'Kite & manja',done:false} ]},
+    { category:'Flowers & Fruits', items:[ {name:'Sugarcane',done:false}, {name:'Seasonal fruits',done:false} ]}
+  ]}
 ];
 
 // ─── Utilities (must be before STATE init) ──────────────────────
@@ -2300,7 +2489,7 @@ function defaultState() {
     shops: JSON.parse(JSON.stringify(DEFAULT_SHOPS)),
     udhaari: [], outflows: [], intershop: [], dayClose: [], loans: [], audit: [],
     homeExpenses: [], reminders: [], waContacts: [], dailyExpenses: [], investors: [],
-    staff: [], salaryPayments: [],
+    staff: [], salaryPayments: [], festivals: JSON.parse(JSON.stringify(DEFAULT_FESTIVALS)),
     sheetUrl: '', filters: {}, lockEnabled: false, lastSyncAt: ''
   };
 }
@@ -2323,6 +2512,14 @@ function migrateState(s) {
   if (!s.homeExpenses) s.homeExpenses = [];
   if (!s.dailyExpenses) s.dailyExpenses = [];
   if (!s.reminders) s.reminders = [];
+  // Festival Calendar — seed with defaults on first load; on existing saves just ensure
+  // the field/shape exists so older data doesn't crash, without overwriting user edits.
+  if (!s.festivals || !Array.isArray(s.festivals) || !s.festivals.length) s.festivals = JSON.parse(JSON.stringify(DEFAULT_FESTIVALS));
+  (s.festivals||[]).forEach(f => {
+    if (!f.icon) f.icon = '🎉';
+    if (!Array.isArray(f.checklist)) f.checklist = [];
+    f.checklist.forEach(c => { if (!Array.isArray(c.items)) c.items = []; c.items.forEach(it => { if (it.done === undefined) it.done = false; }); });
+  });
   if (!s.investors) s.investors = [];
   (s.investors||[]).forEach(inv => { if (!inv.reserves) inv.reserves = []; if (!inv.status) inv.status = 'Active'; });
   if (!s.waContacts) s.waContacts = [];
@@ -2620,6 +2817,26 @@ function initApp() {
   updateLockUi();
   renderAll();
   pullFromSheet();
+  startLiveSync();
+}
+// ─── Live Sync — keeps every open phone/browser showing the same shared data ──
+// Google Sheets has no push/websocket, so "live" here means: poll for the latest
+// snapshot every 40s while this tab is open, plus refresh immediately whenever
+// the phone/tab is unlocked or switched back to. Skipped while a modal is open,
+// or entirely if PIN-locked (renderAll() would otherwise redraw content behind
+// the lock screen), so it never disrupts someone mid-edit.
+let _liveSyncTimer = null;
+function startLiveSync() {
+  if (!effectiveSheetUrl() || _liveSyncTimer) return;
+  _liveSyncTimer = setInterval(() => {
+    if (document.hidden) return;
+    if (document.querySelector('.modal-overlay.open')) return;
+    if (STATE.lockEnabled && $('pin-screen') && $('pin-screen').style.display !== 'none') return;
+    pullFromSheet();
+  }, 40000);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) pullFromSheet();
+  });
 }
 function updateHeaderDate() {
   const d = new Date();
@@ -2632,7 +2849,7 @@ function updateHeaderDate() {
 function renderAll() {
   const steps = [renderDashboard, renderUdhaari, renderOutflows, renderIntershop,
                  renderLoans, renderInvestors, renderStaff, renderAudit, renderDcHistory, renderHomeExpenses,
-                 renderReminders, renderReportsTab, renderNewMonthBanner, renderSavingsPendingBanner, updateBadges];
+                 renderReminders, renderFestivalBanner, renderFestivalCalendar, renderReportsTab, renderNewMonthBanner, renderSavingsPendingBanner, updateBadges];
   steps.forEach(fn => {
     try { fn(); } catch (e) { console.error(`renderAll: ${fn.name} failed`, e); }
   });
@@ -8669,6 +8886,325 @@ function renderReminders() {
       </div>
     </div>`;
   }).join('');
+}
+
+// ─── Festival Calendar / Stock-Prep Checklist ─────────────────────
+// FEST_TEMP holds the working copy being edited inside modal-festival. Nothing touches
+// STATE.festivals until "Save Festival" is clicked — matches the rest of the app's pattern
+// of explicit Save buttons on modals.
+let FEST_TEMP = null;
+
+function festDefaultChecklist() {
+  return [
+    { category:'Pooja Items', items:[] },
+    { category:'Utensils', items:[] },
+    { category:'Flowers & Fruits', items:[] },
+    { category:'Decoration', items:[] }
+  ];
+}
+
+function festChecklistProgress(f) {
+  let total = 0, done = 0;
+  (f.checklist||[]).forEach(c => (c.items||[]).forEach(it => { total++; if (it.done) done++; }));
+  return { total, done };
+}
+
+// Upcoming festivals within `days` days (today included, not yet passed).
+function upcomingFestivals(days) {
+  return (STATE.festivals||[])
+    .map(f => ({ f, du: daysUntil(f.date) }))
+    .filter(x => x.du !== null && x.du >= 0 && x.du <= days)
+    .sort((a,b) => a.du - b.du);
+}
+
+function renderFestivalBanner() {
+  const wrap = $('festival-reminder-banner');
+  if (!wrap) return;
+  const upcoming = upcomingFestivals(15);
+  if (!upcoming.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+  wrap.style.display = 'block';
+  wrap.innerHTML = `<div class="fest-banner-wrap">
+    ${upcoming.map(({f,du}) => {
+      const { total, done } = festChecklistProgress(f);
+      const tag = du === 0 ? `<span class="tag today">Today!</span>` : `<span class="tag">in ${du} day${du!==1?'s':''}</span>`;
+      const prepSub = total ? `${done}/${total} items ready in your prep checklist` : `Tap to build your stock prep checklist`;
+      return `<div class="fest-banner-card" onclick="openFestivalModal('${f.id}')">
+        <div class="fest-banner-icon">${escHtml(f.icon||'🎉')}</div>
+        <div class="fest-banner-body">
+          <div class="fest-banner-title">${escHtml(f.name)} ${tag}</div>
+          <div class="fest-banner-sub">${escHtml(fmtDateShort(f.date))} — ${escHtml(prepSub)}</div>
+        </div>
+        <div class="fest-banner-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderFestivalCalendar() {
+  const cont = $('festival-cal-list');
+  if (!cont) return;
+  const list = (STATE.festivals||[]).slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  if (!list.length) {
+    cont.innerHTML = `<div class="empty" style="padding:24px 20px;"><div class="empty-icon"><i class="fa-solid fa-calendar-xmark"></i></div>No festivals added yet. Click Add Festival to get started</div>`;
+    return;
+  }
+  cont.innerHTML = list.map(f => {
+    const du = daysUntil(f.date);
+    const past = du !== null && du < 0;
+    const { total, done } = festChecklistProgress(f);
+    let badgeCls = 'style="background:rgba(122,122,158,0.15);color:var(--muted);"', badgeText = past ? 'PAST' : '';
+    if (!past) {
+      badgeCls = du === 0 ? 'style="background:rgba(248,113,113,0.18);color:var(--bad);"' :
+                 du <= 15 ? 'style="background:rgba(251,191,36,0.18);color:var(--warn);"' :
+                 'style="background:rgba(122,122,158,0.15);color:var(--muted);"';
+      badgeText = du === 0 ? 'TODAY' : `in ${du}d`;
+    }
+    return `<div class="fest-cal-card ${past?'past':''}" onclick="openFestivalModal('${f.id}')">
+      <div class="fest-cal-icon">${escHtml(f.icon||'🎉')}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="fest-cal-name">${escHtml(f.name)}</div>
+        <div class="fest-cal-meta">${escHtml(fmtDateShort(f.date))} · ${total ? `${done}/${total} checklist items ready` : 'No checklist items yet'}</div>
+      </div>
+      ${badgeText ? `<span class="fest-cal-badge" ${badgeCls}>${badgeText}</span>` : ''}
+      <div class="fest-cal-actions">
+        <button onclick="event.stopPropagation();deleteFestival('${f.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Festival Calendar — month grid view ───────────────────────────────────
+let FEST_CAL_MONTH = new Date(); // cursor month shown in the grid view
+
+function setFestivalView(view) {
+  const showList = view === 'list';
+  $('festival-cal-list').style.display = showList ? '' : 'none';
+  $('festival-cal-grid').style.display = showList ? 'none' : '';
+  $('fcv-list').classList.toggle('on', showList);
+  $('fcv-cal').classList.toggle('on', !showList);
+  if (!showList) renderFestivalCalendarGrid();
+}
+
+function festCalShiftMonth(dir) {
+  FEST_CAL_MONTH = new Date(FEST_CAL_MONTH.getFullYear(), FEST_CAL_MONTH.getMonth() + dir, 1);
+  renderFestivalCalendarGrid();
+}
+
+function renderFestivalCalendarGrid() {
+  const wrap = $('festival-cal-grid');
+  if (!wrap) return;
+  const y = FEST_CAL_MONTH.getFullYear(), m = FEST_CAL_MONTH.getMonth();
+  const monthLabel = FEST_CAL_MONTH.toLocaleDateString('en-IN', { month:'long', year:'numeric' });
+  const firstDow = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const todayKey = todayStr();
+
+  // Map date -> festivals on that date (YYYY-MM-DD keys, local — no UTC shift)
+  const byDate = {};
+  (STATE.festivals||[]).forEach(f => {
+    if (!f.date) return;
+    (byDate[f.date] = byDate[f.date] || []).push(f);
+  });
+
+  let cells = '';
+  for (let i=0; i<firstDow; i++) cells += `<div></div>`;
+  for (let d=1; d<=daysInMonth; d++) {
+    const key = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const fests = byDate[key] || [];
+    const isToday = key === todayKey;
+    cells += `<div style="min-height:64px;border:1px solid var(--line);border-radius:8px;padding:5px;background:${isToday?'rgba(139,108,255,0.08)':'var(--panel2)'};${isToday?'border-color:rgba(139,108,255,0.4);':''}">
+      <div style="font-size:10.5px;font-weight:${isToday?'800':'600'};color:${isToday?'var(--accent)':'var(--muted)'};margin-bottom:3px;">${d}</div>
+      ${fests.map(f => `<div onclick="openFestivalModal('${f.id}')" style="cursor:pointer;font-size:10px;font-weight:700;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.3);border-radius:5px;padding:2px 5px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escHtml(f.name)}">${escHtml(f.icon||'🎉')} ${escHtml(f.name)}</div>`).join('')}
+    </div>`;
+  }
+
+  wrap.innerHTML = `
+    <div class="card" style="padding:14px 16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <button class="btn btn-ghost btn-sm" onclick="festCalShiftMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+        <div style="font-size:13.5px;font-weight:800;">${monthLabel}</div>
+        <button class="btn btn-ghost btn-sm" onclick="festCalShiftMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:5px;">
+        ${['S','M','T','W','T','F','S'].map(d=>`<div style="text-align:center;font-size:9.5px;font-weight:700;color:var(--muted);">${d}</div>`).join('')}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;">${cells}</div>
+    </div>`;
+}
+
+// ─── AI Festival Checklist Generator (client side) ──────────────────────────
+// Routes through the same Apps Script backend used for Google Sheet sync, so the
+// Anthropic API key stays server-side (see Code.gs) instead of sitting in this HTML.
+async function generateFestivalChecklistAI() {
+  const name = $('fest-name').value.trim();
+  const date = $('fest-date').value;
+  if (!name) { toast('Enter the festival name first', 'error'); return; }
+  const url = effectiveSheetUrl();
+  if (!url) { toast('Set up the Google Sheet URL in Settings first — the AI checklist runs through that same backend', 'error'); return; }
+
+  const btn = $('fest-ai-btn');
+  const origHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Asking AI...`;
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'generateFestivalChecklist', name, date })
+    });
+    const data = await res.json();
+    if (!data.success) { toast(data.error || 'AI checklist generation failed', 'error'); return; }
+
+    const hasExisting = (FEST_TEMP.checklist||[]).some(c => (c.items||[]).length);
+    const applyMerge = () => {
+      data.checklist.forEach(aiCat => {
+        const existingCat = FEST_TEMP.checklist.find(c => c.category.toLowerCase() === aiCat.category.toLowerCase());
+        if (existingCat) {
+          aiCat.items.forEach(it => {
+            if (!existingCat.items.some(x => x.name.toLowerCase() === it.name.toLowerCase())) existingCat.items.push(it);
+          });
+        } else {
+          FEST_TEMP.checklist.push(aiCat);
+        }
+      });
+      renderFestivalModalBody();
+      toast('AI checklist added ✨');
+    };
+
+    if (!hasExisting) {
+      FEST_TEMP.checklist = data.checklist;
+      renderFestivalModalBody();
+      toast('AI checklist generated ✨');
+    } else {
+      showConfirm({
+        title: 'Merge AI Checklist?',
+        msg: `You already have checklist items. AI-suggested items will be <strong>added</strong> to matching categories (duplicates skipped) — nothing existing gets removed.`,
+        icon: '✨', yesText: 'Merge It In', yesCls: 'btn-primary',
+        onYes: applyMerge
+      });
+    }
+  } catch (err) {
+    toast('Could not reach AI backend — ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = origHtml;
+  }
+}
+
+function openFestivalModal(id) {
+  const existing = id ? (STATE.festivals||[]).find(x=>x.id===id) : null;
+  FEST_TEMP = existing
+    ? JSON.parse(JSON.stringify(existing))
+    : { id:'', name:'', date:'', icon:'🎉', checklist: festDefaultChecklist() };
+  $('fest-id').value = existing ? existing.id : '';
+  $('fest-modal-title').firstChild.textContent = existing ? 'Festival Prep Checklist ' : 'Add Festival ';
+  $('fest-icon').value = FEST_TEMP.icon || '🎉';
+  $('fest-name').value = FEST_TEMP.name || '';
+  $('fest-date').value = FEST_TEMP.date || '';
+  $('fest-delete-btn').style.display = existing ? 'block' : 'none';
+  renderFestivalModalBody();
+  openModal('modal-festival');
+}
+
+function renderFestivalModalBody() {
+  const du = FEST_TEMP.date ? daysUntil(FEST_TEMP.date) : null;
+  const cd = $('fest-countdown');
+  if (cd) {
+    cd.textContent = du === null ? '' :
+      du < 0 ? `Was ${Math.abs(du)} day${Math.abs(du)!==1?'s':''} ago — update the date for next year` :
+      du === 0 ? `🎉 It's today!` : `⏳ ${du} day${du!==1?'s':''} to go`;
+  }
+  const { total, done } = festChecklistProgress(FEST_TEMP);
+  const pct = total ? Math.round((done/total)*100) : 0;
+  const wrap = $('fest-checklist-wrap');
+  wrap.innerHTML = `
+    ${total ? `<div class="fest-chk-progress"><div class="fest-chk-progress-bar" style="width:${pct}%;"></div></div>` : ''}
+    ${(FEST_TEMP.checklist||[]).map((c, ci) => `
+      <div class="fest-chk-cat">
+        <div class="fest-chk-cat-head">
+          <div class="fest-chk-cat-name">${escHtml(c.category)}</div>
+          <button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;" onclick="festTempRemoveCategory(${ci})" title="Remove category"><i class="fa-solid fa-trash"></i></button>
+        </div>
+        ${(c.items||[]).map((it, ii) => `
+          <div class="fest-chk-item ${it.done?'done':''}">
+            <input type="checkbox" ${it.done?'checked':''} onchange="festTempToggleItem(${ci},${ii})">
+            <span class="nm">${escHtml(it.name)}</span>
+            <button class="rm" onclick="festTempRemoveItem(${ci},${ii})" title="Remove"><i class="fa-solid fa-xmark"></i></button>
+          </div>`).join('')}
+        <div class="fest-chk-add-row">
+          <input class="inp" id="fest-add-item-${ci}" placeholder="Add item..." onkeydown="if(event.key==='Enter'){event.preventDefault();festTempAddItem(${ci});}">
+          <button class="btn btn-ghost btn-sm" onclick="festTempAddItem(${ci})"><i class="fa-solid fa-plus"></i></button>
+        </div>
+      </div>`).join('')}`;
+}
+
+function festTempToggleItem(ci, ii) {
+  FEST_TEMP.checklist[ci].items[ii].done = !FEST_TEMP.checklist[ci].items[ii].done;
+  renderFestivalModalBody();
+}
+function festTempAddItem(ci) {
+  const inp = $(`fest-add-item-${ci}`);
+  const name = inp.value.trim();
+  if (!name) return;
+  FEST_TEMP.checklist[ci].items.push({ name, done:false });
+  renderFestivalModalBody();
+  $(`fest-add-item-${ci}`)?.focus();
+}
+function festTempRemoveItem(ci, ii) {
+  FEST_TEMP.checklist[ci].items.splice(ii,1);
+  renderFestivalModalBody();
+}
+function festTempAddCategory() {
+  const inp = $('fest-new-cat');
+  const name = inp.value.trim();
+  if (!name) { toast('Enter a category name first', 'error'); return; }
+  FEST_TEMP.checklist.push({ category:name, items:[] });
+  inp.value = '';
+  renderFestivalModalBody();
+}
+function festTempRemoveCategory(ci) {
+  FEST_TEMP.checklist.splice(ci,1);
+  renderFestivalModalBody();
+}
+
+function saveFestival() {
+  const name = $('fest-name').value.trim();
+  const date = $('fest-date').value;
+  const icon = $('fest-icon').value.trim() || '🎉';
+  if (!name || !date) { toast('Festival name and date are required', 'error'); return; }
+  FEST_TEMP.name = name; FEST_TEMP.date = date; FEST_TEMP.icon = icon;
+  const id = $('fest-id').value;
+  if (id) {
+    const idx = STATE.festivals.findIndex(x=>x.id===id);
+    if (idx > -1) STATE.festivals[idx] = FEST_TEMP;
+    auditLog('REMINDER', `[UPDATE] Festival — ${name} (${fmtDate(date)})`);
+  } else {
+    FEST_TEMP.id = newId('FEST');
+    STATE.festivals.push(FEST_TEMP);
+    auditLog('REMINDER', `Added festival — ${name} (${fmtDate(date)})`);
+  }
+  saveStateLocal();
+  renderFestivalBanner(); renderFestivalCalendar();
+  closeModal('modal-festival');
+  toast(id ? `Festival updated — ${name}` : `Festival added — ${name}`);
+}
+
+function deleteFestival(id) {
+  const f = (STATE.festivals||[]).find(x=>x.id===id);
+  if (!f) return;
+  showConfirm({
+    title:'Delete Festival?',
+    msg:`<strong>${escHtml(f.name)}</strong> and its checklist will be removed from the calendar.`,
+    icon:'!', yesText:'Delete', yesCls:'btn-bad',
+    onYes:() => {
+      STATE.festivals = STATE.festivals.filter(x=>x.id!==id);
+      saveStateLocal();
+      renderFestivalBanner(); renderFestivalCalendar();
+      closeModal('modal-festival');
+      auditLog('REMINDER', `Deleted festival — ${f.name}`);
+      toast('Festival deleted');
+    }
+  });
 }
 
 // ─── Audit ───────────────────────────────────────────────────────
