@@ -1751,6 +1751,24 @@ html,body{overflow-x:hidden;max-width:100%;}
         </div>
 
         <div class="settings-section">
+          <h3><i class="fa-solid fa-bell"></i> Sound &amp; Notifications</h3>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:12px 14px;margin-bottom:10px;">
+            <div>
+              <div style="font-size:13px;font-weight:700;">Alerts for due reminders &amp; upcoming festivals</div>
+              <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">Plays a sound + shows a notification when a Fixed Payment is due/overdue. For festivals, it also <strong>speaks it out loud in Hindi</strong> (e.g. "Ganesh Chaturthi 12 din mein hai") once it enters its 15-day countdown. This is a per-device setting.</div>
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);cursor:pointer;flex-shrink:0;">
+              <input type="checkbox" id="notify-enabled-inp" style="accent-color:var(--accent);width:17px;height:17px;" onchange="toggleNotify(this.checked)">
+              <span id="notify-enabled-label">OFF</span>
+            </label>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-ghost btn-sm" onclick="playAlertBeep(true)"><i class="fa-solid fa-volume-high"></i> Test Sound</button>
+            <button class="btn btn-ghost btn-sm" onclick="speakText('Ganesh Chaturthi, 12 din mein hai', true)"><i class="fa-solid fa-microphone-lines"></i> Test Voice</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
           <h3><i class="fa-solid fa-calculator"></i> Sale Formula</h3>
           <div style="font-size:13px;color:var(--muted);line-height:1.8;">
             <div><strong style="color:var(--good);">Total Sale</strong> = Cash Taken Home + Counter Cash Kept + GPay/Online + Counter Expenses − Yesterday's Counter Cash</div>
@@ -2275,7 +2293,8 @@ html,body{overflow-x:hidden;max-width:100%;}
 
     <div id="fest-checklist-wrap"></div>
     <div style="display:flex;gap:8px;margin-bottom:10px;">
-      <button class="btn btn-ghost btn-sm" style="flex:1;" id="fest-ai-btn" onclick="generateFestivalChecklistAI()"><i class="fa-solid fa-wand-magic-sparkles"></i> Auto-fill checklist with AI</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1;" id="fest-ai-btn" onclick="generateFestivalChecklistAI()"><i class="fa-solid fa-wand-magic-sparkles"></i> Auto-fill with AI</button>
+      <button class="btn btn-good btn-sm" style="flex:1;background:#25D366;border-color:#1ea952;color:#fff;" onclick="shareFestivalChecklistWA()"><i class="fa-brands fa-whatsapp"></i> Share Checklist</button>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:16px;">
       <input class="inp" id="fest-new-cat" placeholder="New category name, e.g. Sweets" style="flex:1;">
@@ -2363,7 +2382,7 @@ html,body{overflow-x:hidden;max-width:100%;}
 // The Settings URL field will be hidden/locked automatically.
 //
 // Leave empty if each user should manually enter the URL in Settings.
-const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbyDgaL-UPxihZrX9WGVk2kUiKK3zvzeHzUoECZT6JqaXh5hElqkMWdhL8iEn3mJqs8A/exec'
+const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbzpSFjatIN7RIY7_hazPnfF-S_X3Ms9TKjPiXuVUrfRipNbsXhPCgui42JPjWq28MRX/exec'
 // ═══════════════════════════════════════════════════════════════════
 
 // ─── Initial State ──────────────────────────────────────────────
@@ -2815,9 +2834,12 @@ function initApp() {
   enhanceCustomSelects();
   renderSettings();
   updateLockUi();
+  updateNotifyUi();
   renderAll();
-  pullFromSheet();
+  pullFromSheet({ silent: true });
   startLiveSync();
+  checkDueAlerts();
+  setInterval(checkDueAlerts, 5 * 60000);
 }
 // ─── Live Sync — keeps every open phone/browser showing the same shared data ──
 // Google Sheets has no push/websocket, so "live" here means: poll for the latest
@@ -2832,10 +2854,154 @@ function startLiveSync() {
     if (document.hidden) return;
     if (document.querySelector('.modal-overlay.open')) return;
     if (STATE.lockEnabled && $('pin-screen') && $('pin-screen').style.display !== 'none') return;
-    pullFromSheet();
+    pullFromSheet({ silent: true });
   }, 40000);
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) pullFromSheet();
+    if (!document.hidden) pullFromSheet({ silent: true });
+  });
+}
+
+// ─── Sound & Notification Alerts ────────────────────────────────────────────
+// Per-device setting (stored in localStorage, not synced) — plays a short beep
+// and/or shows a browser notification for due/overdue Fixed Payment reminders
+// and festivals inside their 15-day countdown. Each item is only alerted once
+// per calendar day (dedupe log in localStorage) so it never spams on every poll.
+function isNotifyEnabled() { return localStorage.getItem('jmd_notify_enabled') === '1'; }
+
+async function toggleNotify(checked) {
+  if (checked) {
+    if (window.Notification && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+      try { await Notification.requestPermission(); } catch(e) {}
+    }
+    if (window.Notification && Notification.permission === 'denied') {
+      toast('Browser notifications are blocked — sound alerts will still play while the app is open. Enable notifications in your browser/site settings for full alerts.', 'info');
+    }
+    localStorage.setItem('jmd_notify_enabled', '1');
+    playAlertBeep(true);
+    toast('Alerts enabled 🔔');
+  } else {
+    localStorage.setItem('jmd_notify_enabled', '0');
+    toast('Alerts disabled');
+  }
+  updateNotifyUi();
+}
+
+function updateNotifyUi() {
+  const inp = $('notify-enabled-inp'); if (inp) inp.checked = isNotifyEnabled();
+  const lab = $('notify-enabled-label'); if (lab) { lab.textContent = isNotifyEnabled() ? 'ON' : 'OFF'; lab.style.color = isNotifyEnabled() ? 'var(--good)' : 'var(--muted)'; }
+}
+
+// Two-tone beep via Web Audio — no external audio file to host/load.
+// `force` plays it even if alerts are off (used by the Settings "Test Sound" button).
+function playAlertBeep(force) {
+  if (!force && !isNotifyEnabled()) return;
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.18].forEach((t, i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine'; o.frequency.value = i === 0 ? 880 : 1046.5;
+      g.gain.setValueAtTime(0.0001, ctx.currentTime + t);
+      g.gain.exponentialRampToValueAtTime(0.16, ctx.currentTime + t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + t + 0.16);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + 0.17);
+    });
+  } catch (e) { /* Web Audio unsupported/blocked — silently skip */ }
+}
+
+function fireAlert(title, body) {
+  playAlertBeep();
+  if (window.Notification && Notification.permission === 'granted') {
+    try { new Notification(title, { body }); return; } catch (e) {}
+  }
+  toast(`${title} — ${body}`, 'info');
+}
+
+// Speaks a Hindi line out loud via the browser's built-in text-to-speech — used only
+// for festival reminders ("Raksha Bandhan 13 din mein hai"), not payment reminders.
+// Note: mobile browsers generally require at least one prior tap/interaction on the
+// page in that session before they'll allow JS-triggered speech — a normal browser
+// autoplay restriction, not a bug. Once the app's been touched once, later automatic
+// alerts speak fine for the rest of that session.
+//
+// Voice list caching: the browser's getVoices() often returns an empty array the very
+// first time it's called (voices load asynchronously) — if that happens right when
+// someone taps the speaker icon, no Hindi voice gets matched and the OS falls back to
+// its default English voice reading the Hindi text with English pronunciation, which
+// is exactly the "English awaaz" problem. Pre-loading and caching the list as soon as
+// it's ready (and re-caching on the voiceschanged event some browsers fire) fixes that.
+let _cachedVoices = [];
+function _refreshVoiceCache() {
+  if (!window.speechSynthesis) return;
+  const v = window.speechSynthesis.getVoices();
+  if (v && v.length) _cachedVoices = v;
+}
+if (window.speechSynthesis) {
+  _refreshVoiceCache();
+  window.speechSynthesis.onvoiceschanged = _refreshVoiceCache;
+}
+
+function _findHindiVoice() {
+  _refreshVoiceCache();
+  const voices = _cachedVoices;
+  // Prefer an explicit hi-IN voice, then anything hi-*, then any voice whose name
+  // mentions Hindi/India (some engines label it that way instead of by lang code).
+  return voices.find(v => v.lang === 'hi-IN') ||
+         voices.find(v => v.lang && v.lang.toLowerCase().startsWith('hi')) ||
+         voices.find(v => /hindi|हिन्दी|india/i.test(v.name || ''));
+}
+
+let _warnedNoHindiVoice = false;
+function speakText(text, force) {
+  if (!force && !isNotifyEnabled()) return;
+  if (!window.speechSynthesis) return;
+  try {
+    window.speechSynthesis.cancel(); // don't stack up if several alerts fire close together
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'hi-IN';
+    u.rate = 0.95;
+    const hiVoice = _findHindiVoice();
+    if (hiVoice) {
+      u.voice = hiVoice;
+    } else if (!_warnedNoHindiVoice) {
+      _warnedNoHindiVoice = true;
+      toast('No Hindi voice found on this phone — reminders will still speak, but in the default voice. Install a Hindi voice: Phone Settings → Language/Text-to-Speech → download Hindi (हिन्दी).', 'info');
+    }
+    window.speechSynthesis.speak(u);
+  } catch (e) { /* speech unsupported/blocked — silently skip, beep still played */ }
+}
+
+function fireFestivalAlert(f, du) {
+  const title = du === 0 ? `🎉 ${f.name} is Today!` : `${f.icon || '🎉'} ${f.name} in ${du} day${du !== 1 ? 's' : ''}`;
+  const body = 'Tap the Festival Calendar to check your stock-prep checklist';
+  playAlertBeep();
+  if (window.Notification && Notification.permission === 'granted') {
+    try { new Notification(title, { body }); } catch (e) {}
+  } else {
+    toast(`${title} — ${body}`, 'info');
+  }
+  speakText(du === 0 ? `${f.name}, aaj hai!` : `${f.name}, ${du} din mein hai`);
+}
+
+function _notifiedLog() { try { return JSON.parse(localStorage.getItem('jmd_notified_log') || '{}'); } catch(e) { return {}; } }
+function _alreadyNotifiedToday(key) { return _notifiedLog()[key] === todayStr(); }
+function _markNotifiedToday(key) { const log = _notifiedLog(); log[key] = todayStr(); localStorage.setItem('jmd_notified_log', JSON.stringify(log)); }
+
+function checkDueAlerts() {
+  if (!isNotifyEnabled()) return;
+  (STATE.reminders || []).forEach(r => {
+    const du = daysUntil(r.dueDate);
+    if (du === null || du > 0) return;
+    const key = `rem-${r.id}`;
+    if (_alreadyNotifiedToday(key)) return;
+    fireAlert(du === 0 ? `⏰ Due Today: ${r.name}` : `⚠️ Overdue: ${r.name}`, `₹${fmtNum(r.amount)}${r.category ? ' — ' + r.category : ''}`);
+    _markNotifiedToday(key);
+  });
+  upcomingFestivals(15).forEach(({ f, du }) => {
+    const key = `fest-${f.id}`;
+    if (_alreadyNotifiedToday(key)) return;
+    fireFestivalAlert(f, du);
+    _markNotifiedToday(key);
   });
 }
 function updateHeaderDate() {
@@ -8893,6 +9059,11 @@ function renderReminders() {
 // STATE.festivals until "Save Festival" is clicked — matches the rest of the app's pattern
 // of explicit Save buttons on modals.
 let FEST_TEMP = null;
+// Set to an existing festival's id while that festival's modal is open — lets checklist
+// edits (ticks, add/remove item/category) save to the shared sheet the instant they
+// happen, instead of waiting for "Save Festival". Stays null for a brand-new festival
+// until it's saved once (it has no id to live-write into yet).
+let FEST_LIVE_ID = null;
 
 function festDefaultChecklist() {
   return [
@@ -8917,6 +9088,14 @@ function upcomingFestivals(days) {
     .sort((a,b) => a.du - b.du);
 }
 
+function speakFestivalNow(id) {
+  const f = (STATE.festivals||[]).find(x=>x.id===id);
+  if (!f) return;
+  const du = daysUntil(f.date);
+  if (du === null) { toast('Set a date for this festival first', 'error'); return; }
+  speakText(du === 0 ? `${f.name}, aaj hai!` : du < 0 ? `${f.name}, ${Math.abs(du)} din pehle tha` : `${f.name}, ${du} din mein hai`, true);
+}
+
 function renderFestivalBanner() {
   const wrap = $('festival-reminder-banner');
   if (!wrap) return;
@@ -8934,6 +9113,7 @@ function renderFestivalBanner() {
           <div class="fest-banner-title">${escHtml(f.name)} ${tag}</div>
           <div class="fest-banner-sub">${escHtml(fmtDateShort(f.date))} — ${escHtml(prepSub)}</div>
         </div>
+        <button onclick="event.stopPropagation();speakFestivalNow('${f.id}')" title="Speak reminder aloud" style="background:none;border:none;color:var(--warn);font-size:16px;padding:4px 8px;cursor:pointer;flex-shrink:0;"><i class="fa-solid fa-volume-high"></i></button>
         <div class="fest-banner-arrow"><i class="fa-solid fa-chevron-right"></i></div>
       </div>`;
     }).join('')}
@@ -8967,6 +9147,8 @@ function renderFestivalCalendar() {
       </div>
       ${badgeText ? `<span class="fest-cal-badge" ${badgeCls}>${badgeText}</span>` : ''}
       <div class="fest-cal-actions">
+        <button onclick="event.stopPropagation();speakFestivalNow('${f.id}')" title="Speak reminder aloud" style="color:var(--warn);"><i class="fa-solid fa-volume-high"></i></button>
+        <button onclick="event.stopPropagation();shareFestivalChecklistWAById('${f.id}')" title="Share on WhatsApp" style="color:#25D366;"><i class="fa-brands fa-whatsapp"></i></button>
         <button onclick="event.stopPropagation();deleteFestival('${f.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
       </div>
     </div>`;
@@ -9068,12 +9250,14 @@ async function generateFestivalChecklistAI() {
         }
       });
       renderFestivalModalBody();
+      festLiveCommit();
       toast('AI checklist added ✨');
     };
 
     if (!hasExisting) {
       FEST_TEMP.checklist = data.checklist;
       renderFestivalModalBody();
+      festLiveCommit();
       toast('AI checklist generated ✨');
     } else {
       showConfirm({
@@ -9096,6 +9280,7 @@ function openFestivalModal(id) {
   FEST_TEMP = existing
     ? JSON.parse(JSON.stringify(existing))
     : { id:'', name:'', date:'', icon:'🎉', checklist: festDefaultChecklist() };
+  FEST_LIVE_ID = existing ? existing.id : null;
   $('fest-id').value = existing ? existing.id : '';
   $('fest-modal-title').firstChild.textContent = existing ? 'Festival Prep Checklist ' : 'Add Festival ';
   $('fest-icon').value = FEST_TEMP.icon || '🎉';
@@ -9141,6 +9326,7 @@ function renderFestivalModalBody() {
 function festTempToggleItem(ci, ii) {
   FEST_TEMP.checklist[ci].items[ii].done = !FEST_TEMP.checklist[ci].items[ii].done;
   renderFestivalModalBody();
+  festLiveCommit();
 }
 function festTempAddItem(ci) {
   const inp = $(`fest-add-item-${ci}`);
@@ -9149,10 +9335,12 @@ function festTempAddItem(ci) {
   FEST_TEMP.checklist[ci].items.push({ name, done:false });
   renderFestivalModalBody();
   $(`fest-add-item-${ci}`)?.focus();
+  festLiveCommit();
 }
 function festTempRemoveItem(ci, ii) {
   FEST_TEMP.checklist[ci].items.splice(ii,1);
   renderFestivalModalBody();
+  festLiveCommit();
 }
 function festTempAddCategory() {
   const inp = $('fest-new-cat');
@@ -9161,10 +9349,68 @@ function festTempAddCategory() {
   FEST_TEMP.checklist.push({ category:name, items:[] });
   inp.value = '';
   renderFestivalModalBody();
+  festLiveCommit();
 }
 function festTempRemoveCategory(ci) {
   FEST_TEMP.checklist.splice(ci,1);
   renderFestivalModalBody();
+  festLiveCommit();
+}
+
+// Pushes the in-progress checklist straight into STATE + shared Sheet the moment it
+// changes, so a tick made on one phone shows up on everyone else's within the next
+// live-sync poll — no one has to remember to hit "Save Festival" just for a checkbox.
+function festLiveCommit() {
+  if (!FEST_LIVE_ID) return; // brand-new, unsaved festival — nothing to write into yet
+  const idx = STATE.festivals.findIndex(x => x.id === FEST_LIVE_ID);
+  if (idx === -1) return;
+  STATE.festivals[idx].checklist = JSON.parse(JSON.stringify(FEST_TEMP.checklist));
+  saveStateLocal();
+  renderFestivalBanner();
+  renderFestivalCalendar();
+}
+
+// ─── Share festival checklist on WhatsApp ───────────────────────────────────
+// Reuses the same *bold* / divider style as the Day Close WhatsApp reports so
+// messages look consistent. Opens the native WhatsApp share sheet (wa.me/?text=)
+// so the person picks who to send it to — same pattern as shareDcDayReport().
+function buildFestivalChecklistWaMessage(f) {
+  const DIVIDER = '──────────────────────';
+  const du = f.date ? daysUntil(f.date) : null;
+  let msg = `*${f.icon || '🎉'} ${(f.name||'').toUpperCase()}*\n`;
+  if (f.date) msg += `*Date: ${fmtDateOrdinalFull(f.date)}*\n`;
+  msg += `${DIVIDER}\n`;
+  if (du !== null) {
+    msg += (du < 0 ? `_Was ${Math.abs(du)} day${Math.abs(du)!==1?'s':''} ago_` :
+            du === 0 ? `*🎉 Today!*` : `*⏳ ${du} day${du!==1?'s':''} to go*`) + `\n`;
+  }
+  (f.checklist||[]).forEach(c => {
+    if (!c.items || !c.items.length) return;
+    msg += `\n*${c.category.toUpperCase()}*\n`;
+    msg += c.items.map(it => `${it.done ? '✅' : '⬜'} ${it.name}`).join('\n') + `\n`;
+  });
+  const { total, done } = festChecklistProgress(f);
+  msg += `\n${DIVIDER}\n`;
+  if (total) msg += `*Stock Ready: ${done}/${total} items*\n`;
+  msg += `_Sent from JMD Traders Software_`;
+  return msg.trim();
+}
+
+function shareFestivalChecklistWA() {
+  if (!FEST_TEMP || !FEST_TEMP.name || !FEST_TEMP.name.trim()) { toast('Add the festival name first', 'error'); return; }
+  const total = (FEST_TEMP.checklist||[]).reduce((s,c)=>s+(c.items||[]).length, 0);
+  if (!total) { toast('Add a few checklist items first — nothing to share yet', 'error'); return; }
+  const msg = buildFestivalChecklistWaMessage(FEST_TEMP);
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+// Quick-share straight from the calendar list card, without opening the full modal.
+function shareFestivalChecklistWAById(id) {
+  const f = (STATE.festivals||[]).find(x=>x.id===id);
+  if (!f) return;
+  const total = (f.checklist||[]).reduce((s,c)=>s+(c.items||[]).length, 0);
+  if (!total) { toast('This festival has no checklist items yet — open it to add some first', 'error'); return; }
+  window.open(`https://wa.me/?text=${encodeURIComponent(buildFestivalChecklistWaMessage(f))}`, '_blank');
 }
 
 function saveFestival() {
@@ -9445,7 +9691,8 @@ function pushToSheet() {
     } catch(e){ dot.className='sync-dot error'; lbl.textContent='Sync Error'; }
   }, 800);
 }
-async function pullFromSheet() {
+async function pullFromSheet(opts) {
+  const silent = !!(opts && opts.silent);
   const url = effectiveSheetUrl();
   if(!url) { _sheetSyncReady = true; return; }
   const hadPendingEdits = !_sheetSyncReady; // a push was waiting on this exact pull
@@ -9460,7 +9707,8 @@ async function pullFromSheet() {
       markSyncedNow();
       localStorage.setItem('jmd_state',JSON.stringify(STATE));
       initDcForms(); initReportControls(); updateLockUi(); renderAll();
-      toast('Latest data loaded from Sheet','info');
+      checkDueAlerts();
+      if (!silent) toast('Latest data loaded from Sheet','info');
     }
     _sheetSyncReady = true; // we've successfully confirmed what's on the Sheet — safe to push now
     if (hadPendingEdits) pushToSheet(); // retry the push that was held back, now against confirmed data
