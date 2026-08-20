@@ -297,7 +297,6 @@ select.csel-native { position: absolute; width: 1px; height: 1px; padding: 0; ma
   border-color: rgba(139,108,255,0.4);
   box-shadow: 0 4px 18px rgba(139,108,255,0.14), inset 0 1px 0 rgba(255,255,255,0.04);
 }
-.pc-avatar { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #fff; font-size: 12px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
 .pc-main { flex: 1 1 140px; min-width: 120px; }
 .pc-name { font-size: 13.5px; font-weight: 700; }
 .pc-badges { margin-top: 3px; display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
@@ -311,7 +310,6 @@ select.csel-native { position: absolute; width: 1px; height: 1px; padding: 0; ma
 .pc-chevron { display: none; }
 @media(max-width: 700px){
   .pc-row { padding: 9px 11px; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .pc-avatar { width: 32px; height: 32px; font-size: 11px; font-weight: 700; }
   .pc-name { font-size: 13px; }
   .pc-badges { gap: 4px; }
   .pc-badges .badge { font-size: 9px; padding: 1px 6px; }
@@ -406,33 +404,45 @@ select.csel-native { position: absolute; width: 1px; height: 1px; padding: 0; ma
 .ms-mode-btn { background: transparent; border: none; border-radius: 6px; color: var(--muted); padding: 5px 12px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.12s; font-family: 'Inter', sans-serif; }
 .ms-mode-btn:hover { color: var(--jtext); }
 .ms-mode-btn.on { background: var(--accent); color: #fff; }
-.ms-card-body { padding: 16px 18px; }
+.ms-card-body { padding: 14px 18px 16px; }
 .ms-hero {
   background: linear-gradient(135deg, rgba(139,108,255,0.1), rgba(34,211,238,0.04));
   border: 1px solid rgba(139,108,255,0.22);
   border-radius: 12px;
-  padding: 13px 16px; margin-bottom: 12px;
+  padding: 11px 16px; margin-bottom: 10px;
   display: flex; align-items: center; justify-content: space-between;
   box-shadow: 0 4px 20px rgba(139,108,255,0.06);
 }
 .ms-hero-label { font-size: 9.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; font-weight: 700; }
 .ms-hero-val {
-  font-size: 26px; font-weight: 800; letter-spacing: -0.02em;
+  font-size: 24px; font-weight: 800; letter-spacing: -0.02em;
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
-.ms-hero-icon { font-size: 28px; color: rgba(124,92,252,0.35); }
-.ms-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.ms-hero-icon { font-size: 26px; color: rgba(124,92,252,0.35); }
+.ms-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .ms-tile {
   background: var(--panel2); border: 1px solid var(--line); border-radius: 10px;
-  padding: 12px 14px;
+  padding: 10px 12px;
   transition: all 0.2s;
 }
 .ms-tile:hover { border-color: var(--line-hover); }
-.ms-tile-label { font-size: 10px; color: var(--muted); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 7px; display: flex; align-items: center; gap: 6px; }
-.ms-tile-val { font-family: 'JetBrains Mono', monospace; font-size: 19px; font-weight: 700; letter-spacing: -0.02em; }
-.ms-tile-sub { font-size: 10.5px; color: var(--muted); margin-top: 8px; border-top: 1px solid var(--line); padding-top: 7px; }
-@media (max-width: 640px) { .ms-grid { grid-template-columns: 1fr; } }
+.ms-tile-label { font-size: 9.5px; color: var(--muted); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; line-height: 1.25; }
+.ms-tile-val { font-family: 'JetBrains Mono', monospace; font-size: 17px; font-weight: 700; letter-spacing: -0.02em; }
+.ms-tile-sub { font-size: 9.5px; color: var(--muted); margin-top: 6px; border-top: 1px solid var(--line); padding-top: 5px; }
+@media (max-width: 900px) { .ms-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) {
+  .ms-grid { grid-template-columns: repeat(2, 1fr); gap: 7px; }
+  .ms-card-body { padding: 12px 12px 14px; }
+  .ms-hero { padding: 10px 12px; margin-bottom: 8px; }
+  .ms-hero-val { font-size: 20px; }
+  .ms-tile { padding: 9px 10px; }
+  .ms-tile-val { font-size: 15px; }
+  .ms-tile-val span[style*="font-size:16px"] { font-size: 14px !important; }
+  .ms-tile-label { font-size: 8.8px; margin-bottom: 5px; }
+  .ms-tile-label i { font-size: 10px; }
+  .ms-tile-sub { font-size: 8.8px; }
+}
 
 /* ── Modal ── */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); z-index: 100; display: none; align-items: center; justify-content: center; padding: 16px; }
@@ -560,6 +570,14 @@ select.csel-native { position: absolute; width: 1px; height: 1px; padding: 0; ma
 .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--good); display: inline-block; box-shadow: 0 0 6px rgba(52,211,153,0.4); }
 .sync-dot.syncing { background: var(--warn); animation: pulse 1s infinite; box-shadow: 0 0 6px rgba(251,191,36,0.4); }
 .sync-dot.error { background: var(--bad); box-shadow: 0 0 6px rgba(248,113,113,0.4); }
+.sync-pill {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--panel2); border: 1px solid var(--line);
+  border-radius: 999px; padding: 5px 10px 5px 9px;
+}
+.sync-pill-label { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.sync-pill-last { font-size: 10.5px; color: var(--muted); border-left: 1px solid var(--line); padding-left: 8px; white-space: nowrap; }
+@media(max-width: 640px){ .sync-pill { padding: 5px 8px; } .sync-pill-label { font-size: 10px; } }
 @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
 
 /* ============ MOBILE BOTTOM NAV (solid edge-to-edge bar) ============ */
@@ -810,8 +828,22 @@ select.csel-native { position: absolute; width: 1px; height: 1px; padding: 0; ma
 
 /* ── Day close history card ── */
 
+/* ── Day Close: sticky date bar + shop tabs while scrolling the form ── */
+.dc-sticky-wrap {
+  position: sticky; top: 52px; z-index: 22;
+  background: var(--bg);
+  padding-top: 4px; margin: -4px -2px 0; padding-left: 2px; padding-right: 2px;
+}
+.dc-sticky-wrap::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -10px; height: 10px;
+  background: linear-gradient(180deg, var(--bg), transparent);
+  pointer-events: none;
+}
+@media(max-width: 768px){ .dc-sticky-wrap { top: 0; } }
+
 /* ── Day Close Shop Tabs ── */
 .dc-shop-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.dc-shop-tab .tab-amt { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 700; opacity: 0.85; margin-left: 1px; }
 .dc-shop-tab {
   padding: 9px 18px; border-radius: 10px; border: 1px solid var(--line);
   background: rgba(255,255,255,0.02); color: var(--muted);
@@ -917,6 +949,8 @@ hr.divider { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
 .dce-toolbar .inp { flex: 1 1 160px; min-width: 140px; }
 .dce-month-nav { display: flex; align-items: center; gap: 10px; background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; flex-shrink: 0; }
 .dce-month-nav button { background: none; border: none; color: var(--warn); cursor: pointer; font-size: 13px; padding: 2px 4px; }
+.dce-today-btn { flex-shrink: 0; background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; color: var(--accent2); font-size: 11px; font-weight: 700; padding: 6px 12px; cursor: pointer; transition: all 0.2s; }
+.dce-today-btn:hover { border-color: var(--accent2); background: rgba(34,211,238,0.08); }
 .dce-send-btn { flex-shrink: 0; }
 .dc-entries-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
 .dc-entries-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 760px; }
@@ -928,11 +962,38 @@ hr.divider { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
 .dc-entries-table th:last-child, .dc-entries-table td:last-child { text-align: center; cursor: default; }
 .dc-entries-table th .sort-arrow { margin-left: 3px; opacity: 0.5; font-size: 8px; }
 .dc-entries-table td { text-align: right; padding: 8px 12px; font-family: 'JetBrains Mono', monospace; border-bottom: 1px solid var(--line); white-space: nowrap; }
-.dc-entries-table tbody tr { cursor: pointer; transition: background 0.15s; }
+.dc-entries-table tbody tr { cursor: pointer; transition: background 0.15s; border-left: 3px solid transparent; }
 .dc-entries-table tbody tr:hover { background: rgba(139,108,255,0.06); }
 .dc-entries-table tbody tr.dc-deleted { opacity: 0.35; }
 .dc-entries-table tbody tr:last-child td { border-bottom: none; }
+.dc-entries-table tbody tr.dc-profit-pos { border-left-color: var(--good); }
+.dc-entries-table tbody tr.dc-profit-neg { border-left-color: var(--bad); }
 .dce-sub { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+
+/* ── Day Close entries: dedicated card layout on mobile instead of a cramped scrolling table ── */
+.dc-entries-cards { display: none; flex-direction: column; gap: 8px; }
+@media(max-width: 640px){
+  .dc-entries-wrap { display: none; }
+  .dc-entries-cards { display: flex; }
+}
+.dce-card {
+  background: var(--panel); border: 1px solid var(--line); border-left: 3px solid transparent;
+  border-radius: 12px; padding: 12px 14px; cursor: pointer; transition: all 0.15s;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.03);
+}
+.dce-card:active { transform: scale(0.98); }
+.dce-card.dc-profit-pos { border-left-color: var(--good); }
+.dce-card.dc-profit-neg { border-left-color: var(--bad); }
+.dce-card.dc-deleted { opacity: 0.4; }
+.dce-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.dce-card-date { font-size: 13px; font-weight: 700; }
+.dce-card-shop { display: inline-block; margin-left: 7px; padding: 2px 8px; border-radius: 20px; font-size: 9.5px; font-weight: 700; letter-spacing: 0.02em; }
+.dce-card-sale { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 800; }
+.dce-card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+.dce-card-grid .k { font-size: 9px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+.dce-card-grid .v { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; }
+.dce-card-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding-top: 8px; border-top: 1px dashed var(--line); }
+
 
 /* ── Paid stamp ── */
 .paid-stamp { font-size: 9px; font-weight: 800; letter-spacing: 0.12em; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(52,211,153,0.4); background: rgba(52,211,153,0.1); color: var(--good); text-transform: uppercase; }
@@ -1012,11 +1073,22 @@ hr.divider { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
 }
 
 /* ── Festival Calendar / Prep Checklist ─────────────────────────── */
+/* ── Expense Search & Analytics (Day Close) ─────────────────────── */
+.exp-search-bar {
+  display:flex; align-items:center; gap:10px;
+  background: var(--panel2); border:1px solid var(--line); border-radius:12px;
+  padding:12px 16px; margin-bottom:16px; cursor:pointer;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.exp-search-bar:hover, .exp-search-bar:focus { outline:none; border-color: rgba(139,108,255,0.4); transform: translateY(-1px); }
+.exp-search-bar i.fa-magnifying-glass { color: var(--muted); font-size:13px; }
+.exp-search-bar span { font-size:12.5px; color: var(--muted); flex:1; }
+.exp-search-bar i.fa-chart-pie { color: var(--accent); opacity:0.6; font-size:13px; }
+
 @keyframes festGlow {
   0%,100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.0), 0 8px 24px rgba(0,0,0,0.35); }
   50% { box-shadow: 0 0 0 6px rgba(251,191,36,0.06), 0 8px 24px rgba(0,0,0,0.35); }
-}
-@keyframes festSparkle {
+}@keyframes festSparkle {
   0%,100% { transform: scale(1) rotate(0deg); opacity:1; }
   50% { transform: scale(1.12) rotate(-6deg); opacity:0.85; }
 }
@@ -1147,7 +1219,6 @@ html,body{overflow-x:hidden;max-width:100%;}
       <div class="nav-item" id="nav-outflows" onclick="switchTab(&#39;outflows&#39;)"><i class="fa-solid fa-file-invoice" style="width:14px;"></i> Outflows <span class="nav-badge amber" id="badge-outflows"></span></div>
       <div class="nav-item" id="nav-intershop" onclick="switchTab(&#39;intershop&#39;)"><i class="fa-solid fa-right-left" style="width:14px;"></i> InterShop <span class="nav-badge amber" id="badge-intershop"></span></div>
       <div class="nav-item" id="nav-loans" onclick="switchTab(&#39;loans&#39;)"><i class="fa-solid fa-hand-holding-dollar" style="width:14px;"></i> Loans <span class="nav-badge red" id="badge-loans"></span></div>
-      <div class="nav-item" id="nav-investors" onclick="switchTab(&#39;investors&#39;)"><i class="fa-solid fa-coins" style="width:14px;"></i> Investors <span class="nav-badge amber" id="badge-investors"></span></div>
       <div class="nav-label">Records</div>
       <div class="nav-item" id="nav-staff" onclick="switchTab(&#39;staff&#39;)"><i class="fa-solid fa-user-tie" style="width:14px;"></i> Staff Salary <span class="nav-badge amber" id="badge-staff"></span></div>
       <div class="nav-item" id="nav-homeexp" onclick="switchTab(&#39;homeexp&#39;)"><i class="fa-solid fa-house" style="width:14px;"></i> Home Expenses <span class="nav-badge amber" id="badge-homeexp"></span></div>
@@ -1180,9 +1251,11 @@ html,body{overflow-x:hidden;max-width:100%;}
         <a href="wholesale.html" class="btn btn-good btn-sm hide-mob" onclick="return navigateTo(event,'wholesale.html');" style="text-decoration:none;" title="Open Wholesale module">
           <i class="fa-solid fa-warehouse"></i> Wholesale
         </a>
-        <span class="sync-dot" id="sync-dot" title="Sync status" style="background: rgb(68, 68, 96);"></span>
-        <span style="font-size:11px;color:var(--muted);" id="sync-label">No Sheet</span>
-        <span style="font-size:10.5px;color:var(--muted);border-left:1px solid var(--line);padding-left:8px;" id="sync-last">Last sync: —</span>
+        <div class="sync-pill" title="Sync status">
+          <span class="sync-dot" id="sync-dot" style="background: rgb(68, 68, 96);"></span>
+          <span class="sync-pill-label" id="sync-label">No Sheet</span>
+          <span class="sync-pill-last hide-mob" id="sync-last">Last sync: —</span>
+        </div>
         <button class="btn btn-ghost" style="padding:5px 10px;font-size:11.5px;" onclick="manualSync()"><i class="fa-solid fa-rotate" id="sync-icon"></i></button>
       </div>
     </div>
@@ -1208,12 +1281,53 @@ html,body{overflow-x:hidden;max-width:100%;}
             <div class="nw-bd-item"><div class="k">GPay / Online</div><div class="v" style="color:var(--accent2);" id="nw-online">₹0</div></div>
             <div class="nw-bd-item"><div class="k">Credit Due</div><div class="v" style="color:var(--warn);" id="nw-udhaar">₹0</div></div>
             <div class="nw-bd-item"><div class="k">Bills Pending</div><div class="v" style="color:var(--bad);" id="nw-liab">₹0</div></div>
-            <div class="nw-bd-item"><div class="k">Confirmed Savings</div><div class="v" style="color:var(--good);" id="nw-savings" title="Total confirmed 40% savings (Cash + Bank)">₹0</div></div>
+            <div class="nw-bd-item"><div class="k">Confirmed Savings</div><div class="v" style="color:var(--good);" id="nw-savings" title="Total confirmed 30% owner savings (Cash + Bank) — excludes the 10% staff/bills reserve">₹0</div></div>
           </div>
           <div style="margin-top:14px;font-size:10.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;">
             <i class="fa-solid fa-circle-info" style="margin-right:4px;color:var(--accent2);"></i>
             <strong style="color:var(--jtext);">Net Position</strong> = Wallet + GPay + Credit Due + Savings − Bills − Loans
           </div>
+        </div>
+
+        <!-- Quick actions: the daily workflow should be one tap away -->
+        <div class="dashboard-quick-actions" aria-label="Quick actions">
+          <div class="quick-actions-heading">
+            <div>
+              <div class="quick-actions-title"><i class="fa-solid fa-bolt"></i> Quick Actions</div>
+              <div class="quick-actions-sub">Daily entries and money movement</div>
+            </div>
+            <span class="quick-actions-hint">Most used</span>
+          </div>
+          <div class="quick-actions-grid">
+            <button class="quick-action qa-primary" type="button" onclick="switchTab('dayclose')">
+              <span class="qa-icon"><i class="fa-solid fa-calendar-check"></i></span>
+              <span><strong>Day Close</strong><small>Record today</small></span>
+              <i class="fa-solid fa-arrow-right qa-arrow"></i>
+            </button>
+            <button class="quick-action qa-credit" type="button" onclick="openAddUdhaariModal()">
+              <span class="qa-icon"><i class="fa-solid fa-users"></i></span>
+              <span><strong>Add Credit</strong><small>Customer udhaari</small></span>
+              <i class="fa-solid fa-arrow-right qa-arrow"></i>
+            </button>
+            <button class="quick-action qa-expense" type="button" onclick="openAddOutflowModal()">
+              <span class="qa-icon"><i class="fa-solid fa-file-invoice"></i></span>
+              <span><strong>Add Outflow</strong><small>Bill or payment</small></span>
+              <i class="fa-solid fa-arrow-right qa-arrow"></i>
+            </button>
+            <button class="quick-action qa-transfer" type="button" onclick="openAddIntershopModal()">
+              <span class="qa-icon"><i class="fa-solid fa-right-left"></i></span>
+              <span><strong>Transfer</strong><small>Move shop funds</small></span>
+              <i class="fa-solid fa-arrow-right qa-arrow"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="dashboard-attention-strip">
+          <div class="attention-copy">
+            <span class="attention-icon"><i class="fa-solid fa-circle-exclamation"></i></span>
+            <span><strong>Needs Attention</strong><small>Pending items are highlighted in the sidebar</small></span>
+          </div>
+          <button type="button" class="btn btn-ghost btn-xs" onclick="switchTab('udhaari')">Review Credit <i class="fa-solid fa-arrow-right"></i></button>
         </div>
 
         <!-- Shop matrix -->
@@ -1312,22 +1426,23 @@ html,body{overflow-x:hidden;max-width:100%;}
                 <div class="ms-tile-val" id="ms-exp-val" style="color:var(--bad);">₹0</div>
               </div>
               <div class="ms-tile">
-                <div class="ms-tile-label"><i class="fa-solid fa-piggy-bank" style="color:var(--good);"></i> Cash Savings (40%)</div>
+                <div class="ms-tile-label"><i class="fa-solid fa-piggy-bank" style="color:var(--good);"></i> Cash Savings (30%)</div>
                 <div class="ms-tile-val" id="ms-cashsave-val" style="color:var(--good);">₹0</div>
                 <div class="ms-tile-sub" id="ms-cashsave-sub" style="font-size:10px;color:var(--muted);">Target: ₹0 · Confirmed: ₹0</div>
               </div>
               <div class="ms-tile">
-                <div class="ms-tile-label"><i class="fa-solid fa-building-columns" style="color:var(--accent2);"></i> Bank Savings (40%)</div>
+                <div class="ms-tile-label"><i class="fa-solid fa-building-columns" style="color:var(--accent2);"></i> Bank Savings (30%)</div>
                 <div class="ms-tile-val" id="ms-banksave-val" style="color:var(--accent2);">₹0</div>
                 <div class="ms-tile-sub" id="ms-banksave-sub" style="font-size:10px;color:var(--muted);">Target: ₹0 · Confirmed: ₹0</div>
               </div>
               <div class="ms-tile">
-                <div class="ms-tile-label"><i class="fa-solid fa-hand-holding-dollar" style="color:var(--bad);"></i> Loans Borrowed</div>
-                <div class="ms-tile-val" id="ms-loan-borrowed-val" style="color:var(--bad);">₹0</div>
+                <div class="ms-tile-label"><i class="fa-solid fa-users" style="color:var(--warn);"></i> Staff/Bills Reserve (10%)</div>
+                <div class="ms-tile-val" id="ms-staffreserve-val" style="color:var(--warn);">₹0</div>
+                <div class="ms-tile-sub" id="ms-staffreserve-sub" style="font-size:10px;color:var(--muted);">Target: ₹0 · Confirmed: ₹0</div>
               </div>
               <div class="ms-tile">
-                <div class="ms-tile-label"><i class="fa-solid fa-money-bill-transfer" style="color:var(--good);"></i> Loans Repaid</div>
-                <div class="ms-tile-val" id="ms-loan-repaid-val" style="color:var(--good);">₹0</div>
+                <div class="ms-tile-label"><i class="fa-solid fa-hand-holding-dollar" style="color:var(--bad);"></i> Loans (Borrowed | Repaid)</div>
+                <div class="ms-tile-val" style="font-size:16px;"><span id="ms-loan-borrowed-val" style="color:var(--bad);">₹0</span> <span style="color:var(--muted);font-size:13px;">|</span> <span id="ms-loan-repaid-val" style="color:var(--good);">₹0</span></div>
               </div>
             </div>
           </div>
@@ -1397,35 +1512,50 @@ html,body{overflow-x:hidden;max-width:100%;}
 
       <!-- ═══ DAY CLOSE ═══ -->
       <div class="tab-section" id="tab-dayclose">
-        <!-- Common date — applies to whichever shop you're filling -->
-        <div class="dc-common-date-bar">
-          <div class="lbl-main"><i class="fa-solid fa-calendar-days"></i>Date (for all shops)</div>
-          <input class="inp" id="dc-common-date" type="date" onchange="onDcCommonDateChange()" />
-          <div class="dc-progress" id="dc-progress-label">
-            <div class="dc-progress-dots" id="dc-progress-dots"></div>
-            <span id="dc-progress-text"></span>
+        <!-- Common date + shop tabs — stays visible while filling the form below -->
+        <div class="dc-sticky-wrap">
+          <div class="dc-common-date-bar">
+            <div class="lbl-main"><i class="fa-solid fa-calendar-days"></i>Date (for all shops)</div>
+            <input class="inp" id="dc-common-date" type="date" onchange="onDcCommonDateChange()" />
+            <div class="dc-progress" id="dc-progress-label">
+              <div class="dc-progress-dots" id="dc-progress-dots"></div>
+              <span id="dc-progress-text"></span>
+            </div>
           </div>
+          <!-- Shop tabs -->
+          <div class="dc-shop-tabs" id="dc-shop-tabs"></div>
         </div>
-        <!-- Shop tabs -->
-        <div class="dc-shop-tabs" id="dc-shop-tabs"></div>
         <!-- Active shop form -->
         <div id="dc-forms"></div>
 
         <div style="margin-top:24px;">
+          <div class="exp-search-bar" tabindex="0" onclick="openExpenseSearchModal()" onkeydown="if(event.key==='Enter')openExpenseSearchModal()">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>Search any expense item — e.g. Nariyal, Diya, Rent...</span>
+            <i class="fa-solid fa-chart-pie"></i>
+          </div>
           <div class="section-hd">
             <h2>Day Close Records</h2>
           </div>
           <div id="dc-entries-view">
             <div class="dce-toolbar">
               <input class="inp" id="dce-search" placeholder="Search..." oninput="renderDcHistory()">
-              <select class="inp" id="dce-shop-filter" style="width:auto;padding:5px 10px;font-size:11.5px;" onchange="renderDcHistory()">
+              <select class="inp" id="dce-shop-filter" style="display:none;" onchange="setDcEntriesShopFilter(this.value)">
                 <option value="all">All Shops</option>
               </select>
+              <div class="dce-shop-filters" id="dce-shop-filters" aria-label="Filter records by shop">
+                <button type="button" class="dce-shop-filter on" data-shop="all" onclick="setDcEntriesShopFilter('all')">All Shops</button>
+                <button type="button" class="dce-shop-filter" data-shop="SHOP01" onclick="setDcEntriesShopFilter('SHOP01')">JMD</button>
+                <button type="button" class="dce-shop-filter" data-shop="SHOP02" onclick="setDcEntriesShopFilter('SHOP02')">SMS</button>
+                <button type="button" class="dce-shop-filter" data-shop="SHOP03" onclick="setDcEntriesShopFilter('SHOP03')">Stall</button>
+                <button type="button" class="dce-shop-filter" data-shop="SHOP04" onclick="setDcEntriesShopFilter('SHOP04')">Graphics</button>
+              </div>
               <div class="dce-month-nav">
                 <button onclick="shiftDcEntriesMonth(-1)" title="Previous month"><i class="fa-solid fa-caret-left"></i></button>
                 <span id="dce-month-label">—</span>
                 <button onclick="shiftDcEntriesMonth(1)" title="Next month"><i class="fa-solid fa-caret-right"></i></button>
               </div>
+              <button class="dce-today-btn" onclick="jumpDcEntriesToday()" title="Jump to current month"><i class="fa-solid fa-calendar-day"></i> Today</button>
               <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);cursor:pointer;user-select:none;white-space:nowrap;">
                 <input type="checkbox" id="dce-show-deleted" onchange="renderDcHistory()" style="cursor:pointer;"> Show deleted
               </label>
@@ -1448,6 +1578,8 @@ html,body{overflow-x:hidden;max-width:100%;}
                 <tbody id="dc-entries-tbody"></tbody>
               </table>
             </div>
+            <div class="dc-entries-cards" id="dc-entries-cards"></div>
+            <div class="dce-pagination" id="dce-pagination"></div>
           </div>
         </div>
       </div>
@@ -1536,15 +1668,6 @@ html,body{overflow-x:hidden;max-width:100%;}
           <button class="btn btn-primary btn-sm" onclick="openModal(&#39;modal-add-loan&#39;)"><i class="fa-solid fa-plus"></i> Add Loan</button>
         </div>
         <div class="pc-list" id="loan-cards"></div>
-      </div>
-
-      <!-- ═══ INVESTORS ═══ -->
-      <div class="tab-section" id="tab-investors">
-        <div class="section-hd">
-          <div style="font-size:11.5px;color:var(--muted);">External investors — track what's owed at maturity, and how much you've already set aside.</div>
-          <button class="btn btn-primary btn-sm" onclick="openAddInvestorModal()"><i class="fa-solid fa-plus"></i> Add Investor</button>
-        </div>
-        <div class="pc-list" id="investor-cards"></div>
       </div>
 
       <!-- ═══ STAFF SALARY ═══ -->
@@ -1776,9 +1899,9 @@ html,body{overflow-x:hidden;max-width:100%;}
             <div style="font-size:11.5px;">Example: Took ₹2000 home, left ₹500 in counter, received ₹1000 GPay, spent ₹200 from counter, yesterday's counter was ₹800 →</div>
             <div style="font-family:&#39;JetBrains Mono&#39;,monospace;margin-top:6px;color:var(--jtext);">Sale = 2000 + 500 + 1000 + 200 − 800 = <strong style="color:var(--good);">₹2900</strong></div>
             <hr class="divider">
-            <div><strong style="color:var(--accent);">Profit</strong> = 40% × (Cash Taken Home + GPay/Online)</div>
+            <div><strong style="color:var(--accent);">Profit</strong> = 40% × (Cash Taken Home + GPay/Online) — split as 30% Owner Savings + 10% Staff/Bills Reserve</div>
             <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">Counter Cash and Expenses are NOT included in profit calculation.</div>
-            <div style="font-family:&#39;JetBrains Mono&#39;,monospace;margin-top:6px;color:var(--jtext);">Profit = 40% × (2000 + 1000) = <strong style="color:var(--accent);">₹1200</strong></div>
+            <div style="font-family:&#39;JetBrains Mono&#39;,monospace;margin-top:6px;color:var(--jtext);">Profit = 40% × (2000 + 1000) = <strong style="color:var(--accent);">₹1200</strong> (₹900 Savings @30% + ₹300 Staff/Bills Reserve @10%)</div>
           </div>
         </div>
 
@@ -2107,50 +2230,6 @@ html,body{overflow-x:hidden;max-width:100%;}
   </div>
 </div>
 
-<!-- Add / Edit Investor -->
-<div class="modal-overlay" id="modal-add-investor" onclick="modalBgClose(event,'modal-add-investor')">
-  <div class="modal-box">
-    <div class="modal-title"><span id="ai-title">Add Investor</span> <button class="modal-close" onclick="closeModal('modal-add-investor')">×</button></div>
-    <input type="hidden" id="ai-id" />
-    <div class="fg"><div class="lbl">Investor Name</div><input class="inp" id="ai-name" placeholder="e.g. Ramesh"></div>
-    <div class="fg"><div class="lbl">Phone (optional)</div><input class="inp" id="ai-phone" placeholder="10-digit number"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      <div class="fg"><div class="lbl">Principal (₹)</div><input class="inp" id="ai-principal" type="number" placeholder="100000" oninput="updateInvestorPreview()"></div>
-      <div class="fg"><div class="lbl">Interest Rate (% / year)</div><input class="inp" id="ai-rate" type="number" placeholder="12" oninput="updateInvestorPreview()"></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      <div class="fg"><div class="lbl">Start Date</div><input class="inp" id="ai-start" type="date" onchange="updateInvestorPreview()"></div>
-      <div class="fg"><div class="lbl">Tenure (months)</div><input class="inp" id="ai-tenure" type="number" placeholder="12" oninput="updateInvestorPreview()"></div>
-    </div>
-    <div class="fg"><div class="lbl">Note (optional)</div><input class="inp" id="ai-note" placeholder="Any remarks"></div>
-    <div class="formula-box" id="ai-preview" style="margin-top:2px;"></div>
-    <div style="display:flex;gap:10px;margin-top:10px;"><button class="btn btn-ghost" style="flex:1;" onclick="closeModal('modal-add-investor')">Cancel</button><button class="btn btn-primary" style="flex:2;" onclick="saveInvestor()">Save Investor</button></div>
-  </div>
-</div>
-
-<!-- Add Reserve toward an investor -->
-<div class="modal-overlay" id="modal-add-reserve" onclick="modalBgClose(event,'modal-add-reserve')">
-  <div class="modal-box">
-    <div class="modal-title">Add Reserve <button class="modal-close" onclick="closeModal('modal-add-reserve')">×</button></div>
-    <input type="hidden" id="ar-invid" />
-    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;" id="ar-context"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      <div class="fg"><div class="lbl">Amount (₹)</div><input class="inp" id="ar-amount" type="number" placeholder="0"></div>
-      <div class="fg"><div class="lbl">Date</div><input class="inp" id="ar-date" type="date"></div>
-    </div>
-    <div class="fg"><div class="lbl">Note (optional)</div><input class="inp" id="ar-note" placeholder="e.g. from today's profit"></div>
-    <div style="display:flex;gap:10px;margin-top:6px;"><button class="btn btn-ghost" style="flex:1;" onclick="closeModal('modal-add-reserve')">Cancel</button><button class="btn btn-primary" style="flex:2;" onclick="saveInvestorReserve()">Add Reserve</button></div>
-  </div>
-</div>
-
-<!-- Investor Detail (reserve history) -->
-<div class="modal-overlay" id="modal-investor-detail" onclick="modalBgClose(event,'modal-investor-detail')">
-  <div class="modal-box">
-    <div class="modal-title">Investor Detail <button class="modal-close" onclick="closeModal('modal-investor-detail')">×</button></div>
-    <div id="investor-detail-body"></div>
-  </div>
-</div>
-
 <!-- Repay Loan -->
 <div class="modal-overlay" id="modal-repay-loan" onclick="modalBgClose(event,&#39;modal-repay-loan&#39;)">
   <div class="modal-box">
@@ -2279,6 +2358,22 @@ html,body{overflow-x:hidden;max-width:100%;}
   </div>
 </div>
 
+<!-- Expense Search & Analytics -->
+<div class="modal-overlay" id="modal-expense-search" onclick="modalBgClose(event,'modal-expense-search')">
+  <div class="modal-box" style="max-width:560px;max-height:88vh;overflow-y:auto;">
+    <div class="modal-title">Expense Search <button class="modal-close" onclick="closeModal('modal-expense-search')">×</button></div>
+    <div style="position:relative;margin-bottom:14px;">
+      <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;"></i>
+      <input class="inp" id="exp-search-input" placeholder="Search an item... e.g. Nariyal, Diya, Rent" style="padding-left:36px;" oninput="renderExpenseSearchResults()" onkeydown="if(event.key==='Enter')renderExpenseSearchResults()">
+    </div>
+    <div class="filter-bar" style="margin-bottom:16px;">
+      <button class="filter-btn on" id="exp-search-range-month" onclick="setExpenseSearchRange('month')">This Month</button>
+      <button class="filter-btn" id="exp-search-range-all" onclick="setExpenseSearchRange('all')">All Time</button>
+    </div>
+    <div id="exp-search-results"></div>
+  </div>
+</div>
+
 <!-- Festival — Add/Edit + Stock Prep Checklist -->
 <div class="modal-overlay" id="modal-festival" onclick="modalBgClose(event,'modal-festival')">
   <div class="modal-box" style="max-width:480px;max-height:88vh;overflow-y:auto;">
@@ -2300,6 +2395,10 @@ html,body{overflow-x:hidden;max-width:100%;}
       <input class="inp" id="fest-new-cat" placeholder="New category name, e.g. Sweets" style="flex:1;">
       <button class="btn btn-ghost btn-sm" onclick="festTempAddCategory()"><i class="fa-solid fa-plus"></i> Add Category</button>
     </div>
+
+    <!-- Last Year's Sales Report — helps plan this year's stock/purchase -->
+    <button class="btn btn-ghost btn-sm" id="fest-sales-toggle-btn" style="width:100%;margin-bottom:10px;" onclick="toggleFestivalSalesReport()"><i class="fa-solid fa-chart-column"></i> Last Year's Sales Report</button>
+    <div id="fest-sales-report-wrap" style="display:none;margin-bottom:16px;"></div>
 
     <div style="display:flex;gap:10px;">
       <button class="btn btn-ghost" style="flex:1;" onclick="closeModal('modal-festival')">Cancel</button>
@@ -2382,7 +2481,7 @@ html,body{overflow-x:hidden;max-width:100%;}
 // The Settings URL field will be hidden/locked automatically.
 //
 // Leave empty if each user should manually enter the URL in Settings.
-const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbzpSFjatIN7RIY7_hazPnfF-S_X3Ms9TKjPiXuVUrfRipNbsXhPCgui42JPjWq28MRX/exec'
+const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbzcqu43djuAIYPts3hjFaGFRZ9LX2StxWCxtvrobn49Jv8Xw3WX2HC4IqmbO_Dczb8N/exec'
 // ═══════════════════════════════════════════════════════════════════
 
 // ─── Initial State ──────────────────────────────────────────────
@@ -2541,6 +2640,34 @@ function migrateState(s) {
   });
   if (!s.investors) s.investors = [];
   (s.investors||[]).forEach(inv => { if (!inv.reserves) inv.reserves = []; if (!inv.status) inv.status = 'Active'; });
+  // One-time migration: split the old 40% savings target into 30% owner savings + 10%
+  // staff/bills/EMI reserve. Entries already confirmed ("Done") are left exactly as they
+  // were — that money already physically moved under the old 40% rule, so re-splitting it
+  // now would just create an accounting mismatch for no benefit. Only entries still PENDING
+  // (not yet confirmed) get their target recomputed against the new 30%/10% split, since
+  // nothing has actually been set aside for them yet.
+  s.migrations = s.migrations || {};
+  if (!s.migrations.staffReserveSplit302010) {
+    (s.dayClose||[]).forEach(r => {
+      if (r.shopId === 'SHOP04') return; // Graphics has no savings split
+      if (!r.cashSaveDone) {
+        r.cashSaveTarget = roundTo100((r.cashHome || 0) * 0.3);
+        r.staffCashTarget = roundTo100((r.cashHome || 0) * 0.1);
+        r.staffCashDone = false;
+      } else if (r.staffCashTarget == null) {
+        // Already confirmed under the old 40% rule — nothing further owed for staff reserve.
+        r.staffCashTarget = 0; r.staffCashDone = true;
+      }
+      if (!r.bankSaveDone) {
+        r.bankSaveTarget = roundTo100((r.gpay || 0) * 0.3);
+        r.staffBankTarget = roundTo100((r.gpay || 0) * 0.1);
+        r.staffBankDone = false;
+      } else if (r.staffBankTarget == null) {
+        r.staffBankTarget = 0; r.staffBankDone = true;
+      }
+    });
+    s.migrations.staffReserveSplit302010 = true;
+  }
   if (!s.waContacts) s.waContacts = [];
   if (!s.staff) s.staff = [];
   if (!s.salaryPayments) s.salaryPayments = [];
@@ -2550,7 +2677,7 @@ function migrateState(s) {
   if (!s.lastSyncAt) s.lastSyncAt = '';
   (s.udhaari||[]).forEach(u => { if (u.phone == null) u.phone = ''; });
   // Ensure homeTransfer exists on all shops
-  (s.shops||[]).forEach(sh => { if (sh.homeTransfer == null) sh.homeTransfer = 0; });
+  (s.shops||[]).forEach(sh => { if (sh.homeTransfer == null) sh.homeTransfer = 0; if (sh.staffReserveBalance == null) sh.staffReserveBalance = 0; });
   // Inbuilt URL always overrides local setting
   if (INBUILT_SHEET_URL) s.sheetUrl = INBUILT_SHEET_URL;
   return s;
@@ -2711,6 +2838,9 @@ const TAB_TITLES = {
   homeexp:'Home Expenses', reports:'Reports & Export', audit:'Audit Log', settings:'Settings'
 };
 function switchTab(tab) {
+  const wasDayCloseOpen = $('tab-dayclose')?.classList.contains('active');
+  if (tab === 'dayclose' && !wasDayCloseOpen) dcDrafts = {};
+  _dayCloseSyncPaused = tab === 'dayclose';
   document.querySelectorAll('.tab-section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.querySelectorAll('.bnav-item').forEach(n=>n.classList.remove('active'));
@@ -2722,6 +2852,14 @@ function switchTab(tab) {
   else renderAll();
   if (tab==='reports') renderReportsTab();
   closeFab();
+  if (wasDayCloseOpen && tab !== 'dayclose') {
+    // Sync resumes only after the user leaves Day Close. Pulling now is safe:
+    // all Day Close drafts have intentionally been left behind on that tab.
+    dcDrafts = {};
+    updateSyncUI();
+  } else if (tab === 'dayclose') {
+    updateSyncUI();
+  }
 }
 
 // ─── Mobile Bottom Sheet ─────────────────────────────────────────
@@ -2848,16 +2986,31 @@ function initApp() {
 // or entirely if PIN-locked (renderAll() would otherwise redraw content behind
 // the lock screen), so it never disrupts someone mid-edit.
 let _liveSyncTimer = null;
+let _dayCloseSyncPaused = false;
+// Bug fix: pullFromSheet() calls initDcForms()/renderAll(), which fully rebuilds
+// the Day Close (and other) form inputs from the last-synced STATE. Those fields
+// only get written to STATE on submit, so if a background pull landed while
+// someone was mid-typing (e.g. filling Home/GPay in Day Close), their unsaved
+// digits were wiped back to blank/0. We now skip a poll entirely whenever focus
+// is inside an editable field, so typing is never interrupted by a silent sync.
+function _userIsTyping() {
+  const el = document.activeElement;
+  if (!el) return false;
+  const tag = el.tagName;
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
+}
 function startLiveSync() {
   if (!effectiveSheetUrl() || _liveSyncTimer) return;
   _liveSyncTimer = setInterval(() => {
     if (document.hidden) return;
+    if (_dayCloseSyncPaused || $('tab-dayclose')?.classList.contains('active')) return;
     if (document.querySelector('.modal-overlay.open')) return;
     if (STATE.lockEnabled && $('pin-screen') && $('pin-screen').style.display !== 'none') return;
+    if (_userIsTyping()) return; // don't clobber a field the user is actively filling in
     pullFromSheet({ silent: true });
   }, 40000);
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) pullFromSheet({ silent: true });
+    if (!document.hidden && !_dayCloseSyncPaused && !$('tab-dayclose')?.classList.contains('active') && !_userIsTyping()) pullFromSheet({ silent: true });
   });
 }
 
@@ -3032,8 +3185,6 @@ function updateBadges() {
   setbadge('badge-intershop', openIS, 'amber');
   const pendL = STATE.loans.filter(l=>l.status==='Pending').length;
   setbadge('badge-loans', pendL, 'red');
-  const dueInv = activeInvestors().filter(i => (investorDaysLeft(i)||0) <= 30).length;
-  setbadge('badge-investors', dueInv, 'amber');
   const dueRem = (STATE.reminders||[]).filter(r => daysUntil(r.dueDate) <= 3).length;
   setbadge('badge-homeexp', dueRem, 'amber');
   const pendSave = getPendingSavings().length;
@@ -3057,6 +3208,17 @@ function shopHomeCash(shopId) {
   const spent   = (STATE.dailyExpenses||[]).filter(e=>e.shopId===shopId && e.source==='HOME' && !e.deleted).reduce((s,e)=>s+(e.amount||0), 0);
   const homeXfer = (STATE.shops.find(s=>s.id===shopId)||{}).homeTransfer||0;
   return brought - spent - homeXfer;
+}
+// Staff/Bills/EMI Reserve — the SPENDABLE 10% wallet, tracked as two separate pools (Cash and
+// GPay) just like the 30% Owner Savings is. Unlike Owner Savings (which is locked away
+// permanently once confirmed — it just leaves Home Cash/GPay and is gone), the 10% reserve is
+// credited into these balances when confirmed (see confirmSavingsDone) and is then meant to be
+// spent from — via the "Staff Reserve (Cash)" / "Staff Reserve (GPay)" Daily Expense sources —
+// on staff salary, bills, EMI, etc. Cash reserve = physical cash in hand; GPay reserve = digital/
+// UPI money, so payments should use whichever pool matches how you're actually paying.
+function shopStaffReserveBalance(shopId) {
+  const sh = STATE.shops.find(s=>s.id===shopId);
+  return (sh && sh.staffReserveBalance) || 0;
 }
 // ─── Historical balance snapshot (as of a given Day Close date) ──────────
 // Used by the Day Close detail modal + Monthly Summary to show what the Home
@@ -3229,8 +3391,11 @@ function renderGraphicsSwapBanner() {
 // (see confirmSavingsDone) — so once confirmed, that money is already gone from Home Cash.
 // Only *pending* (not yet confirmed) cash targets still need reserving out of Home Cash.
 function shopHomeReserved(shopId) {
-  return (STATE.dayClose||[]).filter(r=>!r.deleted && r.shopId===shopId && !r.cashSaveDone)
+  const savings = (STATE.dayClose||[]).filter(r=>!r.deleted && r.shopId===shopId && !r.cashSaveDone)
     .reduce((s,r)=>s+(r.cashSaveTarget||0), 0);
+  const staffReserve = (STATE.dayClose||[]).filter(r=>!r.deleted && r.shopId===shopId && !r.staffCashDone)
+    .reduce((s,r)=>s+(r.staffCashTarget||0), 0);
+  return savings + staffReserve;
 }
 // SINGLE SOURCE OF TRUTH — Home Cash actually in hand. Owner's model: the 40% profit is only a
 // REMINDER to set aside; the physical cash is all still here until you press "Done". So the balance
@@ -3249,8 +3414,11 @@ function shopSpendableHomeCashRaw(shopId) {
 // Once confirmed, that money is already gone from sh.online — no need to reserve it again.
 // Only *pending* (not yet confirmed) bank targets still need reserving.
 function shopOnlineReserved(shopId) {
-  return (STATE.dayClose||[]).filter(r=>!r.deleted && r.shopId===shopId && !r.bankSaveDone)
+  const savings = (STATE.dayClose||[]).filter(r=>!r.deleted && r.shopId===shopId && !r.bankSaveDone)
     .reduce((s,r)=>s+(r.bankSaveTarget||0), 0);
+  const staffReserve = (STATE.dayClose||[]).filter(r=>!r.deleted && r.shopId===shopId && !r.staffBankDone)
+    .reduce((s,r)=>s+(r.staffBankTarget||0), 0);
+  return savings + staffReserve;
 }
 // SINGLE SOURCE OF TRUTH — GPay/Online actually available. Same rule as Home Cash above: the 40%
 // bank-profit is only a REMINDER; the money is all still in the balance until you press "Done".
@@ -3288,6 +3456,11 @@ function guardBalance(entityName, label, available, amt, onProceed) {
 function addMonthsToDate(dateStr, months) {
   const d = new Date(dateStr + 'T00:00:00');
   d.setMonth(d.getMonth() + Number(months || 0));
+  return localDateStr(d);
+}
+function addDaysToDate(dateStr, days) {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setDate(d.getDate() + Number(days || 0));
   return localDateStr(d);
 }
 function investorMaturityDate(inv) { return addMonthsToDate(inv.startDate, inv.tenureMonths); }
@@ -3358,7 +3531,7 @@ function renderDashboard() {
   // option is chosen. So this money never came out of the shop-sourced Home Cash pool, and must
   // NOT be subtracted from it here. personalWalletDrain() is kept as a pure info figure only.
   const personalWallet = Math.max(0, totalHomeCash);        // net home savings (shop-sourced only)
-  const confirmedSavings = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.desc && e.desc.startsWith('Savings (40%')).reduce((s, e) => s + (e.amount || 0), 0);
+  const confirmedSavings = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.desc && e.desc.startsWith('Savings (')).reduce((s, e) => s + (e.amount || 0), 0);
   const nw = personalWallet + totalOnlineGross + totalUd - totalLiab - totalLoanPending + confirmedSavings;         // TRUE NET POSITION (loans reduce net worth, confirmed savings add back)
 
   $('nw-val').textContent = fmtSigned(nw);
@@ -3379,7 +3552,7 @@ function renderDashboard() {
   // dailyExpenses savings-confirmation entries already carry a shopId, so this can be attributed
   // exactly per shop (unlike personalWalletDrain, which is a household-level pool not tied to
   // any one shop's till — see note on the Total row below for why that one stays hero-only).
-  const shopConfirmedSavings = id => (STATE.dailyExpenses || []).filter(e => !e.deleted && e.shopId === id && e.desc && e.desc.startsWith('Savings (40%')).reduce((s, e) => s + (e.amount || 0), 0);
+  const shopConfirmedSavings = id => (STATE.dailyExpenses || []).filter(e => !e.deleted && e.shopId === id && e.desc && e.desc.startsWith('Savings (')).reduce((s, e) => s + (e.amount || 0), 0);
   // Shop-level "own money" = shop's home-cash cumulative + shop online + shop udhaari + shop's
   // confirmed savings - shop bills - shop pending loans (counter cash NOT counted — pure working capital)
   const shopNet = id => {
@@ -3411,10 +3584,10 @@ function renderDashboard() {
     const gpCls  = isMonthPeriod ? 'mono' : 'mono editable-cell';
     const hcTitle = isMonthPeriod
       ? `This month (${monthYm}) Home Cash brought home, net of Home-source expenses — read-only`
-      : `Home Cash in hand: ${fmt(shopHomeCash(sh.id))} (full amount). Reminder: ${fmt(shopHomeReserved(sh.id))} still to set aside as 40% profit — this balance drops only when you mark that savings "Done". Dbl-click to set opening balance`;
+      : `Home Cash in hand: ${fmt(shopHomeCash(sh.id))} (full amount). Reminder: ${fmt(shopHomeReserved(sh.id))} still to set aside as 30% savings + 10% staff/bills reserve — this balance drops only when you mark those "Done". Dbl-click to set opening balance`;
     const gpTitle = isMonthPeriod
       ? `This month (${monthYm}) GPay received, net of GP-source expenses — read-only`
-      : `GPay/Bank available: ${fmt(sh.online)} (full amount). Reminder: ${fmt(shopOnlineReserved(sh.id))} still to set aside as 40% profit — this balance drops only when you mark that savings "Done". Dbl-click to edit`;
+      : `GPay/Bank available: ${fmt(sh.online)} (full amount). Reminder: ${fmt(shopOnlineReserved(sh.id))} still to set aside as 30% savings + 10% staff/bills reserve — this balance drops only when you mark those "Done". Dbl-click to edit`;
     tbody += `<tr>
       <td><span style="display:inline-flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:${shopColor(sh.id)};"></span><strong>${sh.name}</strong></span></td>
       <td><span class="${hcCls}" style="color:${hc<0?'var(--bad)':'var(--accent)'};"${hcAttr} title="${hcTitle}">${fmtSigned(hc)}</span></td>
@@ -3577,9 +3750,10 @@ function renderMsShopTabs() {
 }
 
 // ─── Savings-Pending Reminders ────────────────────────────────────
-// Har Day Close entry apna "40% side karna tha" target aur ek done-flag (cash/bank alag-alag)
-// carry karta hai. Jab tak flag true nahi hota, wo entry "pending" gina jaata hai aur banner +
-// nav badge mein baar-baar reappear karta rahega — jaisa app dobara kholo/reload karo waisa hi.
+// Har Day Close entry apna "30% savings + 10% staff/bills reserve side karna tha" target aur ek
+// done-flag (cash/bank alag-alag, savings/reserve alag-alag) carry karta hai. Jab tak flag true
+// nahi hota, wo entry "pending" gina jaata hai aur banner + nav badge mein baar-baar reappear
+// karta rahega — jaisa app dobara kholo/reload karo waisa hi.
 function getPendingSavings() {
   const pend = [];
   (STATE.dayClose || []).filter(r => !r.deleted).forEach(r => {
@@ -3589,6 +3763,12 @@ function getPendingSavings() {
     if ((r.bankSaveTarget || 0) > 0 && !r.bankSaveDone) {
       pend.push({ dcId: r.id, shopId: r.shopId, date: r.date, type: 'bank', amount: r.bankSaveTarget });
     }
+    if ((r.staffCashTarget || 0) > 0 && !r.staffCashDone) {
+      pend.push({ dcId: r.id, shopId: r.shopId, date: r.date, type: 'staffcash', amount: r.staffCashTarget });
+    }
+    if ((r.staffBankTarget || 0) > 0 && !r.staffBankDone) {
+      pend.push({ dcId: r.id, shopId: r.shopId, date: r.date, type: 'staffbank', amount: r.staffBankTarget });
+    }
   });
   return pend.sort((a, b) => (a.date < b.date ? 1 : -1));
 }
@@ -3596,27 +3776,44 @@ function getPendingSavings() {
 // User ne "Haan, kar diya" confirm kiya — isko ek Daily Expense (HOME/GP source) ke roop mein
 // record karte hain taaki Net Bal (Home|Bank), Dashboard Net Worth, aur shop ka live GPay balance
 // (sh.online) — sab jagah ye paisa "consumed/set-aside" maana jaaye, na ki abhi bhi "available" jaisa.
+// type: 'cash'/'bank' = 30% owner savings. 'staffcash'/'staffbank' = 10% staff/bills/EMI reserve.
 function confirmSavingsDone(dcId, type) {
   const r = STATE.dayClose.find(x => x.id === dcId);
   if (!r) return;
-  const amt = type === 'cash' ? (r.cashSaveTarget || 0) : (r.bankSaveTarget || 0);
+  const isStaff = type === 'staffcash' || type === 'staffbank';
+  const isCashSide = type === 'cash' || type === 'staffcash';
+  const amt = type === 'cash' ? (r.cashSaveTarget || 0)
+    : type === 'bank' ? (r.bankSaveTarget || 0)
+    : type === 'staffcash' ? (r.staffCashTarget || 0)
+    : (r.staffBankTarget || 0);
   if (!amt) return;
 
+  const descLabel = isStaff ? `Staff/Bills Reserve (10% ${isCashSide ? 'Cash' : 'GPay'})` : `Savings (30% ${isCashSide ? 'Cash' : 'GPay'})`;
   STATE.dailyExpenses = STATE.dailyExpenses || [];
   STATE.dailyExpenses.unshift({
     id: newId('DE'), shopId: r.shopId, date: r.date,
-    desc: `Savings (40% ${type === 'cash' ? 'Cash' : 'GPay'})`,
-    source: type === 'cash' ? 'HOME' : 'GP',
+    desc: descLabel,
+    source: isCashSide ? 'HOME' : 'GP',
     amount: amt, deleted: false,
-    linkedDcId: r.id  // link to the DC that created this savings expense
+    linkedDcId: r.id  // link to the DC that created this savings/reserve expense
   });
-  if (type === 'bank') {
+  if (!isCashSide) {
     const sh = STATE.shops.find(s => s.id === r.shopId);
     if (sh) sh.online = Math.max(0, (sh.online || 0) - amt);
   }
-  if (type === 'cash') r.cashSaveDone = true; else r.bankSaveDone = true;
+  if (isStaff) {
+    // Credit the spendable Staff/Bills/EMI Reserve wallet — this is the ONE thing that's
+    // different from Owner Savings: this money doesn't just vanish, it moves into a dedicated
+    // spendable balance — see addDailyExpense 'STAFF' source.
+    const sh = STATE.shops.find(s => s.id === r.shopId);
+    if (sh) sh.staffReserveBalance = (sh.staffReserveBalance || 0) + amt;
+  }
+  if (type === 'cash') r.cashSaveDone = true;
+  else if (type === 'bank') r.bankSaveDone = true;
+  else if (type === 'staffcash') r.staffCashDone = true;
+  else r.staffBankDone = true;
 
-  auditLog('SAVINGS', `${shopName(r.shopId)} ${fmtDate(r.date)} — ${type === 'cash' ? 'Cash' : 'GPay'} savings ${fmt(amt)} confirmed done`);
+  auditLog('SAVINGS', `${shopName(r.shopId)} ${fmtDate(r.date)} — ${descLabel} ${fmt(amt)} confirmed done`);
   saveStateLocal();
   renderSavingsPendingBanner();
   renderGraphicsSwapBanner();
@@ -3700,12 +3897,26 @@ function dismissNewMonthBanner(monthKey) {
   if (wrap) { wrap.style.display = 'none'; wrap.innerHTML = ''; }
 }
 
+// Collapse-by-shop state for the Savings Pending banner & the To Pay alerts banner — kept at
+// module level (not reset on every re-render) so a shop stays expanded across refreshes,
+// closes back up by default. Purpose: these lists were growing long; grouping by shop with a
+// collapsed count keeps the page short while all the same info/actions remain one click away.
+let _savingsPendingOpen = {};
+let _dashboardAlertsOpen = {};
+function toggleSavingsPendingGroup(shopId) { _savingsPendingOpen[shopId] = !_savingsPendingOpen[shopId]; renderSavingsPendingBanner(); }
+function toggleDashboardAlertsGroup(key) { _dashboardAlertsOpen[key] = !_dashboardAlertsOpen[key]; renderDashboardAlerts(); }
+
 function renderSavingsPendingBanner() {
   const wrap = $('savings-pending-banner');
   if (!wrap) return;
   const pend = getPendingSavings();
   if (!pend.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
   wrap.style.display = 'block';
+
+  const groups = {};
+  pend.forEach(p => { (groups[p.shopId] = groups[p.shopId] || []).push(p); });
+  const shopIds = Object.keys(groups).sort((a, b) => shopName(a).localeCompare(shopName(b)));
+
   wrap.innerHTML = `
     <div class="card" style="padding:14px 16px;border-left:3px solid var(--warn);margin-bottom:14px;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
@@ -3713,17 +3924,36 @@ function renderSavingsPendingBanner() {
         <div style="font-size:13px;font-weight:700;">Savings Pending — ${pend.length} confirmations pending</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:7px;">
-        ${pend.map(p => `
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;">
-            <div style="font-size:12px;">
-              <span style="font-weight:700;">${escHtml(fmtDate(p.date))}</span>
-              <span style="color:var(--muted);"> — ${escHtml(shopName(p.shopId))} · ${p.type === 'cash' ? 'Cash' : 'GPay'} to be set aside</span>
+        ${shopIds.map(shopId => {
+          const list = groups[shopId];
+          const total = list.reduce((s, p) => s + p.amount, 0);
+          const open = !!_savingsPendingOpen[shopId];
+          return `
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer;" onclick="toggleSavingsPendingGroup('${shopId}')">
+              <div style="display:flex;align-items:center;gap:9px;">
+                <i class="fa-solid fa-chevron-${open ? 'down' : 'right'}" style="font-size:10px;color:var(--muted);width:10px;"></i>
+                <span style="font-weight:700;font-size:12.5px;">${escHtml(shopName(shopId))}</span>
+                <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;background:var(--warn)22;color:var(--warn);">${list.length} pending</span>
+              </div>
+              <span class="mono" style="font-weight:700;font-size:12px;color:var(--warn);">${fmt(total)}</span>
             </div>
-            <div style="display:flex;align-items:center;gap:10px;">
-              <span class="mono" style="font-weight:700;color:${p.type === 'cash' ? 'var(--warn)' : 'var(--accent2)'};">${fmt(p.amount)}</span>
-              <button class="btn btn-good btn-xs" onclick="confirmSavingsDone('${p.dcId}','${p.type}')"><i class="fa-solid fa-check"></i> Done</button>
-            </div>
-          </div>`).join('')}
+            ${open ? `
+            <div style="display:flex;flex-direction:column;gap:6px;margin:7px 0 0 22px;">
+              ${list.map(p => `
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;">
+                  <div style="font-size:12px;">
+                    <span style="font-weight:700;">${escHtml(fmtDate(p.date))}</span>
+                    <span style="color:var(--muted);"> — ${p.type === 'cash' ? 'Cash Savings (30%)' : p.type === 'bank' ? 'GPay Savings (30%)' : p.type === 'staffcash' ? 'Staff/Bills Reserve — Cash (10%)' : 'Staff/Bills Reserve — GPay (10%)'} to be set aside</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="mono" style="font-weight:700;color:${p.type === 'cash' ? 'var(--warn)' : p.type === 'bank' ? 'var(--accent2)' : 'var(--bad)'};">${fmt(p.amount)}</span>
+                    <button class="btn btn-good btn-xs" onclick="event.stopPropagation();confirmSavingsDone('${p.dcId}','${p.type}')"><i class="fa-solid fa-check"></i> Done</button>
+                  </div>
+                </div>`).join('')}
+            </div>` : ''}
+          </div>`;
+        }).join('')}
       </div>
     </div>`;
 }
@@ -3746,7 +3976,8 @@ function renderDashboardAlerts() {
     items.push({
       kind: 'Bill', icon: 'fa-file-invoice', color: 'var(--warn)', tab: 'outflows', du,
       title: o.payee || 'Outflow', sub: shopName(o.shopId),
-      amount: (o.amount || 0) + (o.lateFee || 0) - (o.paid || 0), date: o.dueDate
+      amount: (o.amount || 0) + (o.lateFee || 0) - (o.paid || 0), date: o.dueDate,
+      groupKey: o.shopId, groupLabel: shopName(o.shopId)
     });
   });
 
@@ -3754,24 +3985,48 @@ function renderDashboardAlerts() {
   (STATE.reminders || []).forEach(r => {
     const du = daysUntil(r.dueDate);
     if (du === null || du > 3) return;
+    const gk = r.linkedLoanShopId || 'general';
     items.push({
       kind: 'Reminder', icon: 'fa-bell', color: 'var(--accent)', tab: 'homeexp', du,
       title: r.name || 'Payment', sub: r.category || '',
-      amount: r.amount || 0, date: r.dueDate
+      amount: r.amount || 0, date: r.dueDate,
+      groupKey: gk, groupLabel: r.linkedLoanShopId ? shopName(r.linkedLoanShopId) : 'Home / General'
     });
+  });
+
+  // Staff/Bills/EMI Reserve — low balance nudge (spendable wallets funded by the 10% split, Cash & GPay tracked separately)
+  const STAFF_RESERVE_LOW_THRESHOLD = 500;
+  STATE.shops.filter(sh => sh.id === 'SHOP01' || sh.id === 'SHOP02').forEach(sh => {
+    const bal = shopStaffReserveBalance(sh.id);
+    if (bal < STAFF_RESERVE_LOW_THRESHOLD) {
+      items.push({
+        kind: 'Staff/Bills Reserve', icon: 'fa-users', color: bal < 0 ? 'var(--bad)' : 'var(--warn)', tab: 'dayclose', du: bal < 0 ? -1 : 0,
+        title: `${sh.name} — Reserve Low`, sub: bal < 0 ? 'Negative balance' : 'Running low',
+        amount: bal, date: '',
+        groupKey: sh.id, groupLabel: sh.name
+      });
+    }
   });
 
   // Loans — overdue is not date-based here, so surface anything still Pending as a soft nudge
   // only when it's been outstanding a while; keeping this list focused on DATE-based urgency,
   // Loans intentionally excluded (no due date field on a loan) to avoid noise.
 
-  // NOTE: Investors reserve-nudges are intentionally NOT shown here — investment/wholesale
-  // is on hold for now. The Investors tab still exists for manual tracking, just no
-  // auto-suggested reserve reminders anywhere in the app.
+  // NOTE: Investors feature was removed from the UI entirely (nav, tab, modals). Old investor
+  // JS functions/data are still in the file but unreachable — harmless dead code, kept only in
+  // case investor tracking is wanted back later.
 
   if (!items.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
   items.sort((a, b) => a.du - b.du);
   const overdueCount = items.filter(i => i.du < 0).length;
+
+  const groups = {};
+  items.forEach(i => { (groups[i.groupKey] = groups[i.groupKey] || { label: i.groupLabel, items: [] }).items.push(i); });
+  const groupKeys = Object.keys(groups).sort((a, b) => {
+    const minA = Math.min(...groups[a].items.map(i => i.du));
+    const minB = Math.min(...groups[b].items.map(i => i.du));
+    return minA - minB;
+  });
 
   wrap.style.display = 'block';
   wrap.innerHTML = `
@@ -3781,22 +4036,41 @@ function renderDashboardAlerts() {
         <div style="font-size:13px;font-weight:700;">To Pay — ${items.length} item${items.length > 1 ? 's' : ''}${overdueCount ? ` (${overdueCount} overdue)` : ''}</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:7px;">
-        ${items.map(i => {
-          const badgeTxt = i.du < 0 ? `${Math.abs(i.du)}d overdue` : i.du === 0 ? 'DUE TODAY' : `in ${i.du}d`;
-          const badgeColor = i.du < 0 ? 'var(--bad)' : i.du <= 1 ? 'var(--warn)' : 'var(--muted)';
+        ${groupKeys.map(gk => {
+          const g = groups[gk];
+          const gOverdue = g.items.filter(i => i.du < 0).length;
+          const open = !!_dashboardAlertsOpen[gk];
           return `
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel2);border:1px solid var(--line);border-left:3px solid ${i.color};border-radius:8px;padding:8px 12px;cursor:pointer;" onclick="switchTab('${i.tab}')">
-            <div style="display:flex;align-items:center;gap:9px;min-width:0;">
-              <i class="fa-solid ${i.icon}" style="color:${i.color};width:14px;flex-shrink:0;"></i>
-              <div style="font-size:12px;min-width:0;">
-                <span style="font-weight:700;">${escHtml(i.title)}</span>
-                <span style="color:var(--muted);"> — ${escHtml(i.kind)}${i.sub ? ' · ' + escHtml(i.sub) : ''}</span>
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer;" onclick="toggleDashboardAlertsGroup('${gk}')">
+              <div style="display:flex;align-items:center;gap:9px;">
+                <i class="fa-solid fa-chevron-${open ? 'down' : 'right'}" style="font-size:10px;color:var(--muted);width:10px;"></i>
+                <span style="font-weight:700;font-size:12.5px;">${escHtml(g.label)}</span>
+                <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;background:${gOverdue ? 'var(--bad)' : 'var(--warn)'}22;color:${gOverdue ? 'var(--bad)' : 'var(--warn)'};">${g.items.length} item${g.items.length > 1 ? 's' : ''}${gOverdue ? ` · ${gOverdue} overdue` : ''}</span>
               </div>
             </div>
-            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-              <span class="mono" style="font-weight:700;font-size:12px;">${fmt(i.amount)}</span>
-              <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;background:${badgeColor}22;color:${badgeColor};white-space:nowrap;">${badgeTxt}</span>
-            </div>
+            ${open ? `
+            <div style="display:flex;flex-direction:column;gap:6px;margin:7px 0 0 22px;">
+              ${g.items.map(i => {
+                const isReserve = i.kind === 'Staff/Bills Reserve';
+                const badgeTxt = isReserve ? (i.amount < 0 ? 'NEGATIVE' : 'LOW') : (i.du < 0 ? `${Math.abs(i.du)}d overdue` : i.du === 0 ? 'DUE TODAY' : `in ${i.du}d`);
+                const badgeColor = isReserve ? (i.amount < 0 ? 'var(--bad)' : 'var(--warn)') : (i.du < 0 ? 'var(--bad)' : i.du <= 1 ? 'var(--warn)' : 'var(--muted)');
+                return `
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel2);border:1px solid var(--line);border-left:3px solid ${i.color};border-radius:8px;padding:8px 12px;cursor:pointer;" onclick="switchTab('${i.tab}')">
+                  <div style="display:flex;align-items:center;gap:9px;min-width:0;">
+                    <i class="fa-solid ${i.icon}" style="color:${i.color};width:14px;flex-shrink:0;"></i>
+                    <div style="font-size:12px;min-width:0;">
+                      <span style="font-weight:700;">${escHtml(i.title)}</span>
+                      <span style="color:var(--muted);"> — ${escHtml(i.kind)}${i.sub ? ' · ' + escHtml(i.sub) : ''}</span>
+                    </div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                    <span class="mono" style="font-weight:700;font-size:12px;">${fmt(i.amount)}</span>
+                    <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;background:${badgeColor}22;color:${badgeColor};white-space:nowrap;">${badgeTxt}</span>
+                  </div>
+                </div>`;
+              }).join('')}
+            </div>` : ''}
           </div>`;
         }).join('')}
       </div>
@@ -3875,8 +4149,8 @@ function renderMonthlySummary() {
   const bankSavings = recs.reduce((s, r) => s + (r.bankSaveTarget || 0), 0);
   // Monthly Summary fix: also calculate confirmed savings for this month/shop filter
   const monthShopExps = (STATE.dailyExpenses || []).filter(e => !e.deleted && (e.date || '').slice(0, 7) === ym && (_msShopFilter === 'ALL' || e.shopId === _msShopFilter));
-  const confirmedCashSave = monthShopExps.filter(e => e.desc && e.desc.startsWith('Savings (40% Cash')).reduce((s, e) => s + (e.amount || 0), 0);
-  const confirmedBankSave = monthShopExps.filter(e => e.desc && e.desc.startsWith('Savings (40% GPay')).reduce((s, e) => s + (e.amount || 0), 0);
+  const confirmedCashSave = monthShopExps.filter(e => e.desc && e.desc.startsWith('Savings (') && e.desc.includes('Cash')).reduce((s, e) => s + (e.amount || 0), 0);
+  const confirmedBankSave = monthShopExps.filter(e => e.desc && e.desc.startsWith('Savings (') && e.desc.includes('GPay')).reduce((s, e) => s + (e.amount || 0), 0);
   $('ms-cashsave-val').textContent = fmt(cashSavings);
   $('ms-banksave-val').textContent = fmt(bankSavings);
   const pendingCash = Math.max(0, cashSavings - confirmedCashSave);
@@ -3885,6 +4159,18 @@ function renderMonthlySummary() {
   $('ms-cashsave-sub').style.color = pendingCash > 0 ? 'var(--warn)' : 'var(--muted)';
   $('ms-banksave-sub').textContent = `Confirmed: ${fmt(confirmedBankSave)}${pendingBank > 0 ? ' · Pending: ' + fmt(pendingBank) : ''}`;
   $('ms-banksave-sub').style.color = pendingBank > 0 ? 'var(--warn)' : 'var(--muted)';
+
+  // Staff/Bills Reserve (10%) — same pattern as Cash/Bank Savings above, combined into one tile.
+  const staffCashTarget = recs.reduce((s, r) => s + (r.staffCashTarget || 0), 0);
+  const staffBankTarget = recs.reduce((s, r) => s + (r.staffBankTarget || 0), 0);
+  const staffReserveTarget = staffCashTarget + staffBankTarget;
+  const confirmedStaffReserve = monthShopExps.filter(e => e.desc && e.desc.startsWith('Staff/Bills Reserve (')).reduce((s, e) => s + (e.amount || 0), 0);
+  const pendingStaffReserve = Math.max(0, staffReserveTarget - confirmedStaffReserve);
+  if ($('ms-staffreserve-val')) {
+    $('ms-staffreserve-val').textContent = fmt(staffReserveTarget);
+    $('ms-staffreserve-sub').textContent = `Confirmed: ${fmt(confirmedStaffReserve)}${pendingStaffReserve > 0 ? ' · Pending: ' + fmt(pendingStaffReserve) : ''}`;
+    $('ms-staffreserve-sub').style.color = pendingStaffReserve > 0 ? 'var(--warn)' : 'var(--muted)';
+  }
 
   // Adjustment: shortfall between the cash-savings target and what was actually brought home this
   // month — this shortfall is carried against the shop(s)' previously accumulated home balance.
@@ -3896,7 +4182,7 @@ function renderMonthlySummary() {
   // EXCLUDE 40% "Savings (…)" entries — those set-asides reduce the wallet but are profit reserve,
   // not business spending, so they must not inflate the Expenses total.
   const counterExp = recs.reduce((s, r) => s + (r.expense || 0), 0);
-  const itemExp = exps.filter(e => e.source !== 'COUNTER' && !(e.desc || '').startsWith('Savings (40%')).reduce((s, e) => s + (e.amount || 0), 0);
+  const itemExp = exps.filter(e => e.source !== 'COUNTER' && !(((e.desc || '').startsWith('Savings (')) || ((e.desc || '').startsWith('Staff/Bills Reserve (')))).reduce((s, e) => s + (e.amount || 0), 0);
   $('ms-exp-val').textContent = fmt(counterExp + itemExp);
 
   // Calculate loans for this month
@@ -3920,7 +4206,7 @@ function renderMonthlySummary() {
   // Adjustment tile: make it clear what this number actually means, rather than a bare figure.
   const adjEl = $('ms-adj-val');
   if (adjEl && adjEl.parentElement) {
-    adjEl.parentElement.title = 'Home Cash target (40% of Home Cash) minus what was actually brought home this month — a shortfall here means less was taken home than the savings target, and it carries forward against your accumulated Home balance.';
+    adjEl.parentElement.title = 'Home Cash target (30% of Home Cash) minus what was actually brought home this month — a shortfall here means less was taken home than the savings target, and it carries forward against your accumulated Home balance.';
   }
 
   // Negative-balance days banner — removed per user request (felt noisy showing every date).
@@ -4217,11 +4503,34 @@ function renderPerfTracker() {
 // ─── Day Close ───────────────────────────────────────────────────
 let activeDcShop = null;
 let dcCommonDate = null; // shared date box — applies to whichever shop panel you're filling
+let dcDrafts = {}; // unsaved values kept while another shop is submitted
+
+function captureDcDrafts() {
+  const drafts = {};
+  STATE.shops.forEach(sh => {
+    const date = $(`dc-date-${sh.id}`)?.value;
+    if (!date) return;
+    drafts[sh.id] = {
+      date,
+      cashHome: $(`dc-home-${sh.id}`)?.value ?? '',
+      counterCash: $(`dc-counter-${sh.id}`)?.value ?? '',
+      gpay: $(`dc-gpay-${sh.id}`)?.value ?? '',
+      expense: $(`dc-exp-${sh.id}`)?.value ?? '',
+      profit: $(`dc-profit-${sh.id}`)?.value ?? '',
+      note: $(`dc-note-${sh.id}`)?.value ?? ''
+    };
+  });
+  return drafts;
+}
 
 function initDcForms() {
   const tabsEl = $('dc-shop-tabs');
   const formsEl = $('dc-forms');
   if (!tabsEl || !formsEl) return;
+
+  // initDcForms rebuilds every panel. Keep values the user typed in another
+  // shop so submitting one shop never clears the next shop's unfinished draft.
+  dcDrafts = { ...dcDrafts, ...captureDcDrafts() };
 
   // Keep the previously selected date/shop across rebuilds (e.g. after a submit)
   if (!dcCommonDate) dcCommonDate = todayStr();
@@ -4260,7 +4569,8 @@ function initDcForms() {
     const activeList = STATE.dayClose.filter(r=>r.shopId===sh.id && !r.deleted);
     const lastEntry = activeList[0];
     // Prefill from the selected date's DC (edit mode) if present
-    const pf = todaysDc || {};
+    const draft = dcDrafts[sh.id]?.date === today ? dcDrafts[sh.id] : null;
+    const pf = draft || todaysDc || {};
     return `<div class="dc-form-panel${sh.id===activeDcShop?' active':''}" id="dcpanel-${sh.id}">
       <div class="card" style="padding:0;overflow:hidden;border-top:2px solid ${shopColor(sh.id)};">
         <!-- Shop Header with gradient -->
@@ -4318,7 +4628,9 @@ function initDcForms() {
             <button type="button" class="chip-tile active" data-value="COUNTER" onclick="chipPick('de-source-${sh.id}','COUNTER')" style="padding:5px 10px;font-size:10.5px;"><i class="fa-solid fa-cash-register"></i>Counter</button>
             <button type="button" class="chip-tile" data-value="HOME" onclick="chipPick('de-source-${sh.id}','HOME')" style="padding:5px 10px;font-size:10.5px;"><i class="fa-solid fa-house"></i>Home</button>
             <button type="button" class="chip-tile" data-value="GP" onclick="chipPick('de-source-${sh.id}','GP')" style="padding:5px 10px;font-size:10.5px;"><i class="fa-solid fa-mobile-screen"></i>GP</button>
+            ${(sh.id === 'SHOP01' || sh.id === 'SHOP02') ? `<button type="button" class="chip-tile" data-value="STAFF" onclick="chipPick('de-source-${sh.id}','STAFF')" style="padding:5px 10px;font-size:10.5px;color:#c084fc;"><i class="fa-solid fa-users"></i>Staff Reserve</button>` : ''}
           </div>
+          ${(sh.id === 'SHOP01' || sh.id === 'SHOP02') ? `<div style="font-size:10px;color:var(--muted);margin:-3px 0 8px;">Staff/Bills Reserve balance: <span class="mono" style="font-weight:700;color:${shopStaffReserveBalance(sh.id) < 0 ? 'var(--bad)' : '#c084fc'};" id="de-staffbal-${sh.id}">₹${fmtNum(shopStaffReserveBalance(sh.id))}</span></div>` : ''}
           <div id="de-list-${sh.id}" style="display:flex;flex-direction:column;gap:5px;"></div>
           <div id="de-summary-${sh.id}" style="font-size:10px;color:var(--muted);margin-top:6px;padding-top:6px;border-top:1px solid rgba(251,191,36,0.1);"></div>
         </div>
@@ -4398,8 +4710,8 @@ function clearIfZero(inp) {
 }
 
 // ─── Daily Expense (Counter / Home / GP) — itemized quick expenses ──
-const DE_SOURCE_LABEL = { COUNTER:'Counter', HOME:'Home', GP:'GP' };
-const DE_SOURCE_COLOR = { COUNTER:'var(--warn)', HOME:'var(--accent)', GP:'var(--accent2)' };
+const DE_SOURCE_LABEL = { COUNTER:'Counter', HOME:'Home', GP:'GP', STAFF:'Staff Reserve' };
+const DE_SOURCE_COLOR = { COUNTER:'var(--warn)', HOME:'var(--accent)', GP:'var(--accent2)', STAFF:'#c084fc' };
 
 function deSetDesc(shopId, text) {
   const el = $(`de-desc-${shopId}`);
@@ -4430,12 +4742,19 @@ function addDailyExpense(shopId) {
       if (sh) sh.online = (sh.online||0) - amt;
       renderDashboard();
     }
+    if (source === 'STAFF') {
+      const sh = STATE.shops.find(s=>s.id===shopId);
+      if (sh) sh.staffReserveBalance = (sh.staffReserveBalance||0) - amt;
+      const balEl = $(`de-staffbal-${shopId}`);
+      if (balEl) { balEl.textContent = `₹${fmtNum(shopStaffReserveBalance(shopId))}`; balEl.style.color = shopStaffReserveBalance(shopId) < 0 ? 'var(--bad)' : '#c084fc'; }
+      renderDashboard();
+    }
     auditLog('DAILY_EXPENSE', `${shopName(shopId)} — ${desc} (${DE_SOURCE_LABEL[source]}) ₹${amt}`);
     saveStateLocal();
     toast(`${desc} — ₹${fmtNum(amt)} added (${DE_SOURCE_LABEL[source]})`, 'success');
   }
 
-  // Warn before making GPay or Home Cash negative
+  // Warn before making GPay, Home Cash, or Staff Reserve (Cash/GPay) negative
   if (source === 'GP') {
     const sh = STATE.shops.find(s=>s.id===shopId);
     if (sh) {
@@ -4448,6 +4767,13 @@ function addDailyExpense(shopId) {
     if (sh) {
       const available = shopSpendableHomeCash(shopId);
       guardBalance(sh.name, 'Home Cash', available, amt, _finishDailyExpense);
+      return;
+    }
+  } else if (source === 'STAFF') {
+    const sh = STATE.shops.find(s=>s.id===shopId);
+    if (sh) {
+      const available = shopStaffReserveBalance(shopId);
+      guardBalance(sh.name, 'Staff/Bills Reserve', available, amt, _finishDailyExpense);
       return;
     }
   }
@@ -4466,6 +4792,10 @@ function removeDailyExpense(id) {
       if (e.source === 'GP') {
         const sh = STATE.shops.find(s=>s.id===e.shopId);
         if (sh) sh.online = (sh.online||0) + e.amount;
+      }
+      if (e.source === 'STAFF') {
+        const sh = STATE.shops.find(s=>s.id===e.shopId);
+        if (sh) sh.staffReserveBalance = (sh.staffReserveBalance||0) + e.amount;
       }
       STATE.dailyExpenses.splice(idx, 1);
       renderDailyExpenses(e.shopId);
@@ -4492,7 +4822,7 @@ function renderDailyExpenses(shopId) {
   const entryDate = $(`dc-date-${shopId}`)?.value || todayStr();
   // 40% "Savings" set-asides live in dailyExpenses so they reduce the wallet, but they are profit
   // reserve — not spending — so they must not appear in this expense list or its Home/GP totals.
-  const items = STATE.dailyExpenses.filter(e => e.shopId===shopId && e.date===entryDate && !e.deleted && !(e.desc || '').startsWith('Savings (40%'));
+  const items = STATE.dailyExpenses.filter(e => e.shopId===shopId && e.date===entryDate && !e.deleted && !(((e.desc || '').startsWith('Savings (')) || ((e.desc || '').startsWith('Staff/Bills Reserve ('))));
 
   listEl.innerHTML = items.map(e => `
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 10px;">
@@ -4501,9 +4831,9 @@ function renderDailyExpenses(shopId) {
       <button type="button" onclick="removeDailyExpense('${e.id}')" style="background:none;border:none;color:var(--bad);cursor:pointer;font-size:13px;padding:2px 4px;"><i class="fa-solid fa-xmark"></i></button>
     </div>`).join('') || `<div style="font-size:11px;color:var(--muted);">No expenses added on ${fmtDate(entryDate)}</div>`;
 
-  const bySource = { COUNTER:0, HOME:0, GP:0 };
+  const bySource = { COUNTER:0, HOME:0, GP:0, STAFF:0 };
   items.forEach(e => bySource[e.source] = (bySource[e.source]||0) + (e.amount||0));
-  sumEl.innerHTML = `Counter: <strong style="color:${DE_SOURCE_COLOR.COUNTER};">₹${fmtNum(bySource.COUNTER)}</strong> &nbsp;|&nbsp; Home: <strong style="color:${DE_SOURCE_COLOR.HOME};">₹${fmtNum(bySource.HOME)}</strong> &nbsp;|&nbsp; GP: <strong style="color:${DE_SOURCE_COLOR.GP};">₹${fmtNum(bySource.GP)}</strong>`;
+  sumEl.innerHTML = `Counter: <strong style="color:${DE_SOURCE_COLOR.COUNTER};">₹${fmtNum(bySource.COUNTER)}</strong> &nbsp;|&nbsp; Home: <strong style="color:${DE_SOURCE_COLOR.HOME};">₹${fmtNum(bySource.HOME)}</strong> &nbsp;|&nbsp; GP: <strong style="color:${DE_SOURCE_COLOR.GP};">₹${fmtNum(bySource.GP)}</strong>${bySource.STAFF ? ` &nbsp;|&nbsp; Staff Reserve: <strong style="color:${DE_SOURCE_COLOR.STAFF};">₹${fmtNum(bySource.STAFF)}</strong>` : ''}`;
 }
 
 
@@ -4609,17 +4939,17 @@ function submitDayClose(shopId) {
       // Home cash isn't a running shop balance — it's derived fresh from the sum of dayClose.cashHome
       // every time (see shopHomeCash()), so correcting existing.cashHome below is enough on its own.
     }
-    // Recompute the 40% savings targets against the new home/gpay. Agar target badal gaya
-    // aur pehle "confirm" ho chuka tha, to dobara confirm maango (flag reset) — kyunki purana
-    // confirm ab galat amount ke against tha.
-    // Cash-40% target = 40% of Home Cash (paisa jo ghar le jaate ho) — NOT of total cash sale.
-    // Counter cash (galla) is pure shop working capital and is never part of the 60/40 split.
-    // Graphics (SHOP04) is order-based — no 40% savings split applies to it, whatever remains
+    // Recompute the 30% savings + 10% staff/bills reserve targets against the new home/gpay.
+    // Agar target badal gaya aur pehle "confirm" ho chuka tha, to dobara confirm maango (flag
+    // reset) — kyunki purana confirm ab galat amount ke against tha.
+    // Cash-30%/10% target = 30%/10% of Home Cash (paisa jo ghar le jaate ho) — NOT of total cash sale.
+    // Counter cash (galla) is pure shop working capital and is never part of this split.
+    // Graphics (SHOP04) is order-based — no savings/reserve split applies to it, whatever remains
     // after order costs IS the profit already, nothing further to set aside.
-    // Graphics is order-based — no 40% savings split applies to it, whatever remains
-    // after order costs IS the profit already, nothing further to set aside.
-    const newCashSaveTarget = shopId === 'SHOP04' ? 0 : roundTo100(home * 0.4);
-    const newBankSaveTarget = shopId === 'SHOP04' ? 0 : roundTo100(gpay * 0.4);
+    const newCashSaveTarget = shopId === 'SHOP04' ? 0 : roundTo100(home * 0.3);
+    const newBankSaveTarget = shopId === 'SHOP04' ? 0 : roundTo100(gpay * 0.3);
+    const newStaffCashTarget = shopId === 'SHOP04' ? 0 : roundTo100(home * 0.1);
+    const newStaffBankTarget = shopId === 'SHOP04' ? 0 : roundTo100(gpay * 0.1);
     // If a Graphics cash swap was already confirmed for this entry but the cash amount is now
     // being edited, undo the old swap first — it was against the old (now-wrong) amount.
     if (shopId === 'SHOP04' && existing.cashSwapDone && (existing.cashHome||0) !== home) {
@@ -4630,12 +4960,14 @@ function submitDayClose(shopId) {
     // duplicate savings expenses when user confirms the new (different) target.
     const cashTargetChanged = existing.cashSaveTarget !== newCashSaveTarget;
     const bankTargetChanged = existing.bankSaveTarget !== newBankSaveTarget;
+    const staffCashTargetChanged = (existing.staffCashTarget||0) !== newStaffCashTarget;
+    const staffBankTargetChanged = (existing.staffBankTarget||0) !== newStaffBankTarget;
     if (existing.cashSaveDone && cashTargetChanged) {
-      const oldCashSaveExp = (STATE.dailyExpenses||[]).find(e => e.linkedDcId === existing.id && !e.deleted && e.desc && e.desc.includes('Cash'));
+      const oldCashSaveExp = (STATE.dailyExpenses||[]).find(e => e.linkedDcId === existing.id && !e.deleted && e.desc && e.desc.includes('Cash') && e.desc.startsWith('Savings'));
       if (oldCashSaveExp) oldCashSaveExp.deleted = true;
     }
     if (existing.bankSaveDone && bankTargetChanged) {
-      const oldBankSaveExp = (STATE.dailyExpenses||[]).find(e => e.linkedDcId === existing.id && !e.deleted && e.desc && e.desc.includes('GPay'));
+      const oldBankSaveExp = (STATE.dailyExpenses||[]).find(e => e.linkedDcId === existing.id && !e.deleted && e.desc && e.desc.includes('GPay') && e.desc.startsWith('Savings'));
       if (oldBankSaveExp) {
         oldBankSaveExp.deleted = true;
         // Reverse the GPay deduction that confirmSavingsDone applied
@@ -4643,14 +4975,38 @@ function submitDayClose(shopId) {
         if (oldSh) oldSh.online = (oldSh.online||0) + (oldBankSaveExp.amount||0);
       }
     }
+    if (existing.staffCashDone && staffCashTargetChanged) {
+      const oldExp = (STATE.dailyExpenses||[]).find(e => e.linkedDcId === existing.id && !e.deleted && e.desc && e.desc.startsWith('Staff/Bills Reserve') && e.desc.includes('Cash'));
+      if (oldExp) {
+        oldExp.deleted = true;
+        // Reverse the Staff Reserve wallet credit that confirmSavingsDone applied
+        const oldSh = STATE.shops.find(s=>s.id===existing.shopId);
+        if (oldSh) oldSh.staffReserveBalance = Math.max(0, (oldSh.staffReserveBalance||0) - (oldExp.amount||0));
+      }
+    }
+    if (existing.staffBankDone && staffBankTargetChanged) {
+      const oldExp = (STATE.dailyExpenses||[]).find(e => e.linkedDcId === existing.id && !e.deleted && e.desc && e.desc.startsWith('Staff/Bills Reserve') && e.desc.includes('GPay'));
+      if (oldExp) {
+        oldExp.deleted = true;
+        const oldSh = STATE.shops.find(s=>s.id===existing.shopId);
+        if (oldSh) {
+          oldSh.online = (oldSh.online||0) + (oldExp.amount||0);
+          oldSh.staffReserveBalance = Math.max(0, (oldSh.staffReserveBalance||0) - (oldExp.amount||0));
+        }
+      }
+    }
     const cashSaveDone = (existing.cashSaveDone && !cashTargetChanged) || false;
     const bankSaveDone = (existing.bankSaveDone && !bankTargetChanged) || false;
+    const staffCashDone = (existing.staffCashDone && !staffCashTargetChanged) || false;
+    const staffBankDone = (existing.staffBankDone && !staffBankTargetChanged) || false;
 
     Object.assign(existing, {
       cashHome: home, counterCash: counter, gpay, expense: exp, prevCounter: prev,
       sale, profit, autoProfit, note,
       cashSaveTarget: newCashSaveTarget, bankSaveTarget: newBankSaveTarget,
       cashSaveDone, bankSaveDone,
+      staffCashTarget: newStaffCashTarget, staffBankTarget: newStaffBankTarget,
+      staffCashDone, staffBankDone,
       updatedAt: new Date().toISOString()
     });
     const deltaBits = [];
@@ -4678,12 +5034,15 @@ function submitDayClose(shopId) {
     id: newId('DC'), shopId, shopName: shopName(shopId), date: entryDate,
     cashHome: home, counterCash: counter, gpay, expense: exp, prevCounter: prev,
     sale, profit, autoProfit, note, deleted: false,
-    // 40% savings targets for this specific day — tracked per-entry so we can remind
-    // separately for cash vs GPay until each is actually confirmed as "set aside".
-    // Cash-40% = 40% of Home Cash (paisa jo ghar le jaate ho); galla/counter is untouched.
-    cashSaveTarget: shopId === 'SHOP04' ? 0 : roundTo100(home * 0.4),
-    bankSaveTarget: shopId === 'SHOP04' ? 0 : roundTo100(gpay * 0.4),
+    // 30% owner savings + 10% staff/bills/EMI reserve targets for this specific day — tracked
+    // per-entry so we can remind separately for cash vs GPay until each is confirmed "set aside".
+    // Cash-30%/10% = 30%/10% of Home Cash (paisa jo ghar le jaate ho); galla/counter is untouched.
+    cashSaveTarget: shopId === 'SHOP04' ? 0 : roundTo100(home * 0.3),
+    bankSaveTarget: shopId === 'SHOP04' ? 0 : roundTo100(gpay * 0.3),
+    staffCashTarget: shopId === 'SHOP04' ? 0 : roundTo100(home * 0.1),
+    staffBankTarget: shopId === 'SHOP04' ? 0 : roundTo100(gpay * 0.1),
     cashSaveDone: false, bankSaveDone: false,
+    staffCashDone: false, staffBankDone: false,
     cashSwapDone: false, cashSwapToShop: null
   };
   STATE.dayClose.unshift(entry);
@@ -4874,6 +5233,9 @@ function renderDcHistory() {
 }
 let dcEntriesSort = { key: 'date', dir: 'desc' };
 let dcEntriesMonth = todayStr().slice(0, 7); // YYYY-MM
+let dcEntriesShopFilter = 'all';
+let dcEntriesPage = 1;
+const DCE_PAGE_SIZE = 10;
 const DCE_MONTH_NAMES = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
 function fmtDateShort(d) {
@@ -4885,6 +5247,21 @@ function shiftDcEntriesMonth(delta) {
   const [y, m] = dcEntriesMonth.split('-').map(Number);
   const dt = new Date(y, m - 1 + delta, 1);
   dcEntriesMonth = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0');
+  dcEntriesPage = 1;
+  renderDcEntriesTable();
+}
+function setDcEntriesShopFilter(shopId) {
+  dcEntriesShopFilter = shopId || 'all';
+  dcEntriesPage = 1;
+  const select = $('dce-shop-filter');
+  if (select) select.value = dcEntriesShopFilter;
+  document.querySelectorAll('#dce-shop-filters .dce-shop-filter').forEach(btn => {
+    btn.classList.toggle('on', btn.dataset.shop === dcEntriesShopFilter);
+  });
+  renderDcEntriesTable();
+}
+function setDcEntriesPage(page) {
+  dcEntriesPage = Math.max(1, parseInt(page, 10) || 1);
   renderDcEntriesTable();
 }
 function setDcEntriesSort(key) {
@@ -4902,10 +5279,12 @@ function computeDcEntryStats(r) {
   // pure shop working capital and was never part of the 60/40 split (see save-entry comment).
   // Using cashSale here previously made this number permanently larger than what could ever
   // be confirmed, so "Pending" never reached ₹0 even after confirming everything.
-  const cashSavings = r.cashSaveTarget != null ? r.cashSaveTarget : roundTo100((r.cashHome || 0) * 0.4);
-  const bankSavings = r.bankSaveTarget != null ? r.bankSaveTarget : roundTo100((r.gpay || 0) * 0.4);
+  const cashSavings = r.cashSaveTarget != null ? r.cashSaveTarget : roundTo100((r.cashHome || 0) * 0.3);
+  const bankSavings = r.bankSaveTarget != null ? r.bankSaveTarget : roundTo100((r.gpay || 0) * 0.3);
+  const staffCashReserve = r.staffCashTarget != null ? r.staffCashTarget : roundTo100((r.cashHome || 0) * 0.1);
+  const staffBankReserve = r.staffBankTarget != null ? r.staffBankTarget : roundTo100((r.gpay || 0) * 0.1);
   const dayExps = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.shopId === r.shopId && e.date === r.date);
-  const isSaving = e => (e.desc || '').startsWith('Savings (40%');
+  const isSaving = e => (e.desc || '').startsWith('Savings (') || (e.desc || '').startsWith('Staff/Bills Reserve (');
   const homeExp = dayExps.filter(e => e.source === 'HOME').reduce((s, e) => s + (e.amount || 0), 0);
   const gpExp = dayExps.filter(e => e.source === 'GP').reduce((s, e) => s + (e.amount || 0), 0);
   // "Real" expense = actual spending only. Marking a 40% savings "Done" books a HOME/GP
@@ -4919,12 +5298,15 @@ function computeDcEntryStats(r) {
   const expTotal = (r.expense || 0) + homeExp + gpExp;
   const expTotalReal = (r.expense || 0) + homeExpReal + gpExpReal;
   const outTotal = (STATE.outflows || []).filter(o => o.shopId === r.shopId && o.entryDate === r.date).reduce((s, o) => s + (o.amount || 0), 0);
-  return { cashSavings, bankSavings, homeExp, gpExp, homeExpReal, gpExpReal, adj40, expTotal, expTotalReal, outTotal };
+  return { cashSavings, bankSavings, staffCashReserve, staffBankReserve, homeExp, gpExp, homeExpReal, gpExpReal, adj40, expTotal, expTotalReal, outTotal };
 }
 
 function renderDcEntriesTable() {
   const tbody = $('dc-entries-tbody');
   if (!tbody) return;
+  document.querySelectorAll('#dce-shop-filters .dce-shop-filter').forEach(btn => {
+    btn.classList.toggle('on', btn.dataset.shop === dcEntriesShopFilter);
+  });
   const lbl = $('dce-month-label');
   if (lbl) lbl.textContent = DCE_MONTH_NAMES[parseInt(dcEntriesMonth.split('-')[1], 10) - 1];
   ['date','sale','savings','netcash','gpay','expense'].forEach(k => {
@@ -4934,13 +5316,15 @@ function renderDcEntriesTable() {
 
   const showDeleted = !!$('dce-show-deleted')?.checked;
   const q = ($('dce-search')?.value || '').trim().toLowerCase();
-  const shopFilter = $('dce-shop-filter')?.value || 'all';
+  const shopFilter = dcEntriesShopFilter;
   let visible = STATE.dayClose.filter(r => (showDeleted ? r.deleted : !r.deleted) && (r.date || '').slice(0, 7) === dcEntriesMonth);
   if (shopFilter !== 'all') visible = visible.filter(r => r.shopId === shopFilter);
   if (q) visible = visible.filter(r => (r.shopName || shopName(r.shopId) || '').toLowerCase().includes(q) || (r.date || '').includes(q));
 
   if (!visible.length) {
     tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--muted);font-family:inherit;">${showDeleted ? 'No deleted entries this month' : 'No Day Close entries this month'}</td></tr>`;
+    renderDcEntriesCards([]);
+    renderDcPagination(0, 0);
     return;
   }
 
@@ -4959,9 +5343,14 @@ function renderDcEntriesTable() {
     }
   });
 
-  tbody.innerHTML = rows.map(({ r, s }) => {
+  const totalPages = Math.max(1, Math.ceil(rows.length / DCE_PAGE_SIZE));
+  dcEntriesPage = Math.min(dcEntriesPage, totalPages);
+  const pageRows = rows.slice((dcEntriesPage - 1) * DCE_PAGE_SIZE, dcEntriesPage * DCE_PAGE_SIZE);
+
+  tbody.innerHTML = pageRows.map(({ r, s }) => {
     const del = !!r.deleted;
-    return `<tr class="${del?'dc-deleted':''}" onclick="${del?'':`openDcDetail('${r.id}')`}">
+    const profitCls = (r.sale||0) >= 0 ? 'dc-profit-pos' : 'dc-profit-neg';
+    return `<tr class="${profitCls}${del?' dc-deleted':''}" onclick="${del?'':`openDcDetail('${r.id}')`}">
       <td onclick="event.stopPropagation();"><button class="btn btn-good btn-xs" style="border-radius:50%;width:30px;height:30px;padding:0;justify-content:center;background:#25D366;border-color:#25D366;box-shadow:0 0 0 1px rgba(37,211,102,0.35);" onclick="shareDcDayReport('${r.id}')" title="Share on WhatsApp"><i class="fa-brands fa-whatsapp" style="font-size:14px;color:#fff;"></i></button></td>
       <td>
         <div style="font-weight:700;">${fmtDateShort(r.date)}</div>
@@ -4974,7 +5363,7 @@ function renderDcEntriesTable() {
       </td>
       <td>
         <div style="color:var(--warn);font-weight:700;">${fmt(r.cashHome)}</div>
-        <div class="dce-sub">40% Adj: ${fmt(s.adj40)}</div>
+        <div class="dce-sub">30% Adj: ${fmt(s.adj40)}</div>
         <div class="dce-sub">Exp (H): ${fmt(s.homeExpReal)}</div>
       </td>
       <td>
@@ -4994,6 +5383,76 @@ function renderDcEntriesTable() {
       </td>
     </tr>`;
   }).join('');
+
+  renderDcEntriesCards(pageRows);
+  renderDcPagination(totalPages, rows.length);
+}
+
+function renderDcPagination(totalPages, totalRows) {
+  const wrap = $('dce-pagination');
+  if (!wrap) return;
+  if (!totalRows || totalPages <= 1) {
+    wrap.innerHTML = totalRows ? `<span class="dce-page-count">${totalRows} entr${totalRows === 1 ? 'y' : 'ies'}</span>` : '';
+    return;
+  }
+  const start = (dcEntriesPage - 1) * DCE_PAGE_SIZE + 1;
+  const end = Math.min(dcEntriesPage * DCE_PAGE_SIZE, totalRows);
+  wrap.innerHTML = `
+    <span class="dce-page-count">Showing ${start}–${end} of ${totalRows}</span>
+    <div class="dce-page-buttons">
+      <button type="button" class="dce-page-btn" onclick="setDcEntriesPage(${dcEntriesPage - 1})" ${dcEntriesPage === 1 ? 'disabled' : ''} aria-label="Previous page"><i class="fa-solid fa-chevron-left"></i></button>
+      ${Array.from({length: totalPages}, (_, i) => i + 1).map(p =>
+        `<button type="button" class="dce-page-btn${p === dcEntriesPage ? ' on' : ''}" onclick="setDcEntriesPage(${p})">${p}</button>`
+      ).join('')}
+      <button type="button" class="dce-page-btn" onclick="setDcEntriesPage(${dcEntriesPage + 1})" ${dcEntriesPage === totalPages ? 'disabled' : ''} aria-label="Next page"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>`;
+}
+
+// Mobile card layout for Day Close records — same data as the table, shown instead of it on small screens
+function renderDcEntriesCards(rows) {
+  const wrap = $('dc-entries-cards');
+  if (!wrap) return;
+  const showDeleted = !!$('dce-show-deleted')?.checked;
+  if (!rows.length) {
+    wrap.innerHTML = `<div class="empty" style="padding:24px 10px;">${showDeleted ? 'No deleted entries this month' : 'No Day Close entries this month'}</div>`;
+    return;
+  }
+  wrap.innerHTML = rows.map(({ r, s }) => {
+    const del = !!r.deleted;
+    const profitCls = (r.sale||0) >= 0 ? 'dc-profit-pos' : 'dc-profit-neg';
+    return `<div class="dce-card ${profitCls}${del?' dc-deleted':''}" onclick="${del?'':`openDcDetail('${r.id}')`}">
+      <div class="dce-card-top">
+        <div>
+          <span class="dce-card-date">${fmtDateShort(r.date)}</span>
+          <span class="dce-card-shop" style="background:${shopColor(r.shopId)}22;color:${shopColor(r.shopId)};border:1px solid ${shopColor(r.shopId)}44;">${escHtml(r.shopName || shopName(r.shopId))}</span>
+        </div>
+        <span class="dce-card-sale" style="color:${(r.sale||0)>=0?'var(--good)':'var(--bad)'};">${fmtSigned(r.sale)}</span>
+      </div>
+      <div class="dce-card-grid">
+        <div><div class="k">Savings</div><div class="v" style="color:var(--good);">${fmt(s.cashSavings)} <span style="color:var(--accent2);">/ ${fmt(s.bankSavings)}</span></div></div>
+        <div><div class="k">Net Cash</div><div class="v" style="color:var(--warn);">${fmt(r.cashHome)}</div></div>
+        <div><div class="k">GPay</div><div class="v">${fmt(r.gpay)}</div></div>
+        <div><div class="k">Exp</div><div class="v" style="color:var(--bad);">${fmt(s.expTotalReal)}</div></div>
+        <div><div class="k">Out</div><div class="v" style="color:var(--bad);">${fmt(s.outTotal)}</div></div>
+        <div><div class="k">30% Adj</div><div class="v">${fmt(s.adj40)}</div></div>
+      </div>
+      <div class="dce-card-actions" onclick="event.stopPropagation();">
+        <button class="btn btn-good btn-xs" style="border-radius:50%;width:30px;height:30px;padding:0;justify-content:center;background:#25D366;border-color:#25D366;" onclick="shareDcDayReport('${r.id}')" title="Share on WhatsApp"><i class="fa-brands fa-whatsapp" style="font-size:14px;color:#fff;"></i></button>
+        ${del
+          ? `<button class="btn btn-good btn-xs" style="padding:4px 8px;" onclick="restoreDayClose('${r.id}')" title="Restore"><i class="fa-solid fa-rotate-left"></i></button>
+             <button class="btn btn-bad btn-xs" style="padding:4px 8px;" onclick="hardDeleteDayClose('${r.id}')" title="Permanently delete"><i class="fa-solid fa-xmark"></i></button>`
+          : `<button class="btn btn-ghost btn-xs" style="padding:4px 8px;" onclick="openDcDetail('${r.id}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
+             <button class="btn btn-bad btn-xs" style="padding:4px 8px;" onclick="deleteDayClose('${r.id}')" title="Delete"><i class="fa-solid fa-xmark"></i></button>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Jumps the Day Close records toolbar straight back to the current month
+function jumpDcEntriesToday() {
+  dcEntriesMonth = todayStr().slice(0, 7);
+  dcEntriesPage = 1;
+  renderDcEntriesTable();
 }
 
 // ─── WhatsApp share: single day row ───
@@ -5023,7 +5482,7 @@ function shareDcDayReport(id) {
 
   // Exclude 40% "Savings" set-asides from the itemised EXPENSES list — they appear under the
   // dedicated "Today's Savings" section, and are profit reserve, not spending.
-  const dayExps = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.shopId === r.shopId && e.date === r.date && !(e.desc || '').startsWith('Savings (40%'));
+  const dayExps = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.shopId === r.shopId && e.date === r.date && !(((e.desc || '').startsWith('Savings (')) || ((e.desc || '').startsWith('Staff/Bills Reserve ('))));
 
   // Till-date running totals for this shop, as of this record's date
   const priorRecords = STATE.dayClose.filter(x => !x.deleted && x.shopId === r.shopId && x.date <= r.date);
@@ -5055,8 +5514,8 @@ function shareDcDayReport(id) {
   if (s.gpExpReal > 0) msg += `*• GPay Exp : ${fmt(s.gpExpReal)}*\n`;
 
   msg += `\n*_Today's Savings_*\n`;
-  msg += `*_• Cash (40%) : ${fmt(s.cashSavings)}_*\n`;
-  msg += `*_• Bank (40%) : ${fmt(s.bankSavings)}_*\n`;
+  msg += `*_• Cash (30%) : ${fmt(s.cashSavings)}_*\n`;
+  msg += `*_• Bank (30%) : ${fmt(s.bankSavings)}_*\n`;
 
   msg += `\n${DIVIDER}\n`;
   msg += `*Till Date Summary (${shopDisplayName})*\n`;
@@ -5143,11 +5602,11 @@ function openDcDetail(id) {
     </div>
     <div style="margin-top:10px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;">
       <div style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:9px;padding:10px 12px;">
-        <div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Cash Savings (40%)</div>
+        <div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Cash Savings (30%)</div>
         <div class="mono" style="font-size:15px;font-weight:800;color:var(--good);">${fmt(s.cashSavings)}</div>
       </div>
       <div style="background:rgba(34,211,238,0.08);border:1px solid rgba(34,211,238,0.2);border-radius:9px;padding:10px 12px;">
-        <div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Bank Savings (40%)</div>
+        <div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Bank Savings (30%)</div>
         <div class="mono" style="font-size:15px;font-weight:800;color:var(--accent2);">${fmt(s.bankSavings)}</div>
       </div>
     </div>
@@ -5292,13 +5751,6 @@ function setUFilter(f) {
   renderUdhaari();
 }
 
-// ─── Avatar initials (used by pc-row lists on mobile) ───
-function pcInitials(name) {
-  const parts = (name || '').trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return '?';
-  return (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
-}
-
 // ─── Tap handler for pc-row accordion (mobile) / history modal (desktop) ───
 // On narrow screens the row toggles open to reveal progress + actions inline;
 // on wider screens there's already room so the whole row opens history directly.
@@ -5376,7 +5828,6 @@ function renderUdhaari() {
     const anyOverdue = g.entries.some(e => isOverdue(e));
     const sc = shopColor(g.shopId);
     return `<div class="pc-row${anyOverdue?' pc-overdue':''}${allSettled?' pc-settled':''}" onclick="pcRowClick(this,'udhaari','${escJsAttr(g.customer)}','${g.shopId}')">
-      <div class="pc-avatar" style="background:linear-gradient(135deg,${sc},${sc}88);box-shadow:0 2px 8px ${sc}33;">${pcInitials(g.customer)}</div>
       <div class="pc-main">
         <div class="pc-name">${escHtml(g.customer)}</div>
         <div class="pc-badges">
@@ -5658,7 +6109,6 @@ function renderOutflows() {
     const anyOverdue = g.entries.some(e => isOutflowOverdue(e));
     const sc = shopColor(g.shopId);
     return `<div class="pc-row${anyOverdue?' pc-overdue':''}${allPaid?' pc-settled':''}" onclick="pcRowClick(this,'outflow','${escJsAttr(g.payee)}','${g.shopId}')">
-      <div class="pc-avatar" style="background:linear-gradient(135deg,${sc},${sc}88);box-shadow:0 2px 8px ${sc}33;">${pcInitials(g.payee)}</div>
       <div class="pc-main">
         <div class="pc-name">${escHtml(g.payee)}</div>
         <div class="pc-badges">
@@ -6006,7 +6456,6 @@ function renderStaff() {
     const sc = '#22d3ee';
     const pct = Math.min(100, Math.round(paid / Math.max(1, s.salary||0) * 100));
     return `<div class="pc-row${isPaid?' pc-settled':''}" onclick="staffRowClick(this,'${s.id}')">
-      <div class="pc-avatar" style="background:linear-gradient(135deg,${sc},${sc}88);box-shadow:0 2px 8px ${sc}33;">${pcInitials(s.name)}</div>
       <div class="pc-main">
         <div class="pc-name">${escHtml(s.name)}${s.active===false?' <span style="color:var(--muted);font-weight:400;font-size:11px;">(Inactive)</span>':''}</div>
         <div class="pc-badges">
@@ -6512,7 +6961,6 @@ function renderLoans() {
     const linkedRem = STATE.reminders.find(r => (r.linkedLoanFrom||'').toLowerCase()===(g.from||'').toLowerCase() && r.linkedLoanShopId===g.shopId);
     const sc = shopColor(g.shopId);
     return `<div class="pc-row${allRepaid?' pc-settled':''}" onclick="pcRowClick(this,'loan','${escJsAttr(g.from)}','${g.shopId}')">
-      <div class="pc-avatar" style="background:linear-gradient(135deg,${sc},${sc}88);box-shadow:0 2px 8px ${sc}33;">${pcInitials(g.from)}</div>
       <div class="pc-main">
         <div class="pc-name">${escHtml(g.from)}</div>
         <div class="pc-badges">
@@ -6566,7 +7014,6 @@ function renderInvestors() {
       : daysLeft <= 30 ? `<span class="badge badge-amber">${daysLeft}d left</span>`
       : `<span class="badge badge-gray">${daysLeft}d left</span>`;
     return `<div class="pc-row${isPaid ? ' pc-settled' : ''}" onclick="openInvestorDetail('${inv.id}')">
-      <div class="pc-avatar" style="background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 2px 8px rgba(139,108,255,0.3);">${pcInitials(inv.name)}</div>
       <div class="pc-main">
         <div class="pc-name">${escHtml(inv.name)}</div>
         <div class="pc-badges">
@@ -6731,7 +7178,6 @@ function openInvestorDetail(id) {
   const reserves = [...(inv.reserves || [])].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
   $('investor-detail-body').innerHTML = `
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-      <div class="pc-avatar" style="background:linear-gradient(135deg,var(--accent),var(--accent2));width:38px;height:38px;">${pcInitials(inv.name)}</div>
       <div>
         <div style="font-size:15px;font-weight:700;">${escHtml(inv.name)}</div>
         <div style="font-size:11px;color:var(--muted);">${inv.phone ? escHtml(inv.phone) + ' · ' : ''}${inv.ratePct}%/yr · ${inv.tenureMonths}mo from ${fmtDate(inv.startDate)}</div>
@@ -7837,7 +8283,7 @@ function exportExcelReport() {
   ), 'Home Expenses');
 
   // Daily Expenses
-  const deRows = (STATE.dailyExpenses||[]).filter(e=>!e.deleted && !(e.desc || '').startsWith('Savings (40%')).map(e => [e.date, shopName(e.shopId), e.desc, DE_SOURCE_LABEL[e.source]||e.source, e.amount||0]);
+  const deRows = (STATE.dailyExpenses||[]).filter(e=>!e.deleted && !(((e.desc || '').startsWith('Savings (')) || ((e.desc || '').startsWith('Staff/Bills Reserve (')))).map(e => [e.date, shopName(e.shopId), e.desc, DE_SOURCE_LABEL[e.source]||e.source, e.amount||0]);
   if (deRows.length) XLSX.utils.book_append_sheet(wb, makeSheet(
     ['Date','Shop','Description','Source','Amount'],
     deRows, [12,14,20,10,12]
@@ -7982,7 +8428,7 @@ function exportPdfReport() {
   const totHc = STATE.shops.reduce((s,sh)=>s+shopHomeCash(sh.id), 0);
   const personalWallet = Math.max(0, totHc); // PERSONAL expenses are an outside source, not shop cash — not subtracted
   const pendLoanAmt = STATE.loans.filter(l=>l.status==='Pending').reduce((s,l)=>s+(l.amount-l.repaid),0);
-  const confirmedSavings = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.desc && e.desc.startsWith('Savings (40%')).reduce((s, e) => s + (e.amount || 0), 0);
+  const confirmedSavings = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.desc && e.desc.startsWith('Savings (')).reduce((s, e) => s + (e.amount || 0), 0);
   const netPos = personalWallet + totalOnlineGross + totalUd - totalLiab - pendLoanAmt + confirmedSavings;
 
   // Net Position highlight box
@@ -8370,7 +8816,7 @@ function exportPdfReport() {
   }
 
   // === DAILY EXPENSES ===
-  const deActive = (STATE.dailyExpenses||[]).filter(e=>!e.deleted && !(e.desc || '').startsWith('Savings (40%'));
+  const deActive = (STATE.dailyExpenses||[]).filter(e=>!e.deleted && !(((e.desc || '').startsWith('Savings (')) || ((e.desc || '').startsWith('Staff/Bills Reserve ('))));
   if (deActive.length) {
     sectionTitle('Daily Counter Expenses');
     const deBody = deActive.map(e => [
@@ -8459,9 +8905,9 @@ function buildDailySummary() {
   const pendLoanAmt = STATE.loans.filter(l=>l.status==='Pending').reduce((s,l)=>s+(l.amount-l.repaid),0);
   const totHc = STATE.shops.reduce((s,sh)=>s+shopHomeCash(sh.id), 0);
   const personalWallet = Math.max(0, totHc); // PERSONAL expenses are an outside source, not shop cash — not subtracted
-  const confirmedSavings = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.desc && e.desc.startsWith('Savings (40%')).reduce((s, e) => s + (e.amount || 0), 0);
-  const cashSavingsToday = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.date === today && e.desc && e.desc.startsWith('Savings (40%') && e.source === 'HOME').reduce((s, e) => s + (e.amount || 0), 0);
-  const bankSavingsToday = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.date === today && e.desc && e.desc.startsWith('Savings (40%') && e.source === 'GP').reduce((s, e) => s + (e.amount || 0), 0);
+  const confirmedSavings = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.desc && e.desc.startsWith('Savings (')).reduce((s, e) => s + (e.amount || 0), 0);
+  const cashSavingsToday = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.date === today && e.desc && e.desc.startsWith('Savings (') && e.source === 'HOME').reduce((s, e) => s + (e.amount || 0), 0);
+  const bankSavingsToday = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.date === today && e.desc && e.desc.startsWith('Savings (') && e.source === 'GP').reduce((s, e) => s + (e.amount || 0), 0);
   const netPos = personalWallet + totalOnlineGross + totalUd - totalLiab - pendLoanAmt + confirmedSavings;
 
   const nf = n => { const v = parseFloat(n)||0; return (v<0?'-':'') + '₹' + Math.abs(v).toLocaleString('en-IN'); };
@@ -8496,7 +8942,7 @@ function buildDailySummary() {
   msg += `* Bills pending: ${nf(totalLiab)}\n`;
   msg += `- Loans pending: ${nf(pendLoanAmt)}\n\n`;
   msg += `Net position: *${nf(netPos)}*\n`;
-  msg += `> Savings (40%) - C: ${nf(cashSavingsToday)}  || B: ${nf(bankSavingsToday)}\n`;
+  msg += `> Savings (30%) - C: ${nf(cashSavingsToday)}  || B: ${nf(bankSavingsToday)}\n`;
   msg += `-----------------\n`;
   msg += `_Sent from JMD Traders Software_`;
   return msg;
@@ -8522,7 +8968,7 @@ function buildShopDailySummary(shopId, dateStr) {
   if (dc) {
     const s = computeDcEntryStats(dc);
     // Exclude 40% "Savings" set-asides — shown separately under Savings, not as spending.
-    const dayExps = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.shopId===shopId && e.date===d && !(e.desc || '').startsWith('Savings (40%'));
+    const dayExps = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.shopId===shopId && e.date===d && !(((e.desc || '').startsWith('Savings (')) || ((e.desc || '').startsWith('Staff/Bills Reserve ('))));
 
     m += `*• Cash in Counter : ${fmt(dc.counterCash)}*\n`;
     m += `*• To Home : ${fmt(dc.cashHome)}*\n`;
@@ -8547,8 +8993,8 @@ function buildShopDailySummary(shopId, dateStr) {
     if (dc.note) m += `Note: ${dc.note}\n`;
 
     m += `\n*_Today's Savings_*\n`;
-    m += `*_• Cash (40%) : ${fmt(s.cashSavings)}_*\n`;
-    m += `*_• Bank (40%) : ${fmt(s.bankSavings)}_*\n`;
+    m += `*_• Cash (30%) : ${fmt(s.cashSavings)}_*\n`;
+    m += `*_• Bank (30%) : ${fmt(s.bankSavings)}_*\n`;
 
     // Till-date running totals for this shop, as of this record's date
     const priorRecords = STATE.dayClose.filter(x => !x.deleted && x.shopId===shopId && x.date <= d);
@@ -8778,12 +9224,192 @@ function renderHomeExpenseDonut() {
   }
 }
 
+// ─── Expense Search & Analytics (Day Close) ─────────────────────
+// Searches STATE.dailyExpenses (the itemized counter/home/GP expense entries logged
+// against Day Close) by description. With no search term, it groups ALL of them by
+// description text to surface top spend items at a glance; with a term (e.g. "Nariyal")
+// it totals just the matches and breaks them down by shop.
+let _expSearchRange = 'month'; // 'month' | 'all'
+let _expSearchChart = null;
+
+function openExpenseSearchModal() {
+  $('exp-search-input').value = '';
+  _expSearchRange = 'month';
+  $('exp-search-range-month').classList.add('on');
+  $('exp-search-range-all').classList.remove('on');
+  openModal('modal-expense-search');
+  renderExpenseSearchResults();
+  setTimeout(() => $('exp-search-input')?.focus(), 200);
+}
+
+function setExpenseSearchRange(range) {
+  _expSearchRange = range;
+  $('exp-search-range-month').classList.toggle('on', range === 'month');
+  $('exp-search-range-all').classList.toggle('on', range === 'all');
+  renderExpenseSearchResults();
+}
+
+const EXP_SEARCH_COLORS = ['#7c5cfc','#06b6d4','#f59e0b','#22c55e','#ef4444','#a855f7','#f472b6','#3b82f6','#8888a8'];
+
+// Filler/action words that show up around an item name in freehand expense notes —
+// stripped out so "Purchased Rakhi", "Rakhi Purchasing" and "Cartoon Rakhi" all fold
+// into one "Rakhi" bucket instead of the raw text being treated as three different items.
+const EXP_STOPWORDS = new Set([
+  'purchased','purchase','purchasing','bought','buying','buy','for','the','a','an','of','and','or','to','in','on','at','with','from',
+  'extra','new','old','item','items','stock','material','materials','pcs','pc','piece','pieces','pack','packet','packets','box','boxes',
+  'set','sets','qty','quantity','no','number','misc','miscellaneous','other','others','sample','samples','various','some','few','little',
+  'bit','small','big','large','worth','rs','rupees','total','payment','paid','cash','expense','expenses','cost','charge','charges','bill','bills',
+  'kharida','kharidi','kharide','liya','liye','li','ka','ki','ke','wala','wale','wali','naya','nayi','naye','purana','purani','purane'
+]);
+
+function _tokenizeExpenseDesc(desc) {
+  return (desc||'').toLowerCase().replace(/[^a-z0-9\u0900-\u097F\s]/g, ' ').split(/\s+/)
+    .filter(w => w && w.length > 1 && !EXP_STOPWORDS.has(w));
+}
+
+// Generic action/service words that attach to many different, unrelated items ("Printing
+// Paper" vs "Banner Printing" — Paper and Banner are the actual items, "printing" is just
+// what's being done to/with them). These are only used as the grouping key when nothing
+// more specific is available in that description — otherwise they'd wrongly pull unrelated
+// items together just because they share a common verb.
+const EXP_GENERIC_ACTION_WORDS = new Set([
+  'printing','print','prints','packing','pack','delivery','deliveries','service','servicing',
+  'repair','repairing','maintenance','labour','labor','cutting','stitching','fitting',
+  'installation','install','loading','unloading','transport','transportation','courier',
+  'freight','painting','polishing','cleaning','fixing','washing'
+]);
+
+// Groups a list of dailyExpenses entries by their core item, not their literal description
+// text. For each entry it prefers a specific/non-generic word shared often across the pool
+// (so "rakhi" wins over one-off words like "cartoon", and "paper"/"banner" stay distinct
+// from the generic "printing" that both happen to mention) and only falls back to a generic
+// action word as the key when the description has no more specific word left.
+function groupExpensesByCoreItem(pool) {
+  const tokenSets = pool.map(e => _tokenizeExpenseDesc(e.desc));
+  const freq = {};
+  tokenSets.forEach(tokens => { new Set(tokens).forEach(w => { freq[w] = (freq[w]||0) + 1; }); });
+
+  const groups = {};
+  pool.forEach((e, i) => {
+    const tokens = tokenSets[i];
+    const specific = tokens.filter(w => !EXP_GENERIC_ACTION_WORDS.has(w));
+    const candidates = specific.length ? specific : tokens;
+    const key = candidates.length
+      ? candidates.slice().sort((a,b) => (freq[b]-freq[a]) || (a.length-b.length))[0]
+      : ((e.desc||'other').trim().toLowerCase() || 'other');
+    const label = key.charAt(0).toUpperCase() + key.slice(1);
+    if (!groups[key]) groups[key] = { label, amount:0, count:0, items:[] };
+    groups[key].amount += (e.amount||0);
+    groups[key].count += 1;
+    groups[key].items.push(e.desc || '');
+  });
+  return Object.values(groups).sort((a,b) => b.amount - a.amount);
+}
+
+function renderExpenseSearchResults() {
+  const q = ($('exp-search-input').value || '').trim().toLowerCase();
+  const ym = todayStr().slice(0,7);
+  let pool = (STATE.dailyExpenses || []).filter(e => !e.deleted && !((e.desc||'').startsWith('Savings (') || (e.desc||'').startsWith('Staff/Bills Reserve (')));
+  if (_expSearchRange === 'month') pool = pool.filter(e => (e.date||'').startsWith(ym));
+
+  const resultsEl = $('exp-search-results');
+  if (_expSearchChart) { _expSearchChart.destroy(); _expSearchChart = null; }
+  const periodLabel = _expSearchRange === 'month' ? 'This Month' : 'All Time';
+
+  if (q) {
+    const matches = pool.filter(e => (e.desc||'').toLowerCase().includes(q));
+    if (!matches.length) {
+      resultsEl.innerHTML = `<div class="empty" style="padding:24px 10px;"><div class="empty-icon"><i class="fa-solid fa-magnifying-glass"></i></div>No expenses found matching "${escHtml(q)}" (${periodLabel})</div>`;
+      return;
+    }
+    const total = matches.reduce((s,e)=>s+(e.amount||0),0);
+    const byShop = {};
+    matches.forEach(e => {
+      const sh = (STATE.shops||[]).find(s=>s.id===e.shopId);
+      const key = e.shopId || 'unknown';
+      if (!byShop[key]) byShop[key] = { name: sh ? sh.name : (e.shopId||'Unknown'), amount:0 };
+      byShop[key].amount += (e.amount||0);
+    });
+    const shopEntries = Object.values(byShop).sort((a,b)=>b.amount-a.amount);
+
+    resultsEl.innerHTML = `
+      <div style="text-align:center;margin-bottom:14px;">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;">Total spent on "${escHtml(q)}"</div>
+        <div style="font-size:26px;font-weight:800;color:var(--bad);margin-top:4px;">${fmt(total)}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">${matches.length} transaction${matches.length!==1?'s':''} · ${periodLabel}</div>
+      </div>
+      <div style="position:relative;height:180px;margin-bottom:14px;"><canvas id="exp-search-chart"></canvas></div>
+      <div style="font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;color:var(--accent2);margin-bottom:6px;">Recent Transactions</div>
+      <div>${matches.slice(0,15).map(e => {
+        const sh = (STATE.shops||[]).find(s=>s.id===e.shopId);
+        return `<div style="display:flex;justify-content:space-between;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:5px;font-size:12px;">
+          <div><div style="font-weight:700;">${escHtml(e.desc||'')}</div><div style="font-size:10.5px;color:var(--muted);">${escHtml(fmtDateShort(e.date))} · ${escHtml(sh?sh.name:'')}</div></div>
+          <div class="mono" style="font-weight:700;color:var(--bad);">${fmt(e.amount)}</div>
+        </div>`;
+      }).join('')}</div>`;
+
+    setTimeout(() => {
+      const canvas = $('exp-search-chart'); if (!canvas || typeof Chart === 'undefined') return;
+      _expSearchChart = new Chart(canvas, {
+        type: 'doughnut',
+        data: { labels: shopEntries.map(s=>s.name), datasets: [{ data: shopEntries.map(s=>s.amount), backgroundColor: EXP_SEARCH_COLORS, borderColor:'#13131a', borderWidth:2, hoverOffset:6 }] },
+        options: { responsive:true, maintainAspectRatio:false, cutout:'62%',
+          plugins: { legend: { position:'right', labels:{ color:'#8888a8', font:{size:11,family:'Inter'}, boxWidth:10, padding:8 } },
+            tooltip: { callbacks: { label: ctx => { const v=ctx.parsed; const pct = total?Math.round(v/total*100):0; return `${ctx.label}: ₹${v.toLocaleString('en-IN')} (${pct}%)`; } } } }
+        }
+      });
+    }, 30);
+  } else {
+    if (!pool.length) {
+      resultsEl.innerHTML = `<div class="empty" style="padding:24px 10px;"><div class="empty-icon"><i class="fa-solid fa-chart-pie"></i></div>No expenses recorded ${_expSearchRange==='month'?'this month':'yet'}</div>`;
+      return;
+    }
+    const grouped = groupExpensesByCoreItem(pool);
+    const total = grouped.reduce((s,g)=>s+g.amount,0);
+    const top = grouped.slice(0,8);
+
+    resultsEl.innerHTML = `
+      <div style="text-align:center;margin-bottom:14px;">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;">Total Expenses · ${periodLabel}</div>
+        <div style="font-size:26px;font-weight:800;color:var(--bad);margin-top:4px;">${fmt(total)}</div>
+      </div>
+      <div style="position:relative;height:200px;margin-bottom:14px;"><canvas id="exp-search-chart"></canvas></div>
+      <div style="font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;color:var(--accent2);margin-bottom:6px;">Top Items <span style="text-transform:none;font-weight:500;color:var(--muted);">(tap to see what's grouped in)</span></div>
+      <div>${top.map((g,i) => {
+        const pct = total ? Math.round(g.amount/total*100) : 0;
+        const uniqueItems = [...new Set(g.items)];
+        return `<div>
+          <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(35,35,52,0.5);cursor:pointer;">
+            <span style="width:10px;height:10px;border-radius:50%;background:${EXP_SEARCH_COLORS[i%EXP_SEARCH_COLORS.length]};flex-shrink:0;"></span>
+            <span style="font-size:12.5px;font-weight:600;flex:1;">${escHtml(g.label)} <span style="color:var(--muted);font-weight:400;">(${g.count})</span></span>
+            <span class="mono" style="font-size:12px;color:var(--bad);">${fmt(g.amount)}</span>
+            <span class="badge badge-gray" style="padding:1px 6px;min-width:36px;text-align:center;">${pct}%</span>
+          </div>
+          <div style="display:none;padding:6px 0 8px 18px;font-size:11px;color:var(--muted);">${uniqueItems.map(it=>`• ${escHtml(it)}`).join('<br>')}</div>
+        </div>`;
+      }).join('')}</div>`;
+
+    setTimeout(() => {
+      const canvas = $('exp-search-chart'); if (!canvas || typeof Chart === 'undefined') return;
+      _expSearchChart = new Chart(canvas, {
+        type: 'doughnut',
+        data: { labels: top.map(g=>g.label), datasets: [{ data: top.map(g=>g.amount), backgroundColor: EXP_SEARCH_COLORS, borderColor:'#13131a', borderWidth:2, hoverOffset:6 }] },
+        options: { responsive:true, maintainAspectRatio:false, cutout:'62%',
+          plugins: { legend: { position:'right', labels:{ color:'#8888a8', font:{size:11,family:'Inter'}, boxWidth:10, padding:8 } },
+            tooltip: { callbacks: { label: ctx => { const v=ctx.parsed; const pct = total?Math.round(v/total*100):0; return `${ctx.label}: ₹${v.toLocaleString('en-IN')} (${pct}%)`; } } } }
+        }
+      });
+    }, 30);
+  }
+}
+
 // ─── Reminders (Fixed Payments) ─────────────────────────────────
 const REM_CAT_COLORS = {
   EMI:'#7c5cfc', Rent:'#f97316', Electricity:'#f59e0b', Maintenance:'#06b6d4',
   Subscription:'#a855f7', Insurance:'#3b82f6', Loan:'#ef4444',
   Grocery:'#22c55e', Fuel:'#f472b6', Misc:'#8888a8'
 };
+
 
 function daysUntil(dateStr) {
   if (!dateStr) return null;
@@ -9287,6 +9913,8 @@ function openFestivalModal(id) {
   $('fest-name').value = FEST_TEMP.name || '';
   $('fest-date').value = FEST_TEMP.date || '';
   $('fest-delete-btn').style.display = existing ? 'block' : 'none';
+  $('fest-sales-report-wrap').style.display = 'none';
+  $('fest-sales-report-wrap').innerHTML = '';
   renderFestivalModalBody();
   openModal('modal-festival');
 }
@@ -9451,6 +10079,81 @@ function deleteFestival(id) {
       toast('Festival deleted');
     }
   });
+}
+
+// ─── Last Year's Sales Report (inside the Festival modal) ──────────────────
+// Hindu festivals shift every year (lunar/tithi based), so we can't know last
+// year's exact date automatically — instead we suggest a sensible starting
+// window (the week leading up to ~365 days before this year's date) and let
+// the shopkeeper nudge the From/To dates to match what actually happened,
+// then pull real Day Close numbers for that window to help plan this year's stock.
+function toggleFestivalSalesReport() {
+  const wrap = $('fest-sales-report-wrap');
+  const willShow = wrap.style.display === 'none';
+  wrap.style.display = willShow ? 'block' : 'none';
+  if (willShow) renderFestivalSalesReportUI();
+}
+
+function renderFestivalSalesReportUI() {
+  const wrap = $('fest-sales-report-wrap');
+  const date = FEST_TEMP.date;
+  let toDefault = '', fromDefault = '';
+  if (date) {
+    toDefault = addDaysToDate(date, -365);
+    fromDefault = addDaysToDate(toDefault, -6);
+  }
+  wrap.innerHTML = `
+    <div class="card" style="padding:12px 14px;">
+      <div style="font-size:10.5px;color:var(--muted);margin-bottom:10px;">Festival dates shift every year, so this is a suggested window — adjust the dates below to match when the festival actually fell last year, then generate.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+        <div class="fg" style="margin-bottom:0;"><div class="lbl">From</div><input class="inp" id="fest-sales-from" type="date" value="${fromDefault}"></div>
+        <div class="fg" style="margin-bottom:0;"><div class="lbl">To</div><input class="inp" id="fest-sales-to" type="date" value="${toDefault}"></div>
+      </div>
+      <button class="btn btn-primary btn-sm" style="width:100%;" onclick="generateFestivalSalesReport()"><i class="fa-solid fa-magnifying-glass-chart"></i> Generate Report</button>
+      <div id="fest-sales-report-result" style="margin-top:12px;"></div>
+    </div>`;
+}
+
+function generateFestivalSalesReport() {
+  const from = $('fest-sales-from').value, to = $('fest-sales-to').value;
+  const resultEl = $('fest-sales-report-result');
+  if (!from || !to || from > to) { toast('Pick a valid From/To range', 'error'); return; }
+
+  const recs = (STATE.dayClose||[]).filter(r => !r.deleted && r.date >= from && r.date <= to);
+  if (!recs.length) {
+    resultEl.innerHTML = `<div class="empty" style="padding:16px 10px;"><div class="empty-icon"><i class="fa-solid fa-chart-column"></i></div>No Day Close data found for this range yet.</div>`;
+    return;
+  }
+
+  let totalSale = 0, totalProfit = 0;
+  const byShop = {};
+  recs.forEach(dc => {
+    const sh = (STATE.shops||[]).find(s => s.id === dc.shopId);
+    const profit = dc.profit != null ? dc.profit : (dc.shopId === 'SHOP04' ? ((dc.cashHome||0)+(dc.gpay||0)) : Math.round(((dc.cashHome||0)+(dc.gpay||0))*((sh&&sh.profitPct)||40)/100));
+    totalSale += (dc.sale||0);
+    totalProfit += profit;
+    const key = dc.shopId || 'unknown';
+    if (!byShop[key]) byShop[key] = { name: sh ? sh.name : dc.shopName || key, sale:0, profit:0 };
+    byShop[key].sale += (dc.sale||0);
+    byShop[key].profit += profit;
+  });
+  const dayCount = new Set(recs.map(r=>r.date)).size;
+  const shopRows = Object.values(byShop).sort((a,b)=>b.sale-a.sale);
+
+  resultEl.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+      <div class="card" style="padding:10px 12px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;">Total Sale</div><div style="font-size:16px;font-weight:800;margin-top:3px;">${fmt(totalSale)}</div></div>
+      <div class="card" style="padding:10px 12px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;">Total Profit</div><div style="font-size:16px;font-weight:800;margin-top:3px;color:var(--good);">${fmt(totalProfit)}</div></div>
+      <div class="card" style="padding:10px 12px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;">Days Covered</div><div style="font-size:16px;font-weight:800;margin-top:3px;">${dayCount}</div></div>
+      <div class="card" style="padding:10px 12px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;">Avg Daily Sale</div><div style="font-size:16px;font-weight:800;margin-top:3px;">${fmt(Math.round(totalSale/(dayCount||1)))}</div></div>
+    </div>
+    <div style="font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;color:var(--accent2);margin-bottom:6px;">Per Shop</div>
+    ${shopRows.map(s => `
+      <div style="display:flex;justify-content:space-between;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 10px;margin-bottom:5px;font-size:12px;">
+        <span style="font-weight:700;">${escHtml(s.name)}</span>
+        <span>${fmt(s.sale)} sale · <span style="color:var(--good);">${fmt(s.profit)} profit</span></span>
+      </div>`).join('')}
+  `;
 }
 
 // ─── Audit ───────────────────────────────────────────────────────
@@ -9654,6 +10357,11 @@ function updateSyncUI() {
   const url = effectiveSheetUrl();
   updateLastSyncUI();
   if(!url){ dot.className='sync-dot'; dot.style.background='#444460'; lbl.textContent='No Sheet'; return; }
+  if (_dayCloseSyncPaused || $('tab-dayclose')?.classList.contains('active')) {
+    dot.className='sync-dot syncing';
+    lbl.textContent='Day Close — Sync paused';
+    return;
+  }
   dot.className='sync-dot'; dot.style.background='var(--good)';
   lbl.textContent = INBUILT_SHEET_URL ? 'Team Sync' : 'Connected';
 }
@@ -9695,20 +10403,45 @@ async function pullFromSheet(opts) {
   const silent = !!(opts && opts.silent);
   const url = effectiveSheetUrl();
   if(!url) { _sheetSyncReady = true; return; }
+  // Never apply a remote snapshot while Day Close is open. Applying it calls
+  // initDcForms()/renderAll(), which would replace the user's unsaved inputs.
+  if (_dayCloseSyncPaused || $('tab-dayclose')?.classList.contains('active')) {
+    updateSyncUI();
+    return;
+  }
   const hadPendingEdits = !_sheetSyncReady; // a push was waiting on this exact pull
   try {
     const res=await fetch(url+'?action=load');
     const json=await res.json();
     if(json&&json.data){
-      Object.assign(STATE,json.data);
-      // Bug 7 fix: run migration on pulled data to ensure all required fields exist
-      migrateState(STATE);
-      if (INBUILT_SHEET_URL) STATE.sheetUrl = INBUILT_SHEET_URL; // preserve override
-      markSyncedNow();
-      localStorage.setItem('jmd_state',JSON.stringify(STATE));
-      initDcForms(); initReportControls(); updateLockUi(); renderAll();
-      checkDueAlerts();
-      if (!silent) toast('Latest data loaded from Sheet','info');
+      // Bug fix: the old code applied the pulled data (and re-rendered the forms)
+      // as soon as the fetch resolved, with no check at that point. _userIsTyping()
+      // was only checked *before* starting the fetch, but fetch itself takes a
+      // second or two — plenty of time for someone to start typing into Day Close
+      // in between. When that happened, the response would land mid-edit and
+      // initDcForms()/renderAll() would wipe whatever they'd just written. Now we
+      // re-check focus right before applying, and if the user is typing we retry
+      // shortly after instead of clobbering (or silently dropping) the update.
+      const applyPull = () => {
+        Object.assign(STATE,json.data);
+        // Bug 7 fix: run migration on pulled data to ensure all required fields exist
+        migrateState(STATE);
+        if (INBUILT_SHEET_URL) STATE.sheetUrl = INBUILT_SHEET_URL; // preserve override
+        markSyncedNow();
+        localStorage.setItem('jmd_state',JSON.stringify(STATE));
+        initDcForms(); initReportControls(); updateLockUi(); renderAll();
+        checkDueAlerts();
+        if (!silent) toast('Latest data loaded from Sheet','info');
+      };
+      if (_userIsTyping()) {
+        const retryApply = () => {
+          if (_userIsTyping()) { setTimeout(retryApply, 2000); return; }
+          applyPull();
+        };
+        setTimeout(retryApply, 2000);
+      } else {
+        applyPull();
+      }
     }
     _sheetSyncReady = true; // we've successfully confirmed what's on the Sheet — safe to push now
     if (hadPendingEdits) pushToSheet(); // retry the push that was held back, now against confirmed data
@@ -9716,6 +10449,10 @@ async function pullFromSheet(opts) {
   updateSyncUI();
 }
 function manualSync() {
+  if (_dayCloseSyncPaused || $('tab-dayclose')?.classList.contains('active')) {
+    toast('Sync paused while Day Close is open. Submit your entry and leave this tab to sync.', 'info');
+    return;
+  }
   const icon=$('sync-icon');
   icon.style.animation='spin 0.8s linear infinite';
   if(!document.getElementById('_spin')){ const s=document.createElement('style'); s.id='_spin'; s.textContent='@keyframes spin{to{transform:rotate(360deg)}}'; document.head.appendChild(s); }
@@ -9898,12 +10635,6 @@ function installPWA() {
 }
 </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
 <!-- ═══════════ PAGE TRANSITION (retail ⇄ wholesale) ═══════════ -->
 <style>
 #page-veil{
@@ -9941,6 +10672,243 @@ body.page-enter #bnav{animation:navIn .34s cubic-bezier(.4,0,.2,1) both;}
   #page-veil,#page-veil .pv-box{transition:none;}
   #page-veil .pv-ico{animation:none;}
   body.page-enter #main, body.page-enter #bnav{animation:none;}
+}
+
+/* Dashboard usability pass */
+.dashboard-quick-actions {
+  margin: 0 0 12px;
+  padding: 14px 16px 16px;
+  border: 1px solid rgba(139,108,255,0.18);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(139,108,255,0.08), rgba(34,211,238,0.025) 55%, rgba(16,16,30,0.72));
+  box-shadow: 0 5px 24px rgba(0,0,0,0.16);
+}
+.quick-actions-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:11px; }
+.quick-actions-title { color:var(--jtext); font-size:12px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; }
+.quick-actions-title i { color:var(--warn); margin-right:6px; }
+.quick-actions-sub { color:var(--muted); font-size:10.5px; margin-top:2px; }
+.quick-actions-hint { color:var(--accent2); font-size:9px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+.quick-actions-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.quick-action {
+  min-width:0; display:flex; align-items:center; gap:9px; text-align:left;
+  padding:10px 11px; border:1px solid var(--line); border-radius:10px;
+  color:var(--jtext); background:rgba(255,255,255,.025);
+  font-family:'Inter',sans-serif; transition:transform .18s, border-color .18s, background .18s;
+}
+.quick-action:hover { transform:translateY(-2px); border-color:var(--line-hover); background:rgba(139,108,255,.09); }
+.quick-action:focus-visible { outline:2px solid var(--accent2); outline-offset:2px; }
+.quick-action .qa-icon { width:30px; height:30px; flex:0 0 30px; display:flex; align-items:center; justify-content:center; border-radius:8px; color:#fff; font-size:12px; }
+.qa-primary .qa-icon { background:linear-gradient(135deg,#8b6cff,#6d4de8); }
+.qa-credit .qa-icon { background:linear-gradient(135deg,#f87171,#dc2626); }
+.qa-expense .qa-icon { background:linear-gradient(135deg,#fbbf24,#d97706); }
+.qa-transfer .qa-icon { background:linear-gradient(135deg,#22d3ee,#0e7490); }
+.quick-action strong { display:block; font-size:11.5px; line-height:1.2; }
+.quick-action small { display:block; color:var(--muted); font-size:9.5px; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.qa-arrow { margin-left:auto; color:var(--muted); font-size:9px; transition:transform .18s, color .18s; }
+.quick-action:hover .qa-arrow { color:var(--accent2); transform:translateX(2px); }
+.dashboard-attention-strip {
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  margin:0 0 18px; padding:9px 12px;
+  border:1px solid rgba(251,191,36,.18); border-left:3px solid var(--warn);
+  border-radius:9px; background:rgba(251,191,36,.045);
+}
+.attention-copy { display:flex; align-items:center; gap:9px; min-width:0; }
+.attention-icon { color:var(--warn); font-size:15px; }
+.attention-copy strong { display:block; color:var(--jtext); font-size:11px; }
+.attention-copy small { display:block; color:var(--muted); font-size:10px; margin-top:1px; }
+.dashboard-attention-strip .btn { flex-shrink:0; }
+/* Improve readability of dense metadata without changing the visual language. */
+.nw-bd-item .k, .st-label, .ms-tile-label, .section-hd h2 { color:#9696b8; }
+@media(max-width:900px) {
+  .quick-actions-grid { grid-template-columns:repeat(2,1fr); }
+}
+@media(max-width:640px) {
+  .dashboard-quick-actions { padding:12px; border-radius:12px; }
+  .quick-actions-grid { gap:7px; }
+  .quick-action { padding:9px; gap:7px; }
+  .quick-action .qa-icon { width:28px; height:28px; flex-basis:28px; }
+  .quick-action strong { font-size:11px; }
+  .quick-action small { font-size:9px; }
+  .quick-actions-hint { display:none; }
+  .dashboard-attention-strip { align-items:flex-start; padding:10px; }
+  .dashboard-attention-strip .btn { padding:5px 7px; font-size:10px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .quick-action, .qa-arrow { transition:none; }
+}
+
+/* Day Close Records — larger, cleaner history panel */
+#dc-entries-view {
+  padding: 16px;
+  margin-top: 10px;
+  border: 1px solid rgba(139,108,255,0.16);
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, rgba(139,108,255,0.055), transparent 42%),
+    linear-gradient(180deg, rgba(16,16,30,0.78), rgba(10,10,22,0.62));
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.035);
+}
+#dc-entries-view .dce-toolbar {
+  padding-bottom: 13px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid rgba(130,110,255,0.12);
+}
+#dc-entries-view .dce-toolbar .inp {
+  min-height: 34px;
+}
+.dce-shop-filters {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  flex: 1 1 auto;
+}
+.dce-shop-filter {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 11px;
+  background: rgba(255,255,255,.025);
+  color: var(--muted);
+  font: 600 11px/1 'Inter', sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+.dce-shop-filter:hover {
+  color: var(--jtext);
+  border-color: var(--line-hover);
+  background: rgba(139,108,255,.08);
+}
+.dce-shop-filter.on {
+  color: #fff;
+  border-color: rgba(139,108,255,.42);
+  background: linear-gradient(135deg, rgba(139,108,255,.25), rgba(34,211,238,.08));
+  box-shadow: 0 2px 10px rgba(139,108,255,.12);
+}
+#dc-entries-view .dce-month-nav,
+#dc-entries-view .dce-today-btn {
+  min-height: 34px;
+}
+.dc-entries-wrap {
+  border-color: rgba(139,108,255,0.18);
+  border-radius: 12px;
+  background: rgba(6,6,12,0.24);
+}
+.dc-entries-table {
+  font-size: 12.5px;
+}
+.dc-entries-table th {
+  padding: 12px 14px;
+  background: rgba(139,108,255,0.075);
+  color: #a4a4c4;
+}
+.dc-entries-table td {
+  padding: 12px 14px;
+}
+.dc-entries-table tbody tr:hover {
+  background: rgba(139,108,255,0.09);
+}
+.dce-card {
+  padding: 10px 12px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, rgba(139,108,255,0.06), rgba(16,16,30,0.8));
+}
+.dce-card-top { margin-bottom: 6px; }
+.dce-card-date { font-size: 12px; }
+.dce-card-sale { font-size: 14px; }
+.dce-card-grid { gap: 6px; margin-bottom: 6px; }
+.dce-card-grid .k { font-size: 8.5px; }
+.dce-card-grid .v { font-size: 11.5px; }
+.dce-card-actions { padding-top: 6px; }
+.dce-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 13px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(130,110,255,.12);
+}
+.dce-page-count {
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 600;
+}
+.dce-page-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.dce-page-btn {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 7px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: rgba(255,255,255,.025);
+  color: var(--muted);
+  font: 700 10.5px/1 'Inter', sans-serif;
+  cursor: pointer;
+}
+.dce-page-btn:hover:not(:disabled) {
+  color: var(--jtext);
+  border-color: var(--accent);
+  background: rgba(139,108,255,.1);
+}
+.dce-page-btn.on {
+  color: #fff;
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: 0 2px 9px rgba(139,108,255,.25);
+}
+.dce-page-btn:disabled {
+  opacity: .3;
+  cursor: not-allowed;
+}
+@media(max-width:640px) {
+  #dc-entries-view {
+    padding: 12px;
+    margin-top: 8px;
+    border-radius: 14px;
+  }
+  #dc-entries-view .dce-toolbar {
+    gap: 7px;
+    padding-bottom: 11px;
+    margin-bottom: 11px;
+  }
+  #dc-entries-view .dce-toolbar .inp {
+    flex-basis: 100%;
+    min-width: 0;
+  }
+  .dce-shop-filters {
+    order: 2;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .dce-shop-filter {
+    padding: 8px 5px;
+    font-size: 10px;
+  }
+  .dce-month-nav,
+  .dce-today-btn,
+  .dce-toolbar > label,
+  .dce-send-btn {
+    order: 3;
+  }
+  .dce-pagination {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .dce-page-buttons {
+    width: 100%;
+    justify-content: center;
+  }
+  .dce-card {
+    padding: 10px 12px;
+  }
 }
 </style>
 <div id="page-veil">
@@ -9980,8 +10948,5 @@ function navigateTo(ev, url, label, icon){
   });
 })();
 </script>
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
 </body>
 </html>
