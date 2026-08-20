@@ -485,6 +485,11 @@ select:focus {
 .search-row .inp { max-width: 320px; }
 .search-row select.inp { max-width: 180px; }
 .search-row .btn { white-space: nowrap; }
+/* The visible dropdown is actually .csel-wrap (custom-select trigger), not
+   the underlying <select> — the select becomes invisible/out-of-flow once
+   enhanceSelect() runs, so width rules must target the wrap or they're
+   silently ignored. flex:0 1 auto stops it defaulting to its 100% width. */
+.search-row .csel-wrap { flex: 0 1 auto; }
 
 /* ============ TOAST ============ */
 #toast-container {
@@ -697,6 +702,99 @@ select:focus {
   .quick-chips { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
 }
 
+/* ============ ORDER MOBILE CARDS (redesigned) ============ */
+#order-mob-cards .mob-card-item {
+  padding: 11px 12px; margin-bottom: 7px; border-radius: 12px;
+  background: linear-gradient(160deg, rgba(255,255,255,0.025), rgba(255,255,255,0) 60%), var(--panel);
+}
+#order-mob-cards .mob-card-item::before { width: 3px; }
+#order-mob-cards .ord-check-abs { position: absolute; top: 10px; right: 10px; z-index: 2; }
+#order-mob-cards .ord-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; padding-right: 22px; }
+#order-mob-cards .ord-card-no { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 0.03em; }
+#order-mob-cards .ord-card-cust { font-size: 13.5px; font-weight: 700; margin-top: 2px; line-height: 1.2; }
+#order-mob-cards .ord-card-date { font-size: 9.5px; color: var(--muted); margin-top: 2px; }
+#order-mob-cards .ord-card-amt { text-align: right; flex-shrink: 0; }
+#order-mob-cards .ord-card-amt .amt-label { font-size: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+#order-mob-cards .ord-card-amt .amt-val { font-size: 16px; font-weight: 800; margin-top: 1px; }
+#order-mob-cards .ord-card-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 7px; }
+#order-mob-cards .ord-card-badges .badge { font-size: 9px; padding: 2px 7px; }
+#order-mob-cards .ord-card-meta {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 7px; padding-top: 7px; border-top: 1px dashed var(--line); font-size: 10.5px; color: var(--muted);
+}
+#order-mob-cards .ord-status-pill { font-size: 10px; font-weight: 700; padding: 2px 9px; border-radius: 20px; }
+#order-mob-cards .ord-status-pill.due { background: rgba(248,113,113,0.12); color: var(--bad); }
+#order-mob-cards .ord-status-pill.cleared { background: rgba(52,211,153,0.12); color: var(--good); }
+#order-mob-cards .ord-card-actions-primary { display: flex; gap: 6px; margin-top: 8px; }
+#order-mob-cards .ord-card-actions-primary .btn { flex: 1; min-height: 30px; font-size: 11px; border-radius: 8px; padding: 6px 8px; }
+#order-mob-cards .ord-card-actions-secondary { display: flex; gap: 5px; margin-top: 6px; justify-content: flex-end; }
+#order-mob-cards .ord-icon-btn {
+  width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--line); color: var(--muted);
+  transition: all 0.15s; font-size: 11px;
+}
+#order-mob-cards .ord-icon-btn:active { transform: scale(0.92); background: rgba(139,108,255,0.12); color: var(--accent); border-color: rgba(139,108,255,0.3); }
+#order-mob-cards .ord-icon-btn.danger:active { background: rgba(248,113,113,0.15); color: var(--bad); border-color: rgba(248,113,113,0.3); }
+
+/* ============ SHARED PREMIUM CARD STYLE (Customers / Payments / Purchases / Ledger / Expenses / Suppliers) ============ */
+#cust-mob-cards .mob-card-item, #pay-mob-cards .mob-card-item, #pur-mob-cards .mob-card-item,
+#led-mob-cards .mob-card-item, #exp-mob-cards .mob-card-item, #sup-mob-cards .mob-card-item {
+  padding: 11px 12px; margin-bottom: 7px; border-radius: 12px;
+  background: linear-gradient(160deg, rgba(255,255,255,0.025), rgba(255,255,255,0) 60%), var(--panel);
+  transition: border-color 0.2s, transform 0.15s;
+}
+#cust-mob-cards .mob-card-item::before, #pay-mob-cards .mob-card-item::before, #pur-mob-cards .mob-card-item::before,
+#led-mob-cards .mob-card-item::before, #exp-mob-cards .mob-card-item::before, #sup-mob-cards .mob-card-item::before { width: 3px; }
+#cust-mob-cards .mob-card-item:active, #pay-mob-cards .mob-card-item:active, #pur-mob-cards .mob-card-item:active,
+#led-mob-cards .mob-card-item:active, #exp-mob-cards .mob-card-item:active, #sup-mob-cards .mob-card-item:active { transform: scale(0.99); }
+.pc-head { display: flex; align-items: flex-start; gap: 9px; }
+.pc-avatar {
+  width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; color: #fff;
+  background: linear-gradient(135deg, var(--accent), #6d5adf);
+  box-shadow: 0 3px 10px rgba(139,108,255,0.28);
+  transition: transform 0.15s;
+}
+.mob-card-item:active .pc-avatar { transform: scale(0.94); }
+.pc-avatar.amber { background: linear-gradient(135deg, #fbbf24, #d97706); box-shadow: 0 3px 10px rgba(251,191,36,0.25); }
+.pc-avatar.cyan { background: linear-gradient(135deg, #22d3ee, #0891b2); box-shadow: 0 3px 10px rgba(34,211,238,0.25); }
+.pc-avatar.good { background: linear-gradient(135deg, #34d399, #059669); box-shadow: 0 3px 10px rgba(52,211,153,0.25); }
+.pc-identity { flex: 1; min-width: 0; }
+.pc-title { font-size: 13.5px; font-weight: 700; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pc-sub { font-size: 10px; color: var(--muted); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pc-amt { text-align: right; flex-shrink: 0; }
+.pc-amt .amt-label { font-size: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.pc-amt .amt-val { font-size: 15px; font-weight: 800; margin-top: 1px; }
+.pc-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 7px; margin-left: 43px; }
+.pc-badges .badge { font-size: 9px; padding: 2px 7px; }
+.pc-note { font-size: 10.5px; color: var(--muted); font-style: italic; margin-top: 6px; margin-left: 43px; }
+.pc-meta {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 7px; padding-top: 7px; border-top: 1px dashed var(--line); font-size: 10.5px; color: var(--muted);
+}
+.pc-pill { font-size: 10px; font-weight: 700; padding: 2px 9px; border-radius: 20px; }
+.pc-pill.due { background: rgba(248,113,113,0.12); color: var(--bad); }
+.pc-pill.cleared { background: rgba(52,211,153,0.12); color: var(--good); }
+.pc-pill.warn { background: rgba(251,191,36,0.12); color: var(--warn); }
+.pc-actions-primary { display: flex; gap: 6px; margin-top: 8px; }
+.pc-actions-primary .btn { flex: 1; min-height: 30px; font-size: 11px; border-radius: 8px; padding: 6px 8px; }
+.pc-actions-secondary { display: flex; gap: 5px; margin-top: 6px; justify-content: flex-end; flex-wrap: wrap; }
+.pc-icon-btn {
+  width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--line); color: var(--muted);
+  transition: all 0.15s; font-size: 11px; flex-shrink: 0;
+}
+.pc-icon-btn:hover { color: var(--accent); border-color: rgba(139,108,255,0.3); background: rgba(139,108,255,0.08); }
+.pc-icon-btn:active { transform: scale(0.9); background: rgba(139,108,255,0.12); color: var(--accent); border-color: rgba(139,108,255,0.3); }
+.pc-icon-btn.good:hover { color: var(--good); border-color: rgba(52,211,153,0.3); background: rgba(52,211,153,0.08); }
+.pc-icon-btn.good:active { background: rgba(52,211,153,0.15); color: var(--good); border-color: rgba(52,211,153,0.3); }
+.pc-icon-btn.danger:hover { color: var(--bad); border-color: rgba(248,113,113,0.3); background: rgba(248,113,113,0.08); }
+.pc-icon-btn.danger:active { background: rgba(248,113,113,0.15); color: var(--bad); border-color: rgba(248,113,113,0.3); }
+.pc-check-abs { position: absolute; top: 10px; right: 10px; z-index: 2; }
+
+
+
 /* ============ MOBILE CARD LISTS (hidden on desktop) ============ */
 .mob-cards { display: none; }
 /* Order line-items editor is card-style by design (not a table) — it must
@@ -746,14 +844,40 @@ select:focus {
   .stat-tile .st-label { font-size: 8.5px; }
   .stat-tile .st-sub { font-size: 9px; }
   .card-body { padding: 10px; }
+  /* Alerts + today's P&L strip felt oversized on phone — tighten padding,
+     font, and icon size so they sit compact above the stat cards. */
+  .alert-banner { padding: 9px 12px; margin-bottom: 8px; font-size: 11.5px; gap: 8px; border-radius: 9px; }
+  .alert-banner i { font-size: 13px; }
+  .alert-banner[style*="cursor:pointer"]:active { transform: scale(0.98); }
+  .pl-strip { padding: 8px 10px !important; gap: 6px !important; }
+  .pl-strip .pl-label { font-size: 9px; }
+  .pl-strip .pl-val { font-size: 11.5px; }
   /* Hide desktop tables, show mobile cards */
   .table-wrap.desktop-only { display: none; }
   .mob-cards { display: block; }
-  /* Search row: stack on mobile */
-  .search-row { flex-direction: column; align-items: stretch; gap: 6px; margin-bottom: 10px; }
-  .search-row .inp { max-width: 100%; padding: 9px 12px; font-size: 13px; min-height: 38px; }
-  .search-row .btn { justify-content: center; padding: 9px 12px; font-size: 12px; min-height: 38px; }
-  .search-row select.inp { max-width: 100% !important; padding: 9px 12px; font-size: 13px; min-height: 38px; }
+  /* Search row: text search full-width on its own line; dropdown filters
+     share ONE line together (shrinking with ellipsis) instead of each
+     wrapping onto its own line; action buttons flow after, filling the row
+     when alone or sharing it when they fit. */
+  .search-row { flex-direction: row; flex-wrap: wrap; align-items: stretch; gap: 6px; margin-bottom: 10px; }
+  .search-row input.inp { flex: 1 1 100%; max-width: 100%; padding: 9px 12px; font-size: 13px; min-height: 38px; }
+  .search-row .btn { flex: 1 1 100%; justify-content: center; padding: 9px 12px; font-size: 12px; min-height: 38px; white-space: nowrap; }
+  .search-row select.inp {
+    flex: 1 1 0; min-width: 0; max-width: none !important;
+    padding: 8px 6px; font-size: 11.5px; min-height: 38px;
+    text-overflow: ellipsis; white-space: nowrap; overflow: hidden;
+  }
+  /* The visible piece is .csel-wrap (custom-select trigger button), not the
+     underlying <select> — this is what actually needs to shrink and share
+     one line with its sibling dropdowns. */
+  .search-row .csel-wrap {
+    flex: 1 1 0; min-width: 68px; max-width: none !important;
+  }
+  .search-row .csel-wrap .csel-trigger {
+    padding: 8px 24px 8px 8px; font-size: 11.5px; min-height: 38px;
+  }
+  .search-row .csel-wrap .csel-label { font-size: 11.5px; }
+  .search-row .csel-wrap .csel-chevron { font-size: 9px; }
   /* Buttons compact on mobile */
   .btn { padding: 8px 12px; font-size: 12px; min-height: 36px; }
   .btn-sm { padding: 6px 10px; font-size: 11px; min-height: 32px; }
@@ -1104,6 +1228,203 @@ kbd.kbd {
 .mom-growth.up { background:rgba(52,211,153,0.12); color:var(--good); }
 .mom-growth.down { background:rgba(248,113,113,0.12); color:var(--bad); }
 .mom-growth.flat { background:rgba(122,122,158,0.12); color:var(--muted); }
+
+/* ============ ITEM PICKER (order modal) ============ */
+.pick-cat-head { display:flex; align-items:center; gap:8px; padding:7px 10px; margin:10px 0 6px;
+  background:rgba(139,108,255,0.06); border-radius:8px; font-size:10.5px; font-weight:700;
+  color:var(--accent); text-transform:uppercase; letter-spacing:0.05em; cursor:pointer;
+  user-select:none; -webkit-user-select:none; position:sticky; top:0; z-index:2;
+  backdrop-filter:blur(8px); }
+.pick-cat-head:first-child { margin-top:0; }
+.pick-cat-head .pick-cat-count { margin-left:auto; font-weight:600; color:var(--muted);
+  font-size:9.5px; letter-spacing:0; }
+.pick-cat-head .pick-cat-chev { transition:transform .18s ease; font-size:9px; }
+.pick-cat-head.collapsed .pick-cat-chev { transform:rotate(-90deg); }
+
+.pick-row { display:flex; align-items:center; gap:10px; padding:8px 10px; margin-bottom:5px;
+  background:var(--panel2); border:1px solid transparent; border-left:3px solid transparent;
+  border-radius:8px; cursor:pointer; transition:background .15s ease, border-color .15s ease; }
+.pick-row:hover { background:rgba(124,92,252,0.07); }
+.pick-row.on { background:rgba(139,108,255,0.1); border-color:rgba(139,108,255,0.3);
+  border-left-color:var(--accent); }
+.pick-row.oos { opacity:0.55; }
+.pick-check { width:20px; height:20px; flex-shrink:0; border-radius:5px; border:1.5px solid var(--line-hover, rgba(130,110,255,0.3));
+  display:flex; align-items:center; justify-content:center; font-size:10px; color:transparent; }
+.pick-row.on .pick-check { background:var(--accent); border-color:var(--accent); color:#fff; }
+.pick-name { flex:1; min-width:0; }
+.pick-name .n { font-size:12px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pick-name .m { font-size:9px; color:var(--muted); margin-top:1px; }
+.pick-rate { font-family:'JetBrains Mono',monospace; font-size:11.5px; font-weight:700;
+  color:var(--accent); flex-shrink:0; }
+.pick-qty { display:flex; align-items:center; gap:3px; flex-shrink:0; }
+.pick-qty button { width:24px; height:24px; border-radius:5px; border:1px solid var(--line);
+  background:var(--panel); color:var(--jtext); cursor:pointer; font-size:13px;
+  display:flex; align-items:center; justify-content:center; }
+.pick-qty input { width:42px; padding:3px; font-size:12px; min-height:24px; text-align:center; }
+@media(max-width:640px){
+  .pick-row { padding:7px 8px; gap:8px; }
+  .pick-rate { font-size:11px; }
+  .pick-qty input { width:36px; }
+  #pick-list { max-height:40vh !important; }
+}
+
+/* ============ COMPACT OPERATING UI ============ */
+/* Lists are used repeatedly at the counter; keep them information-dense
+   without making the touch targets too small. */
+.table-wrap { border-radius:10px; }
+.data-table { font-size:12px; }
+.data-table th { padding:8px 8px; }
+.data-table td { padding:8px; }
+.mob-card-item { border-radius:9px; padding:9px 10px; margin-bottom:6px; }
+.card-body { padding:14px 16px; }
+.pc-avatar { width:31px; height:31px; border-radius:8px; font-size:12px; }
+.pc-title { font-size:13px; }
+.pc-badges { margin-left:40px; margin-top:5px; }
+#cust-mob-cards .pc-badges, #cust-mob-cards .pc-note { margin-left:0; }
+.pc-actions-primary { margin-top:6px; }
+.pc-actions-secondary { margin-top:5px; }
+.pc-actions-primary .btn { min-height:28px; padding:5px 7px; }
+.pc-icon-btn { width:25px; height:25px; }
+#order-mob-cards .mob-card-item,
+#cust-mob-cards .mob-card-item, #pay-mob-cards .mob-card-item,
+#pur-mob-cards .mob-card-item, #led-mob-cards .mob-card-item,
+#exp-mob-cards .mob-card-item, #sup-mob-cards .mob-card-item {
+  padding:9px 10px; margin-bottom:6px; border-radius:9px;
+}
+#order-mob-cards .ord-card-cust { font-size:13px; }
+#order-mob-cards .ord-card-badges { margin-top:5px; }
+#order-mob-cards .ord-card-meta { margin-top:5px; padding-top:5px; }
+
+/* The picker keeps selection context available while its product list scrolls. */
+#modal-item-picker .modal-box { display:flex; flex-direction:column; }
+#modal-item-picker #pick-list { min-height:120px; }
+#modal-item-picker .modal-footer {
+  position:sticky; bottom:-1px; z-index:4; margin-left:-24px; margin-right:-24px;
+  margin-bottom:-22px; padding:10px 24px; background:rgba(12,12,24,0.97);
+  border-top:1px solid var(--line); backdrop-filter:blur(10px);
+}
+#pick-summary { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#modal-item-picker .modal-footer .btn { white-space:nowrap; }
+#modal-item-picker .modal-footer .btn-primary { min-width:112px; }
+#led-mob-cards .pc-badges, #led-mob-cards .pc-note { margin-left:0; }
+
+@media(max-width:768px){
+  .content { padding:14px 12px 20px; }
+  .search-row { margin-bottom:9px; }
+  .table-wrap { border-radius:8px; }
+  .data-table { font-size:10.5px; }
+  .data-table th { padding:6px 5px; }
+  .data-table td { padding:6px 5px; }
+  .mob-card-item { padding:8px 9px; }
+  #modal-item-picker .modal-footer {
+    margin-left:-16px; margin-right:-16px; margin-bottom:-16px; padding:9px 16px;
+  }
+  #modal-item-picker .modal-footer .btn { min-height:32px; }
+}
+
+@media(max-width:480px){
+  body { font-size:12.5px; }
+  .pc-title { font-size:12.5px; }
+  .pc-sub { font-size:9.5px; }
+  .pc-amt .amt-val { font-size:14px; }
+  .pc-actions-primary .btn { font-size:10px; }
+  /* Picker rows use the first line for identity/rate and the second line
+     for quantity controls. This prevents the right edge from clipping on
+     narrow phones. */
+  .pick-row {
+    display:grid; grid-template-columns:20px minmax(0,1fr) auto;
+    grid-template-rows:auto auto; gap:4px 8px; align-items:center;
+  }
+  .pick-check { grid-column:1; grid-row:1; }
+  .pick-name { grid-column:2; grid-row:1; }
+  .pick-rate { grid-column:3; grid-row:1; }
+  .pick-qty { grid-column:2 / 4; grid-row:2; justify-self:end; }
+  .pick-name .n { font-size:11.5px; }
+  .pick-name .m { font-size:8.5px; }
+  .pick-rate { font-size:10.5px; }
+  .pick-qty button { width:25px; height:25px; }
+  .pick-qty input { width:38px; min-height:25px; }
+  #modal-item-picker .modal-footer .btn {
+    min-width:0; padding:6px 8px; font-size:10.5px; min-height:30px;
+  }
+  #modal-item-picker .modal-footer .btn-primary { flex:1.15; min-width:0; }
+  #modal-item-picker .modal-footer { flex-wrap:wrap; gap:6px; }
+  #modal-item-picker #pick-summary { flex:1 1 100%; order:-1; }
+  #modal-item-picker #pick-add-label { font-size:0; }
+  #modal-item-picker #pick-add-label::after { content:'Add'; font-size:10.5px; }
+}
+
+/* Keep the overall interface refined rather than oversized. Inputs retain
+   their touch-safe height; only surrounding text and list density shrink. */
+body { font-size:13px; }
+.page-title { font-size:17px; }
+.section-title { font-size:11px; }
+.data-table { font-size:11.5px; }
+.mob-card-title { font-size:12.5px; }
+.mob-card-sub { font-size:9.5px; }
+
+@media(max-width:768px){
+  .page-title { font-size:13px; }
+  .section-title { font-size:10px; }
+  .data-table { font-size:10.5px; }
+}
+
+/* Orders list: compact command-card treatment, matching Parties/Ledger. */
+#order-mob-cards .mob-card-item {
+  padding:8px 9px; margin-bottom:5px; border-radius:9px;
+  box-shadow:0 3px 12px rgba(0,0,0,0.14);
+}
+#order-mob-cards .ord-card-head { gap:6px; padding-right:20px; }
+#order-mob-cards .ord-card-no { font-size:9px; }
+#order-mob-cards .ord-card-cust { font-size:12.5px; }
+#order-mob-cards .ord-card-date { font-size:9px; }
+#order-mob-cards .ord-card-amt .amt-label { font-size:7.5px; }
+#order-mob-cards .ord-card-amt .amt-val { font-size:14px; }
+#order-mob-cards .ord-card-badges { gap:4px; margin-top:5px; }
+#order-mob-cards .ord-card-badges .badge { font-size:8.5px; padding:2px 6px; }
+#order-mob-cards .ord-card-meta {
+  margin-top:5px; padding-top:5px; font-size:9.5px;
+}
+#order-mob-cards .ord-status-pill { font-size:9px; padding:2px 7px; }
+#order-mob-cards .prog-bar { height:4px; margin-top:6px !important; }
+#order-mob-cards .ord-card-actions-primary { gap:5px; margin-top:6px; }
+#order-mob-cards .ord-card-actions-primary .btn {
+  min-height:27px; padding:5px 6px; font-size:10px; border-radius:7px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+#order-mob-cards .ord-card-actions-secondary { gap:4px; margin-top:5px; }
+#order-mob-cards .ord-icon-btn { width:24px; height:24px; border-radius:6px; font-size:10px; }
+#order-mob-cards .ord-check-abs { top:8px; right:8px; }
+#order-mob-cards .ord-check-abs input { width:14px; height:14px; }
+
+@media(max-width:480px){
+  #order-mob-cards .ord-card-actions-primary .btn { font-size:9.5px; }
+  #order-mob-cards .ord-card-actions-secondary { margin-top:4px; }
+}
+
+/* Orders controls: keep the main actions close while scrolling the list. */
+#tab-orders > .search-row {
+  position:sticky; top:0; z-index:8; padding:8px; margin:0 0 9px;
+  background:color-mix(in srgb, var(--bg) 88%, transparent);
+  border:1px solid var(--line); border-radius:10px;
+  backdrop-filter:blur(14px); box-shadow:0 5px 16px rgba(0,0,0,.12);
+}
+#tab-orders > .search-row input.inp { flex:1 1 220px; }
+#tab-orders > .search-row .btn { min-height:34px; padding:7px 10px; font-size:11px; }
+#tab-orders > .quick-chips { gap:5px; margin:0 0 9px; }
+#tab-orders > .quick-chips .qchip { padding:6px 11px; font-size:10.5px; }
+#tab-orders > .ord-stats .ord-stat {
+  background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,0)),var(--panel);
+}
+
+@media(max-width:640px){
+  #tab-orders > .search-row { top:0; padding:6px; gap:5px; }
+  #tab-orders > .search-row input.inp { flex:1 1 100%; }
+  #tab-orders > .search-row select.inp { flex:1 1 calc(50% - 5px); max-width:none !important; min-width:0; }
+  #tab-orders > .search-row .btn { flex:1 1 calc(50% - 5px); min-height:34px; }
+  #tab-orders > .quick-chips { margin-right:-4px; overflow-x:auto; flex-wrap:nowrap; padding-bottom:3px; }
+  #tab-orders > .quick-chips .qchip { flex:0 0 auto; }
+}
 </style>
 </head>
 <body>
@@ -1381,7 +1702,13 @@ kbd.kbd {
     </div>
     <input type="hidden" id="prod-id">
     <div class="form-grid" style="gap:10px;">
-      <div><label class="field-label">Product Name *</label><input class="inp" id="prod-name"></div>
+      <div class="form-row">
+        <div class="form-col grow2"><label class="field-label">Product Name *</label><input class="inp" id="prod-name"></div>
+        <div class="form-col"><label class="field-label">Category</label>
+          <input class="inp" id="prod-cat" list="prod-cat-list" placeholder="e.g. Plain, Moli, Fancy" autocomplete="off">
+          <datalist id="prod-cat-list"></datalist>
+        </div>
+      </div>
       <div class="form-row">
         <div class="form-col"><label class="field-label">Unit</label>
           <select class="inp" id="prod-unit">
@@ -1439,11 +1766,11 @@ kbd.kbd {
     <div style="padding:10px 12px;background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.22);border-radius:10px;margin-bottom:12px;">
       <div style="font-size:10px;font-weight:700;color:var(--warn);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">One line per bill row</div>
       <div class="mono" style="font-size:11px;color:var(--muted);line-height:1.7;">
-        Item Name , Qty , Rate , Wholesale Rate , MRP , Unit<br>
-        <span style="color:var(--text);">Aasan Plain 3x4 , 100 , 23 , 30 , 45 , Pcs</span><br>
-        <span style="color:var(--text);">Moli , 50 , 40 , 45 , 60 , Kg</span>
+         Item Name , Wholesale Rate , Purchase Rate , MRP , Opening Stock , Unit , GST , Category<br>
+         <span style="color:var(--text);">Aasan Plain 3x4 , 30 , 23 , 45 , 100 , Pcs , 5 , Plain</span><br>
+         <span style="color:var(--text);">Moli , 45 , 40 , 60 , 50 , Kg , 0 , Moli</span>
       </div>
-      <div style="font-size:9.5px;color:var(--muted);margin-top:6px;">Unit column optional hai — Pcs/Kg/Gram/Ltr/Mtr/Box/Ctn/Dozen/Pack me se koi likho. Naya product bina unit ke Pcs me banega; existing product ka unit tabhi badlega jab yahan likha ho.</div>
+      <div style="font-size:9.5px;color:var(--muted);margin-top:6px;">Unit aur Category optional hain — Pcs/Kg/Gram/Ltr/Mtr/Box/Ctn/Dozen/Pack me se koi unit likho. Naya product bina unit ke Pcs me banega; category blank ho to Other / Uncategorized me dikhega.</div>
       <div style="font-size:10.5px;color:var(--muted);margin-top:7px;">
         Naam se product dhoonda jayega. Jo mile nahi, wo <strong style="color:var(--good);">naya banega</strong> is rate pe — Wholesale Rate aur MRP bhi set hoga. Tick hata do to skip ho jayega.
       </div>
@@ -1550,6 +1877,9 @@ kbd.kbd {
         <button onclick="document.getElementById('order-new-item').focus()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--accent);cursor:pointer;font-size:16px;"><i class="fa-solid fa-search"></i></button>
         <div class="autocomplete-dropdown" id="new-item-drop"></div>
       </div>
+      <button type="button" class="btn btn-primary btn-sm" style="white-space:nowrap;flex-shrink:0;" onclick="openItemPicker()" title="Category-wise list se ek saath kai item chuno">
+        <i class="fa-solid fa-table-cells-large"></i> Browse
+      </button>
       <button type="button" class="btn btn-ghost btn-sm" style="white-space:nowrap;flex-shrink:0;" onclick="openCustomItemModal()" title="Kuch aisa add karo jo inventory me nahi hai — packing, delivery, ek-baar ka item">
         <i class="fa-solid fa-plus"></i> Custom Item
       </button>
@@ -1578,6 +1908,38 @@ kbd.kbd {
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-order')">Cancel</button>
       <button class="btn btn-primary" onclick="saveOrder()"><i class="fa-solid fa-check"></i> Save Order</button>
+    </div>
+  </div>
+</div>
+
+<!-- Item Picker Modal — category-wise browse + multi-select.
+     Nothing is written into the order until "Add to Order" is pressed, so a
+     mis-tap here can never corrupt a bill that is already being built. -->
+<div class="modal-overlay" id="modal-item-picker">
+  <div class="modal-box xwide">
+    <div class="modal-title">
+      <span><i class="fa-solid fa-table-cells-large" style="color:var(--accent);margin-right:8px;"></i>Items Chuno</span>
+      <button class="modal-close" onclick="closeModal('modal-item-picker')">&times;</button>
+    </div>
+
+    <div id="pick-cust-note" style="display:none;font-size:11px;color:var(--muted);margin-bottom:8px;padding:6px 8px;background:var(--panel2);border-radius:6px;"></div>
+
+    <input class="inp" id="pick-search" placeholder="Search product…" autocomplete="off" oninput="renderItemPicker()" style="margin-bottom:8px;">
+
+    <!-- Quick lists: last order / frequent items for the selected customer -->
+    <div id="pick-quick" style="margin-bottom:8px;"></div>
+
+    <!-- Category tabs -->
+    <div id="pick-cats" class="chip-group" style="margin-bottom:10px;overflow-x:auto;flex-wrap:nowrap;"></div>
+
+    <!-- Product list, grouped by category -->
+    <div id="pick-list" style="max-height:46vh;overflow-y:auto;-webkit-overflow-scrolling:touch;"></div>
+
+    <div class="modal-footer" style="flex-wrap:wrap;gap:8px;">
+      <div id="pick-summary" style="font-size:11.5px;color:var(--muted);margin-right:auto;">Kuch select nahi kiya</div>
+      <button class="btn btn-ghost" onclick="clearItemPicker()"><i class="fa-solid fa-eraser"></i> Clear</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-item-picker')">Cancel</button>
+      <button class="btn btn-primary" onclick="commitItemPicker()"><i class="fa-solid fa-cart-plus"></i> <span id="pick-add-label">Add to Order</span></button>
     </div>
   </div>
 </div>
@@ -1763,6 +2125,11 @@ kbd.kbd {
     <input type="hidden" id="rem-done-id">
     <input type="hidden" id="rem-done-date">
     <div id="rem-done-info" style="padding:12px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;margin-bottom:14px;"></div>
+    <div id="rem-done-amt-row" style="display:none;margin-bottom:10px;">
+      <label class="field-label">Amount ₹ (lump sum de rahe ho to bhi chalega)</label>
+      <input type="number" class="inp" id="rem-done-amt" onfocus="clearIfZero(this)">
+      <div style="font-size:9.5px;color:var(--muted);margin-top:4px;line-height:1.4;"><i class="fa-solid fa-circle-info" style="color:var(--accent2);"></i> Ek din se zyada amount doge to woh apne aap utne purane pending din "Done" kar dega — jaise 300/din rate pe 1800 dene se 6 din done ho jaayenge.</div>
+    </div>
     <div class="form-grid" style="gap:10px;">
       <div><label class="field-label">Paid Via *</label>
         <select class="inp" id="rem-done-mode">
@@ -1775,6 +2142,59 @@ kbd.kbd {
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-reminder-done')">Cancel</button>
       <button class="btn btn-good" onclick="confirmReminderDone()"><i class="fa-solid fa-check"></i> Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Reserve Entry Modal (investor daily set-aside) -->
+<div class="modal-overlay" id="modal-reserve-edit">
+  <div class="modal-box" style="max-width:380px;">
+    <div class="modal-title">
+      <span>Edit Reserve Entry</span>
+      <button class="modal-close" onclick="closeModal('modal-reserve-edit')">&times;</button>
+    </div>
+    <input type="hidden" id="redit-inv-id">
+    <input type="hidden" id="redit-entry-id">
+    <div class="form-grid" style="gap:10px;">
+      <div class="form-col"><label class="field-label">Amount ₹ *</label><input type="number" class="inp" id="redit-amt" onfocus="clearIfZero(this)"></div>
+      <div class="form-col"><label class="field-label">Date</label><input type="date" class="inp" id="redit-date"></div>
+      <div class="form-col"><label class="field-label">Paid Via</label>
+        <select class="inp" id="redit-mode">
+          <option value="Cash">Cash</option>
+          <option value="Bank/UPI">Bank / UPI (GPay, PhonePe, etc.)</option>
+        </select>
+      </div>
+      <div class="form-col grow2"><label class="field-label">Notes</label><input class="inp" id="redit-notes"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-reserve-edit')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveReserveEdit()"><i class="fa-solid fa-check"></i> Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Repayment Entry Modal (investor/loan repayments, incl. EMI) -->
+<div class="modal-overlay" id="modal-repayment-edit">
+  <div class="modal-box" style="max-width:380px;">
+    <div class="modal-title">
+      <span>Edit Payment Entry</span>
+      <button class="modal-close" onclick="closeModal('modal-repayment-edit')">&times;</button>
+    </div>
+    <input type="hidden" id="rpedit-id">
+    <div class="form-grid" style="gap:10px;">
+      <div class="form-col"><label class="field-label">Amount ₹ *</label><input type="number" class="inp" id="rpedit-amt" onfocus="clearIfZero(this)"></div>
+      <div class="form-col"><label class="field-label">Date</label><input type="date" class="inp" id="rpedit-date"></div>
+      <div class="form-col"><label class="field-label">Paid Via</label>
+        <select class="inp" id="rpedit-mode">
+          <option value="Cash">Cash</option>
+          <option value="Bank/UPI">Bank / UPI (GPay, PhonePe, etc.)</option>
+        </select>
+      </div>
+      <div class="form-col grow2"><label class="field-label">Notes</label><input class="inp" id="rpedit-notes"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-repayment-edit')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRepaymentEdit()"><i class="fa-solid fa-check"></i> Save Changes</button>
     </div>
   </div>
 </div>
@@ -2521,6 +2941,18 @@ function stampPdfSyncStatus(doc, pageWidth, pageHeight){
 
 /* ============ UTILITIES ============ */
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).substr(2,5); }
+
+// Remembers whichever "Paid Via" mode the user picked last (Cash vs
+// Bank/UPI) so payment-mode dropdowns default to what's actually used most,
+// instead of always defaulting to Cash.
+function getDefaultPayMode(){
+  return (STATE.settings && STATE.settings.lastPaymentMode) || 'Cash';
+}
+function rememberPayMode(mode){
+  if(!mode) return;
+  if(!STATE.settings) STATE.settings = {};
+  STATE.settings.lastPaymentMode = mode;
+}
 function fmt(n){ return '₹' + (n||0).toLocaleString('en-IN'); }
 function fmtDate(d){
   if(!d) return '';
@@ -3066,6 +3498,9 @@ function migrateState(s){
     if(i.tenureMonths === undefined) i.tenureMonths = 12;
     if(i.reserved === undefined) i.reserved = 0;
     if(!Array.isArray(i.savingsLog)) i.savingsLog = [];
+    // Older savingsLog rows have no unique id — backfill so each entry can be
+    // individually edited/deleted from the Reserve History list.
+    i.savingsLog.forEach(l => { if(!l.id) l.id = uid(); });
   });
   // Expenses: older entries have no payment mode — assume Cash.
   (s.expenses||[]).forEach(e => {
@@ -3143,6 +3578,11 @@ function enhanceSelect(sel){
 
   const wrap = document.createElement('div');
   wrap.className = 'csel-wrap';
+  // Carry the original <select>'s inline max-width (if any) onto the wrap —
+  // the select itself becomes invisible/out-of-flow once replaced, so
+  // without this the visible trigger button would ignore that width cap
+  // entirely and always stretch to 100% of its flex container.
+  if(sel.style.maxWidth) wrap.style.maxWidth = sel.style.maxWidth;
   sel.parentNode.insertBefore(wrap, sel);
   wrap.appendChild(sel);
   sel.classList.add('csel-native');
@@ -3789,26 +4229,32 @@ function filterCustomers(){
     const bal = customerBalance(c.id);
     const accentClass = bal > 0 ? 'accent-bad' : bal < 0 ? 'accent-good' : 'accent-gray';
     return `<div class="mob-card-item ${accentClass}" onclick="openLedgerModal('${c.id}')">
-      <div class="mob-card-top">
-        <div>
-          <div class="mob-card-title">${escHtml(c.name)}</div>
-          <div class="mob-card-sub">${escHtml(c.firm)||''} ${c.type ? '· '+escHtml(c.type) : ''}</div>
+      <div class="pc-head">
+        <div class="pc-identity">
+          <div class="pc-title">${escHtml(c.name)}</div>
+          <div class="pc-sub"><i class="fa-solid fa-phone" style="font-size:9px;"></i> ${formatPhoneDisplay(c.mobile)||'-'}${c.firm ? ' · '+escHtml(c.firm) : ''}</div>
         </div>
-        <div class="mono" style="font-size:14px;font-weight:700;color:${bal>0?'var(--bad)':bal<0?'var(--good)':'var(--muted)'};">${fmt(bal)}</div>
+        <div class="pc-amt">
+          <div class="amt-label">Balance</div>
+          <div class="amt-val mono" style="color:${bal>0?'var(--bad)':bal<0?'var(--good)':'var(--jtext)'};">${fmt(bal)}</div>
+        </div>
       </div>
-      <div class="mob-card-row">
-        <span style="color:var(--muted);"><i class="fa-solid fa-phone" style="width:12px;"></i> ${formatPhoneDisplay(c.mobile)||'-'}</span>
-        ${c.status==='Inactive' ? `<span class="badge badge-gray">Inactive</span>` : `<span class="badge badge-${bal>0?'red':bal<0?'green':'gray'}">${bal>0?'Due':bal<0?'Advance':'Clear'}</span>`}
+      <div class="pc-badges">
+        <span class="badge badge-${bal>0?'red':bal<0?'green':'gray'}">${bal>0?'Due':bal<0?'Advance':'Clear'}</span>
+        ${c.type ? `<span class="badge badge-gray">${escHtml(c.type)}</span>` : ''}
+        ${c.status==='Inactive' ? `<span class="badge badge-gray">Inactive</span>` : ''}
       </div>
-      <div class="mob-card-actions" onclick="event.stopPropagation()">
-        ${bal > 0 ? `<button class="btn btn-good btn-xs" onclick="collectFromLedger('${c.id}')"><i class="fa-solid fa-hand-holding-dollar"></i> Collect</button>` : ''}
-        ${bal > 0 ? `<button class="btn btn-ghost btn-xs" onclick="sendPaymentReminder('${c.id}')"><i class="fa-brands fa-whatsapp"></i></button>` : ''}
-        <button class="btn btn-ghost btn-xs" onclick="quickReorder('${c.id}')"><i class="fa-solid fa-rotate"></i> Reorder</button>
-        <button class="btn btn-ghost btn-xs" onclick="viewCustomerOrders('${c.id}')"><i class="fa-solid fa-clipboard-list"></i> Orders</button>
-        <button class="btn btn-ghost btn-xs" onclick="openLedgerModal('${c.id}')"><i class="fa-solid fa-book"></i> Ledger</button>
-        <button class="btn btn-ghost btn-xs" onclick="openCustomerModal('${c.id}')"><i class="fa-solid fa-pen"></i></button>
-        ${c.status==='Inactive' ? `<button class="btn btn-good btn-xs" onclick="reactivateCustomer('${c.id}')"><i class="fa-solid fa-rotate-left"></i></button>` : ''}
-        <button class="btn btn-bad btn-xs" onclick="deleteCustomer('${c.id}')"><i class="fa-solid fa-trash"></i></button>
+      <div class="pc-actions-primary" onclick="event.stopPropagation()">
+        ${bal > 0 ? `<button class="btn btn-good" onclick="collectFromLedger('${c.id}')"><i class="fa-solid fa-hand-holding-dollar"></i> Collect</button>` : `<button class="btn btn-ghost" onclick="openLedgerModal('${c.id}')"><i class="fa-solid fa-book"></i> Ledger</button>`}
+        ${bal > 0 ? `<button class="btn btn-ghost" onclick="sendPaymentReminder('${c.id}')" style="color:#25d366;border-color:rgba(37,211,102,0.3);"><i class="fa-brands fa-whatsapp"></i> Remind</button>` : `<button class="btn btn-ghost" onclick="quickReorder('${c.id}')"><i class="fa-solid fa-rotate"></i> Reorder</button>`}
+      </div>
+      <div class="pc-actions-secondary" onclick="event.stopPropagation()">
+        ${bal > 0 ? `<button class="pc-icon-btn" title="Reorder" onclick="quickReorder('${c.id}')"><i class="fa-solid fa-rotate"></i></button>` : ''}
+        <button class="pc-icon-btn" title="Orders" onclick="viewCustomerOrders('${c.id}')"><i class="fa-solid fa-clipboard-list"></i></button>
+        <button class="pc-icon-btn" title="Ledger" onclick="openLedgerModal('${c.id}')"><i class="fa-solid fa-book"></i></button>
+        <button class="pc-icon-btn" title="Edit" onclick="openCustomerModal('${c.id}')"><i class="fa-solid fa-pen"></i></button>
+        ${c.status==='Inactive' ? `<button class="pc-icon-btn good" title="Reactivate" onclick="reactivateCustomer('${c.id}')"><i class="fa-solid fa-rotate-left"></i></button>` : ''}
+        <button class="pc-icon-btn danger" title="Delete" onclick="deleteCustomer('${c.id}')"><i class="fa-solid fa-trash"></i></button>
       </div>
     </div>`;
   }).join('') || '<div class="empty-state"><i class="fa-solid fa-address-book"></i><div class="msg">No customers found</div></div>';
@@ -3821,9 +4267,13 @@ function renderProducts(){
       <select class="inp" id="prod-supplier-filter" style="max-width:180px;" onchange="filterProducts()">
         <option value="all">All Suppliers</option>
       </select>
+      <select class="inp" id="prod-cat-filter" style="max-width:180px;" onchange="filterProducts()">
+        <option value="all">All Categories</option>
+      </select>
       <select class="inp" id="prod-group-by" style="max-width:160px;" onchange="filterProducts()">
         <option value="none">No Grouping</option>
         <option value="supplier">Group by Supplier</option>
+        <option value="cat">Group by Category</option>
       </select>
       <button class="btn btn-ghost" onclick="openBulkImportModal()" title="Paste a list from Excel"><i class="fa-solid fa-paste"></i> Bulk Add</button>
       <button class="btn btn-primary" onclick="openProductModal()"><i class="fa-solid fa-plus"></i> New Product</button>
@@ -3845,6 +4295,16 @@ function renderProducts(){
     opt.textContent = s.name || s.firm || '—';
     sel.appendChild(opt);
   });
+  // Populate category filter from whatever categories exist today
+  const csel = $('prod-cat-filter');
+  if(csel){
+    allCategories().forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c;
+      csel.appendChild(opt);
+    });
+  }
   filterProducts();
 }
 
@@ -3869,6 +4329,7 @@ function _prodIcon(idx){
 function filterProducts(){
   const q = (val('prod-search')||'').toLowerCase();
   const supFilter = val('prod-supplier-filter') || 'all';
+  const catFilter = val('prod-cat-filter') || 'all';
   const groupBy = val('prod-group-by') || 'none';
 
   // Build a product→supplier map from purchases
@@ -3890,23 +4351,30 @@ function filterProducts(){
   let filtered = STATE.products.filter(p => {
     if(q && !(p.name||'').toLowerCase().includes(q)) return false;
     if(supFilter !== 'all' && prodSupplierMap[p.id] !== supFilter) return false;
+    if(catFilter !== 'all' && prodCat(p) !== catFilter) return false;
     return true;
   });
 
   // Desktop table
-  if(groupBy === 'supplier'){
-    // Group by supplier
+  if(groupBy === 'supplier' || groupBy === 'cat'){
+    // Group by supplier or category
     const groups = {};
     filtered.forEach(p => {
-      const sName = getSupplierName(p.id) || 'Unknown Supplier';
-      if(!groups[sName]) groups[sName] = [];
-      groups[sName].push(p);
+      const groupName = groupBy === 'cat'
+        ? prodCat(p)
+        : (getSupplierName(p.id) || 'Unknown Supplier');
+      if(!groups[groupName]) groups[groupName] = [];
+      groups[groupName].push(p);
     });
-    const sortedKeys = Object.keys(groups).sort();
+    const sortedKeys = Object.keys(groups)
+      .filter(k => groupBy !== 'cat' || k !== UNCAT)
+      .sort((a,b) => a.localeCompare(b));
+    if(groupBy === 'cat' && groups[UNCAT]) sortedKeys.push(UNCAT);
     let html = '';
-    sortedKeys.forEach(sName => {
-      html += `<tr><td colspan="8" style="background:rgba(139,108,255,0.06);font-weight:700;font-size:11px;color:var(--accent);padding:8px;text-transform:uppercase;letter-spacing:0.05em;"><i class="fa-solid fa-truck" style="margin-right:6px;font-size:10px;"></i>${escHtml(sName)} (${groups[sName].length})</td></tr>`;
-      groups[sName].forEach(p => {
+    sortedKeys.forEach(groupName => {
+      const groupIcon = groupBy === 'cat' ? 'fa-layer-group' : 'fa-truck';
+      html += `<tr><td colspan="8" style="background:rgba(139,108,255,0.06);font-weight:700;font-size:11px;color:var(--accent);padding:8px;text-transform:uppercase;letter-spacing:0.05em;"><i class="fa-solid ${groupIcon}" style="margin-right:6px;font-size:10px;"></i>${escHtml(groupName)} (${groups[groupName].length})</td></tr>`;
+      groups[groupName].forEach(p => {
         const stk = productStock(p.id);
         const lowStk = p.minStock > 0 && stk <= p.minStock;
         html += `<tr>
@@ -3948,12 +4416,10 @@ function filterProducts(){
   $('prod-mob-cards').innerHTML = `<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin:8px 0;">All Products (${filtered.length})</div>` + filtered.map((p,i) => {
     const margin = p.mrp > 0 ? Math.round((1 - p.wrate/p.mrp)*100) : 0;
     return `<div class="mob-card-item accent-purple" onclick="openProductModal('${p.id}')" style="display:flex;align-items:center;gap:12px;">
-      <div style="width:40px;height:40px;border-radius:10px;background:${_prodColor(i)};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-        <i class="fa-solid ${_prodIcon(i)}" style="color:#fff;font-size:15px;"></i>
-      </div>
       <div style="flex:1;min-width:0;">
         <div class="mob-card-title" style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(p.name)}</div>
         <div class="mob-card-sub">${escHtml(p.unit)||'Pcs'} · MRP ${fmt(p.mrp)}${getSupplierName(p.id) ? ' · '+escHtml(getSupplierName(p.id)) : ''}</div>
+        <span class="badge badge-purple" style="font-size:8.5px;margin-top:4px;">${escHtml(prodCat(p))}</span>
       </div>
       <div style="text-align:right;flex-shrink:0;">
         <div class="mono" style="font-size:14px;font-weight:700;color:var(--accent);">${fmt(p.wrate)}</div>
@@ -4049,12 +4515,12 @@ function renderOrders(){
     </div>
 
     <div class="quick-chips">
-      <button class="qchip" onclick="applyOrderQuick('')">All</button>
-      <button class="qchip" onclick="applyOrderQuick('due')">Money Due</button>
-      <button class="qchip" onclick="applyOrderQuick('undelivered')">To Deliver</button>
-      <button class="qchip" onclick="applyOrderQuick('paid-undelivered')">Paid · Not Delivered</button>
-      <button class="qchip" onclick="applyOrderQuick('delivered-unpaid')">Delivered · Unpaid</button>
-      <button class="qchip" onclick="applyOrderQuick('today')">Today</button>
+      <button class="qchip ${!orderViewState.quick?'active':''}" onclick="applyOrderQuick('')">All</button>
+      <button class="qchip ${orderViewState.quick==='due'?'active':''}" onclick="applyOrderQuick('due')">Money Due</button>
+      <button class="qchip ${orderViewState.quick==='undelivered'?'active':''}" onclick="applyOrderQuick('undelivered')">To Deliver</button>
+      <button class="qchip ${orderViewState.quick==='paid-undelivered'?'active':''}" onclick="applyOrderQuick('paid-undelivered')">Paid · Not Delivered</button>
+      <button class="qchip ${orderViewState.quick==='delivered-unpaid'?'active':''}" onclick="applyOrderQuick('delivered-unpaid')">Delivered · Unpaid</button>
+      <button class="qchip ${orderViewState.quick==='today'?'active':''}" onclick="applyOrderQuick('today')">Today</button>
     </div>
     <div id="order-active-filter"></div>
 
@@ -4220,30 +4686,37 @@ function filterOrders(){
     const days = orderAgeDays(o);
     const overdue = balance > 0.004 && days > 30;
     return `<div class="mob-card-item ${accentClass}" onclick="openOrderDetailModal('${o.id}')">
-      <div class="mob-card-top">
+      <label class="mob-bulk-check ord-check-abs" onclick="event.stopPropagation()"><input type="checkbox" ${_bulkSelected.has(o.id)?'checked':''} onchange="toggleBulkSelect('${o.id}', this.checked)"></label>
+      <div class="ord-card-head">
         <div>
-          <div class="mob-card-title" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <label class="mob-bulk-check" onclick="event.stopPropagation()"><input type="checkbox" ${_bulkSelected.has(o.id)?'checked':''} onchange="toggleBulkSelect('${o.id}', this.checked)"></label>
-            <span class="mono">ORD-${o.orderNo}</span>
-            <span class="badge badge-${o.status==='Paid'?'green':o.status==='Partial'?'amber':o.status==='Cancelled'?'gray':'red'}">${o.status}</span>
-            <span class="badge badge-${o.delivered?'green':'purple'}"><i class="fa-solid fa-${o.delivered?'truck-fast':'box'}"></i> ${o.delivered?'Delivered':'To Deliver'}</span>
-          </div>
-          <div class="mob-card-sub">${escHtml(c?.name||'Unknown')} · ${fmtDate(o.date)}${overdue?` · <span style="color:var(--warn);font-weight:700;">${days} days old</span>`:''}</div>
+          <div class="ord-card-no mono">ORD-${o.orderNo}</div>
+          <div class="ord-card-cust">${escHtml(c?.name||'Unknown')}</div>
+          <div class="ord-card-date">${fmtDate(o.date)} · ${o.items?.length||0} items${overdue?` · <span style="color:var(--warn);font-weight:700;">${days}d overdue</span>`:''}</div>
         </div>
-        <div class="mono" style="font-size:16px;font-weight:700;">${fmt(total)}</div>
+        <div class="ord-card-amt">
+          <div class="amt-label">Total</div>
+          <div class="amt-val mono">${fmt(total)}</div>
+        </div>
       </div>
-      <div class="mob-card-row">
-        <span style="color:var(--muted);">${o.items?.length||0} items</span>
-        <span style="color:${balance>0?'var(--bad)':'var(--good)'};font-weight:600;">${balance>0?'Due: '+fmt(balance):'Cleared'}</span>
+      <div class="ord-card-badges">
+        <span class="badge badge-${o.status==='Paid'?'green':o.status==='Partial'?'amber':o.status==='Cancelled'?'gray':'red'}">${o.status}</span>
+        <span class="badge badge-${o.delivered?'green':'purple'}"><i class="fa-solid fa-${o.delivered?'truck-fast':'box'}"></i> ${o.delivered?'Delivered':'To Deliver'}</span>
       </div>
-      ${progressPct > 0 && progressPct < 100 ? `<div class="prog-bar" style="margin-top:6px;"><div class="prog-fill ${progressPct>=50?'good':'warn'}" style="width:${progressPct}%;"></div></div>` : ''}
-      <div class="mob-card-actions" onclick="event.stopPropagation()">
-        ${balance>0.004 && o.status!=='Cancelled' ? `<button class="btn btn-good btn-xs" onclick="receivePaymentForOrder('${o.id}')"><i class="fa-solid fa-hand-holding-dollar"></i> Collect</button>` : ''}
-        ${o.status!=='Cancelled' ? `<button class="btn ${o.delivered?'btn-ghost':'btn-primary'} btn-xs" onclick="toggleDelivered('${o.id}', event)"><i class="fa-solid fa-${o.delivered?'rotate-left':'truck-fast'}"></i> ${o.delivered?'Undo':'Delivered'}</button>` : ''}
-        <button class="btn btn-ghost btn-xs" onclick="openOrderDetailModal('${o.id}')"><i class="fa-solid fa-eye"></i></button>
-        <button class="btn btn-ghost btn-xs" onclick="downloadBill('${o.id}')"><i class="fa-solid fa-download"></i></button>
-        <button class="btn btn-ghost btn-xs" onclick="openOrderModal('${o.id}')"><i class="fa-solid fa-pen"></i></button>
-        <button class="btn btn-bad btn-xs" onclick="deleteOrder('${o.id}')"><i class="fa-solid fa-trash"></i></button>
+      ${progressPct > 0 && progressPct < 100 ? `<div class="prog-bar" style="margin-top:10px;"><div class="prog-fill ${progressPct>=50?'good':'warn'}" style="width:${progressPct}%;"></div></div>` : ''}
+      <div class="ord-card-meta">
+        <span>Received ${fmt(received)}</span>
+        <span class="ord-status-pill ${balance>0?'due':'cleared'}">${balance>0?'Due '+fmt(balance):'Cleared'}</span>
+      </div>
+      ${o.status!=='Cancelled' ? `
+      <div class="ord-card-actions-primary" onclick="event.stopPropagation()">
+        ${balance>0.004 ? `<button class="btn btn-good" onclick="receivePaymentForOrder('${o.id}')"><i class="fa-solid fa-hand-holding-dollar"></i> Collect</button>` : ''}
+        <button class="btn ${o.delivered?'btn-ghost':'btn-primary'}" onclick="toggleDelivered('${o.id}', event)"><i class="fa-solid fa-${o.delivered?'rotate-left':'truck-fast'}"></i> ${o.delivered?'Undo Delivery':'Mark Delivered'}</button>
+      </div>` : ''}
+      <div class="ord-card-actions-secondary" onclick="event.stopPropagation()">
+        <button class="ord-icon-btn" title="View" onclick="openOrderDetailModal('${o.id}')"><i class="fa-solid fa-eye"></i></button>
+        <button class="ord-icon-btn" title="Download bill" onclick="downloadBill('${o.id}')"><i class="fa-solid fa-download"></i></button>
+        <button class="ord-icon-btn" title="Edit" onclick="openOrderModal('${o.id}')"><i class="fa-solid fa-pen"></i></button>
+        <button class="ord-icon-btn danger" title="Delete" onclick="deleteOrder('${o.id}')"><i class="fa-solid fa-trash"></i></button>
       </div>
     </div>`;
   }).join('') || '<div class="empty-state"><i class="fa-solid fa-clipboard-list"></i><div class="msg">No orders found</div></div>';
@@ -4333,19 +4806,28 @@ function filterPayments(){
   $('pay-mob-cards').innerHTML = filtered.map(p => {
     const c = STATE.customers.find(x=>x.id===p.customerId);
     const o = p.orderId ? STATE.orders.find(x=>x.id===p.orderId) : null;
-    const modeColors = {'Cash':'accent-good','Bank/UPI':'accent-purple'};
-    return `<div class="mob-card-item ${modeColors[p.mode]||'accent-good'}">
-      <div class="mob-card-top">
-        <div>
-          <div class="mob-card-title">${escHtml(c?.name||'Unknown')}</div>
-          <div class="mob-card-sub">${fmtDate(p.date)} · ${escHtml(p.mode||'Cash')} · ${o ? 'ORD-'+o.orderNo : 'Advance'}</div>
+    const isBank = (p.mode||'').includes('Bank');
+    const accentClass = isBank ? 'accent-purple' : 'accent-good';
+    const initials = (c?.name||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+    return `<div class="mob-card-item ${accentClass}">
+      <div class="pc-head">
+        <div class="pc-avatar ${isBank?'':'good'}"><i class="fa-solid fa-${isBank?'building-columns':'money-bill-wave'}" style="font-size:15px;"></i></div>
+        <div class="pc-identity">
+          <div class="pc-title">${escHtml(c?.name||'Unknown')}</div>
+          <div class="pc-sub">${fmtDate(p.date)} · ${o ? 'ORD-'+o.orderNo : 'Advance'}</div>
         </div>
-        <div class="mono" style="font-size:16px;font-weight:700;color:var(--good);">${fmt(p.amount)}</div>
+        <div class="pc-amt">
+          <div class="amt-label">Received</div>
+          <div class="amt-val mono" style="color:var(--good);">${fmt(p.amount)}</div>
+        </div>
       </div>
-      ${p.ref ? `<div class="mob-card-row"><span style="color:var(--muted);">Ref: <span class="mono">${escHtml(p.ref)}</span></span></div>` : ''}
-      ${p.notes ? `<div class="mob-card-row"><span style="color:var(--muted);font-style:italic;">${escHtml(p.notes)}</span></div>` : ''}
-      <div class="mob-card-actions">
-        <button class="btn btn-bad btn-xs" onclick="deletePayment('${p.id}')"><i class="fa-solid fa-trash"></i> Delete</button>
+      <div class="pc-badges">
+        <span class="badge badge-purple">${escHtml(p.mode||'Cash')}</span>
+        ${p.ref ? `<span class="badge badge-gray mono">Ref: ${escHtml(p.ref)}</span>` : ''}
+      </div>
+      ${p.notes ? `<div class="pc-note">${escHtml(p.notes)}</div>` : ''}
+      <div class="pc-actions-secondary" onclick="event.stopPropagation()">
+        <button class="pc-icon-btn danger" title="Delete" onclick="deletePayment('${p.id}')"><i class="fa-solid fa-trash"></i></button>
       </div>
     </div>`;
   }).join('') || '<div class="empty-state"><i class="fa-solid fa-hand-holding-dollar"></i><div class="msg">No payments found</div></div>';
@@ -4449,21 +4931,24 @@ function filterLedger(){
     const overLimit = (c.creditLimit||0) > 0 && balance > c.creditLimit;
     const accentClass = overLimit ? 'accent-bad' : balance > 0 ? 'accent-bad' : balance < 0 ? 'accent-good' : 'accent-gray';
     return `<div class="mob-card-item ${accentClass}" onclick="openLedgerModal('${c.id}')">
-      <div class="mob-card-top">
-        <div>
-          <div class="mob-card-title">${escHtml(c.name)}</div>
-          <div class="mob-card-sub">${formatPhoneDisplay(c.mobile)||''} · ${orders.length} orders${overLimit ? ' · <span style="color:var(--bad);">credit limit cross</span>' : ''}</div>
+      <div class="pc-head">
+        <div class="pc-identity">
+          <div class="pc-title">${escHtml(c.name)}</div>
+          <div class="pc-sub">${formatPhoneDisplay(c.mobile)||'-'} · ${orders.length} orders</div>
         </div>
-        <div class="mono" style="font-size:15px;font-weight:700;color:${balance>0?'var(--bad)':balance<0?'var(--good)':'var(--muted)'};">${fmt(balance)}</div>
+        <div class="pc-amt">
+          <div class="amt-label">Balance</div>
+          <div class="amt-val mono" style="color:${balance>0?'var(--bad)':balance<0?'var(--good)':'var(--jtext)'};">${fmt(balance)}</div>
+        </div>
       </div>
-      <div class="mob-card-row">
-        <span style="color:var(--muted);">Billed: <span class="mono">${fmt(totalOrders)}</span></span>
-        <span style="color:var(--good);">Paid: <span class="mono">${fmt(totalPaid)}</span></span>
+      ${overLimit ? `<div class="pc-badges"><span class="badge badge-red">Over Credit Limit</span></div>` : ''}
+      <div class="pc-meta">
+        <span>Paid ${fmt(totalPaid)} / Billed ${fmt(totalOrders)}</span>
+        <span class="pc-pill ${balance>0.5?'due':'cleared'}">${balance>0.5?'Due '+fmt(balance):'Cleared'}</span>
       </div>
-      <div class="mob-card-actions" onclick="event.stopPropagation()">
-        ${balance > 0.5 ? `<button class="btn btn-good btn-xs" onclick="collectFromLedger('${c.id}')"><i class="fa-solid fa-hand-holding-dollar"></i> Collect</button>` : ''}
-        <button class="btn btn-ghost btn-xs" onclick="openLedgerModal('${c.id}')"><i class="fa-solid fa-book"></i> Full Ledger</button>
-        ${balance > 0 ? `<button class="btn btn-ghost btn-xs" onclick="sendPaymentReminder('${c.id}')"><i class="fa-brands fa-whatsapp" style="color:var(--good);"></i> Remind</button>` : ''}
+      <div class="pc-actions-primary" onclick="event.stopPropagation()">
+        ${balance > 0.5 ? `<button class="btn btn-good" onclick="collectFromLedger('${c.id}')"><i class="fa-solid fa-hand-holding-dollar"></i> Collect</button>` : `<button class="btn btn-ghost" onclick="openLedgerModal('${c.id}')"><i class="fa-solid fa-book"></i> Full Ledger</button>`}
+        ${balance > 0.5 ? `<button class="btn btn-ghost" onclick="sendPaymentReminder('${c.id}')" style="color:#25d366;border-color:rgba(37,211,102,0.3);"><i class="fa-brands fa-whatsapp"></i> Remind</button>` : ''}
       </div>
     </div>`;
   }).join('') || '<div class="empty-state"><i class="fa-solid fa-book"></i><div class="msg">No customers found</div></div>';
@@ -5775,7 +6260,7 @@ function saveTodayReserve(id){
   adjustCash(-amt, 'Cash');
   inv.reserved = round2((inv.reserved||0) + amt);
   if(!inv.savingsLog) inv.savingsLog = [];
-  inv.savingsLog.push({ date: today(), amount: amt, mode: 'Cash', notes: 'Set aside (from investor card)' });
+  inv.savingsLog.push({ id: uid(), date: today(), amount: amt, mode: 'Cash', notes: 'Set aside (from investor card)' });
   // Also log to reminderLog for unified history
   if(!STATE.reminderLog) STATE.reminderLog = [];
   STATE.reminderLog.push({
@@ -5920,7 +6405,7 @@ function reserveInvestorDay(invId, dateStr, mode, notes){
   adjustCash(-amt, mode || 'Cash');
   inv.reserved = round2((inv.reserved||0) + amt);
   if(!inv.savingsLog) inv.savingsLog = [];
-  inv.savingsLog.push({ date: dateStr, amount: amt, mode: mode||'Cash', notes: notes||'Din-wise set aside' });
+  inv.savingsLog.push({ id: uid(), date: dateStr, amount: amt, mode: mode||'Cash', notes: notes||'Din-wise set aside' });
   if(!STATE.reminderLog) STATE.reminderLog = [];
   STATE.reminderLog.push({
     id: uid(), type:'investor', refId: inv.id, name: inv.name,
@@ -6065,6 +6550,171 @@ function undoLastReserveDay(invId){
     if($('modal-pending-days') && $('modal-pending-days').classList.contains('open')) renderPendingDays();
     toast('Last reserve entry undo ho gayi','success');
   });
+}
+
+// Deletes ANY single reserve (set-aside) entry for an investor from the
+// Reserve History list — not just the most recent one. Reverses its cash
+// effect, reduces the reserved total, and removes the matching reminderLog
+// row. This is how a wrongly-marked "Done" day gets undone — deleting from
+// this history list, not from the reminder card itself.
+function deleteReserveEntry(invId, entryId){
+  const inv = STATE.investors.find(x=>x.id===invId);
+  if(!inv) return;
+  const entry = (inv.savingsLog||[]).find(l=>l.id===entryId);
+  if(!entry){ toast('Entry nahi mili','error'); return; }
+  showConfirm('Delete Reserve Entry', `${fmtDate(entry.date)} ka <strong>${fmt(entry.amount)}</strong> reserve entry delete karein? Cash wapas add ho jaayega aur us din ka reminder wapas pending dikhega.`, () => {
+    snapshotUndo();
+    adjustCash(entry.amount||0, entry.mode || 'Cash');
+    inv.reserved = round2(Math.max(0, (inv.reserved||0) - (entry.amount||0)));
+    inv.savingsLog = inv.savingsLog.filter(l=>l.id!==entryId);
+    if(STATE.reminderLog){
+      const rlIdx = STATE.reminderLog.findIndex(r => r.type==='investor' && r.refId===invId && r.date===entry.date && r.amount===entry.amount);
+      if(rlIdx>=0) STATE.reminderLog.splice(rlIdx,1);
+    }
+    saveState();
+    renderInvestors();
+    renderDashboard();
+    renderReminders();
+    if($('modal-reminder-history') && $('modal-reminder-history').classList.contains('open')) openReminderHistory('investor', invId);
+    if($('modal-pending-days') && $('modal-pending-days').classList.contains('open')) renderPendingDays();
+    toast('Reserve entry delete ho gayi','success');
+  });
+}
+
+function openReserveEditModal(invId, entryId){
+  const inv = STATE.investors.find(x=>x.id===invId);
+  if(!inv) return;
+  const entry = (inv.savingsLog||[]).find(l=>l.id===entryId);
+  if(!entry){ toast('Entry nahi mili','error'); return; }
+  $('redit-inv-id').value = invId;
+  $('redit-entry-id').value = entryId;
+  $('redit-amt').value = entry.amount;
+  $('redit-date').value = entry.date;
+  $('redit-mode').value = entry.mode || 'Cash';
+  $('redit-notes').value = entry.notes || '';
+  openModal('modal-reserve-edit');
+}
+
+function saveReserveEdit(){
+  const invId = $('redit-inv-id').value;
+  const entryId = $('redit-entry-id').value;
+  const inv = STATE.investors.find(x=>x.id===invId);
+  if(!inv) return;
+  const entry = (inv.savingsLog||[]).find(l=>l.id===entryId);
+  if(!entry) return;
+  const newAmt = numVal('redit-amt');
+  const newDate = $('redit-date').value || entry.date;
+  const newMode = $('redit-mode').value || 'Cash';
+  const newNotes = $('redit-notes').value;
+  if(newAmt<=0){ toast('Amount 0 se zyada hona chahiye','error'); return; }
+  if(newDate !== entry.date && (inv.savingsLog||[]).some(l=>l.date===newDate && l.id!==entryId)){
+    toast('Is date ka entry pehle se hai','error'); return;
+  }
+
+  // Reverse the old cash/reserved effect, then apply the new one.
+  adjustCash(entry.amount||0, entry.mode || 'Cash');
+  inv.reserved = round2(Math.max(0, (inv.reserved||0) - (entry.amount||0)));
+
+  if(STATE.reminderLog){
+    const rl = STATE.reminderLog.find(r=>r.type==='investor' && r.refId===invId && r.date===entry.date && r.amount===entry.amount);
+    if(rl){ rl.date = newDate; rl.amount = round2(newAmt); rl.mode = newMode; rl.notes = newNotes; }
+  }
+
+  entry.date = newDate; entry.amount = round2(newAmt); entry.mode = newMode; entry.notes = newNotes;
+  adjustCash(-entry.amount, entry.mode);
+  inv.reserved = round2((inv.reserved||0) + entry.amount);
+  rememberPayMode(newMode);
+
+  saveState();
+  closeModal('modal-reserve-edit');
+  renderInvestors(); renderDashboard(); renderReminders();
+  if($('modal-reminder-history') && $('modal-reminder-history').classList.contains('open')) openReminderHistory('investor', invId);
+  toast('Reserve entry update ho gayi','success');
+}
+
+// Deletes a single repayment entry (investor principal/interest, or loan
+// EMI/repayment) from STATE.repayments. Reverses the cash it moved, restores
+// any investor reserve it consumed, and rolls back principal repaid.
+function deleteRepaymentEntry(paymentId){
+  const idx = (STATE.repayments||[]).findIndex(r=>r.id===paymentId);
+  if(idx<0){ toast('Entry nahi mili','error'); return; }
+  const r = STATE.repayments[idx];
+  const item = r.kind==='investor' ? STATE.investors.find(x=>x.id===r.refId) : STATE.loans.find(x=>x.id===r.refId);
+  showConfirm('Delete Payment', `${fmtDate(r.date)} ka <strong>${fmt(r.amount)}</strong> payment delete karein? Cash wapas add ho jaayega.`, () => {
+    snapshotUndo();
+    const cashOut = r.amount - (r.reservedApplied||0);
+    if(cashOut>0) adjustCash(cashOut, r.mode||'Cash');
+    if(item && r.kind==='investor' && r.reservedApplied>0){
+      item.reserved = round2((item.reserved||0) + r.reservedApplied);
+    }
+    if(item && r.type==='principal'){
+      item.repaid = round2(Math.max(0, (item.repaid||0) - r.amount));
+      if(item.status==='Closed' && item.repaid < item.amount) item.status = 'Active';
+    }
+    STATE.repayments.splice(idx,1);
+    if(r.isEmi && STATE.reminderLog){
+      const rlIdx = STATE.reminderLog.findIndex(rl=>rl.type==='loan' && rl.refId===r.refId && rl.date===r.date && rl.amount===r.amount);
+      if(rlIdx>=0) STATE.reminderLog.splice(rlIdx,1);
+    }
+    saveState();
+    if(r.kind==='investor') renderInvestors(); else renderLoans();
+    renderDashboard(); renderReminders();
+    if($('modal-reminder-history') && $('modal-reminder-history').classList.contains('open')) openReminderHistory(r.kind, r.refId);
+    toast('Payment entry delete ho gayi','success');
+  });
+}
+
+function openRepaymentEditModal(paymentId){
+  const r = (STATE.repayments||[]).find(x=>x.id===paymentId);
+  if(!r) return;
+  $('rpedit-id').value = paymentId;
+  $('rpedit-amt').value = r.amount;
+  $('rpedit-date').value = r.date;
+  $('rpedit-mode').value = r.mode || 'Cash';
+  $('rpedit-notes').value = r.notes || '';
+  openModal('modal-repayment-edit');
+}
+
+function saveRepaymentEdit(){
+  const paymentId = $('rpedit-id').value;
+  const r = (STATE.repayments||[]).find(x=>x.id===paymentId);
+  if(!r) return;
+  const newAmt = numVal('rpedit-amt');
+  const newDate = $('rpedit-date').value || r.date;
+  const newMode = $('rpedit-mode').value || 'Cash';
+  const newNotes = $('rpedit-notes').value;
+  if(newAmt<=0){ toast('Amount 0 se zyada hona chahiye','error'); return; }
+
+  const item = r.kind==='investor' ? STATE.investors.find(x=>x.id===r.refId) : STATE.loans.find(x=>x.id===r.refId);
+
+  // Reverse old effect
+  const oldCashOut = r.amount - (r.reservedApplied||0);
+  if(oldCashOut>0) adjustCash(oldCashOut, r.mode||'Cash');
+  if(item && r.kind==='investor' && r.reservedApplied>0) item.reserved = round2((item.reserved||0) + r.reservedApplied);
+  if(item && r.type==='principal') item.repaid = round2(Math.max(0,(item.repaid||0) - r.amount));
+
+  // Apply new effect. Editing doesn't re-run reserve-consumption logic, so
+  // this entry becomes a plain cash movement (reservedApplied resets to 0).
+  adjustCash(-newAmt, newMode);
+  if(item && r.type==='principal'){
+    item.repaid = round2((item.repaid||0) + newAmt);
+    if(item.repaid >= item.amount) item.status = 'Closed'; else if(item.status==='Closed') item.status = 'Active';
+  }
+
+  if(r.isEmi && STATE.reminderLog){
+    const rl = STATE.reminderLog.find(rl=>rl.type==='loan' && rl.refId===r.refId && rl.date===r.date && rl.amount===r.amount);
+    if(rl){ rl.date = newDate; rl.amount = round2(newAmt); rl.mode = newMode; rl.notes = newNotes; }
+  }
+
+  r.amount = round2(newAmt); r.date = newDate; r.mode = newMode; r.notes = newNotes; r.reservedApplied = 0;
+  rememberPayMode(newMode);
+
+  saveState();
+  closeModal('modal-repayment-edit');
+  if(r.kind==='investor') renderInvestors(); else renderLoans();
+  renderDashboard(); renderReminders();
+  if($('modal-reminder-history') && $('modal-reminder-history').classList.contains('open')) openReminderHistory(r.kind, r.refId);
+  toast('Payment entry update ho gayi','success');
 }
 
 /* ============ REMINDERS TAB ============ */
@@ -6300,8 +6950,10 @@ function openReminderDone(type, id, amount, reminderDate){
   $('rem-done-type').value = type;
   $('rem-done-id').value = id;
   $('rem-done-date').value = reminderDate || today();
-  $('rem-done-mode').value = 'Cash';
+  $('rem-done-mode').value = getDefaultPayMode();
   $('rem-done-notes').value = '';
+  $('rem-done-amt-row').style.display = type==='investor' ? '' : 'none';
+  $('rem-done-amt').value = amount;
 
   const item = type==='investor' ? STATE.investors.find(x=>x.id===id) : STATE.loans.find(x=>x.id===id);
   if(!item) return;
@@ -6333,16 +6985,50 @@ function confirmReminderDone(){
   if(type === 'investor'){
     const inv = STATE.investors.find(x=>x.id===id);
     if(!inv){ toast('Investor nahi mila','error'); return; }
-    // Shared reserve logic (idealDailyRate + pending cap + double-save guard).
-    const ok = reserveInvestorDay(id, reminderDate, mode, notes || 'Din-wise set aside');
-    saveState();
-    renderReminders();
-    renderDashboard();
-    renderInvestors();
-    closeModal('modal-reminder-done');
-    if(ok){
-      const last = inv.savingsLog[inv.savingsLog.length-1];
-      toast(`Reserve ₹${fmt(last?last.amount:0)} via ${mode} · Done`, 'success');
+    const info = investorPayable(inv);
+    const perDay = info.dailyTarget;
+    const enteredAmt = Math.max(0, numVal('rem-done-amt') || 0);
+
+    if(enteredAmt <= perDay + 0.5){
+      // Normal single-day flow — shared reserve logic (idealDailyRate +
+      // pending cap + double-save guard).
+      const ok = reserveInvestorDay(id, reminderDate, mode, notes || 'Din-wise set aside');
+      rememberPayMode(mode);
+      saveState();
+      renderReminders();
+      renderDashboard();
+      renderInvestors();
+      closeModal('modal-reminder-done');
+      if(ok){
+        const last = inv.savingsLog[inv.savingsLog.length-1];
+        toast(`Reserve ₹${fmt(last?last.amount:0)} via ${mode} · Done`, 'success');
+      }
+    } else {
+      // Lump-sum: figure out how many backlog days this amount covers at the
+      // fixed per-day rate, and mark that many OLDEST missed days Done in one
+      // shot — e.g. ₹1800 ÷ ₹300/din = 6 din ek saath "Done" ho jaate hain.
+      const missed = computeMissedDays(inv); // oldest -> newest
+      const daysToCover = Math.min(Math.floor((enteredAmt + 0.01) / perDay), missed.length);
+      if(daysToCover <= 0){
+        toast('Amount kam hai — kam se kam 1 din (' + fmt(perDay) + ') ke barabar do', 'error');
+        return;
+      }
+      const reservedBefore = inv.reserved || 0;
+      let doneCount = 0;
+      for(let k=0;k<daysToCover;k++){
+        const ds = missed[k];
+        const ok2 = reserveInvestorDay(id, ds, mode, notes || `Bulk set aside (₹${fmt(enteredAmt)} ÷ ₹${fmt(perDay)}/din)`);
+        if(ok2) doneCount++;
+      }
+      const doneTotal = round2((inv.reserved||0) - reservedBefore);
+      const leftover = round2(enteredAmt - doneTotal);
+      rememberPayMode(mode);
+      saveState();
+      renderReminders();
+      renderDashboard();
+      renderInvestors();
+      closeModal('modal-reminder-done');
+      toast(`${doneCount} din ka set aside Done (₹${fmt(doneTotal)}) via ${mode}` + (leftover>0.5?` · ₹${fmt(leftover)} extra bacha`:''), 'success');
     }
 
   } else if(type === 'loan'){
@@ -6375,6 +7061,7 @@ function confirmReminderDone(){
     }
     if(loan.repaid >= loan.amount) loan.status = 'Closed';
 
+    rememberPayMode(mode);
     saveState();
     renderReminders();
     renderLoans();
@@ -6450,6 +7137,10 @@ function openReminderHistory(type, id){
               <span class="rem-hist-mode ${modeClass}">${modeLabel}</span>
               ${l.notes ? `<div class="rem-hist-note">${escHtml(l.notes)}</div>` : ''}
               <div class="rem-hist-amt">${fmt(l.amount)}</div>
+              <div style="display:flex;gap:4px;">
+                <button class="btn btn-ghost btn-xs" title="Edit" onclick="openReserveEditModal('${item.id}','${l.id}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="btn btn-ghost btn-xs" title="Delete" style="color:var(--bad);" onclick="deleteReserveEntry('${item.id}','${l.id}')"><i class="fa-solid fa-trash"></i></button>
+              </div>
             </div>
           `;
         }).join('')
@@ -6493,6 +7184,10 @@ function openReminderHistory(type, id){
               ${isEmi ? '<span class="badge badge-purple" style="font-size:8px;">EMI</span>' : ''}
               ${p.notes ? `<div class="rem-hist-note">${escHtml(p.notes)}</div>` : ''}
               <div class="rem-hist-amt">${fmt(p.amount)}</div>
+              <div style="display:flex;gap:4px;">
+                <button class="btn btn-ghost btn-xs" title="Edit" onclick="openRepaymentEditModal('${p.id}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="btn btn-ghost btn-xs" title="Delete" style="color:var(--bad);" onclick="deleteRepaymentEntry('${p.id}')"><i class="fa-solid fa-trash"></i></button>
+              </div>
             </div>
           `;
         }).join('')
@@ -6869,19 +7564,35 @@ function filterPurchases(){
     const total = purchaseTotal(p);
     const paid = purchasePaid(p);
     const bal = round2(total - paid);
+    const statusLabel = paid>=total?'Paid':paid>0?'Partial':'Pending';
+    const initials = (s?.name||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
     return `<div class="mob-card-item accent-warn" onclick="openPurchaseDetailModal('${p.id}')">
-      <div class="mob-card-top">
-        <div><div class="mob-card-title mono">PUR-${p.purchaseNo}</div><div class="mob-card-sub">${escHtml(s?.name||'Unknown')} · ${fmtDate(p.date)}</div></div>
-        <div style="text-align:right;">
-          <div class="mono" style="font-size:15px;font-weight:700;">${fmt(total)}</div>
-          ${bal>0.004?`<div class="mono" style="font-size:10px;color:var(--warn);">Due: ${fmt(bal)}</div>`:''}
+      <div class="pc-head">
+        <div class="pc-avatar amber">${escHtml(initials)}</div>
+        <div class="pc-identity">
+          <div class="pc-title">${escHtml(s?.name||'Unknown')}</div>
+          <div class="pc-sub mono">PUR-${p.purchaseNo} · ${fmtDate(p.date)} · ${p.items?.length||0} items</div>
+        </div>
+        <div class="pc-amt">
+          <div class="amt-label">Total</div>
+          <div class="amt-val mono">${fmt(total)}</div>
         </div>
       </div>
-      <div class="mob-card-actions" onclick="event.stopPropagation()">
-        ${bal>0.004?`<button class="btn btn-warn btn-xs" onclick="openSupplierPayModal('${p.supplierId}')"><i class="fa-solid fa-hand-holding-dollar"></i> Pay</button>`:''}
-        <button class="btn btn-ghost btn-xs" onclick="openPurchaseDetailModal('${p.id}')"><i class="fa-solid fa-eye"></i> Details</button>
-        <button class="btn btn-ghost btn-xs" onclick="openPurchaseModal('${p.id}')"><i class="fa-solid fa-pen"></i></button>
-        <button class="btn btn-bad btn-xs" onclick="deletePurchase('${p.id}')"><i class="fa-solid fa-trash"></i></button>
+      <div class="pc-badges">
+        <span class="badge badge-${paid>=total?'green':paid>0?'amber':'red'}">${statusLabel}</span>
+      </div>
+      <div class="pc-meta">
+        <span>Paid ${fmt(paid)}</span>
+        <span class="pc-pill ${bal>0.004?'warn':'cleared'}">${bal>0.004?'Due '+fmt(bal):'Cleared'}</span>
+      </div>
+      ${bal>0.004 ? `
+      <div class="pc-actions-primary" onclick="event.stopPropagation()">
+        <button class="btn btn-warn" onclick="openSupplierPayModal('${p.supplierId}')"><i class="fa-solid fa-hand-holding-dollar"></i> Pay Supplier</button>
+      </div>` : ''}
+      <div class="pc-actions-secondary" onclick="event.stopPropagation()">
+        <button class="pc-icon-btn" title="Details" onclick="openPurchaseDetailModal('${p.id}')"><i class="fa-solid fa-eye"></i></button>
+        <button class="pc-icon-btn" title="Edit" onclick="openPurchaseModal('${p.id}')"><i class="fa-solid fa-pen"></i></button>
+        <button class="pc-icon-btn danger" title="Delete" onclick="deletePurchase('${p.id}')"><i class="fa-solid fa-trash"></i></button>
       </div>
     </div>`;
   }).join('') || '<div class="empty-state"><i class="fa-solid fa-cart-shopping"></i><div class="msg">No purchases yet</div></div>';
@@ -6905,10 +7616,27 @@ function filterExpenses(){
       <button class="danger" onclick="deleteExpense('${e.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
     </td>
   </tr>`).join('') || '<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-receipt"></i><div class="msg">No expenses yet</div></div></td></tr>';
-  $('exp-mob-cards').innerHTML = filtered.map(e => `<div class="mob-card-item accent-bad" onclick="deleteExpense('${e.id}')">
-    <div class="mob-card-top"><div><div class="mob-card-title">${escHtml(e.category||'General')}</div><div class="mob-card-sub">${fmtDate(e.date)}</div></div><div class="mono" style="font-size:15px;font-weight:700;color:var(--bad);">${fmt(e.amount)}</div></div>
-    ${e.description ? `<div class="mob-card-row"><span style="color:var(--muted);">${escHtml(e.description)}</span></div>` : ''}
-  </div>`).join('') || '<div class="empty-state"><i class="fa-solid fa-receipt"></i><div class="msg">No expenses yet</div></div>';
+  $('exp-mob-cards').innerHTML = filtered.map(e => {
+    const catIcons = {'Transport':'truck','Rent':'house','Salary':'user-tie','Electricity':'bolt','Packing':'box','Marketing':'bullhorn','Maintenance':'screwdriver-wrench'};
+    const icon = catIcons[e.category] || 'receipt';
+    return `<div class="mob-card-item accent-bad">
+      <div class="pc-head">
+        <div class="pc-avatar" style="background:linear-gradient(135deg,#f87171,#dc2626);box-shadow:0 4px 12px rgba(248,113,113,0.25);"><i class="fa-solid fa-${icon}" style="font-size:15px;"></i></div>
+        <div class="pc-identity">
+          <div class="pc-title">${escHtml(e.category||'General')}</div>
+          <div class="pc-sub">${fmtDate(e.date)}${e.mode ? ' · '+escHtml(e.mode) : ''}</div>
+        </div>
+        <div class="pc-amt">
+          <div class="amt-label">Amount</div>
+          <div class="amt-val mono" style="color:var(--bad);">${fmt(e.amount)}</div>
+        </div>
+      </div>
+      ${e.description ? `<div class="pc-note">${escHtml(e.description)}</div>` : ''}
+      <div class="pc-actions-secondary" onclick="event.stopPropagation()">
+        <button class="pc-icon-btn danger" title="Delete" onclick="deleteExpense('${e.id}')"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('') || '<div class="empty-state"><i class="fa-solid fa-receipt"></i><div class="msg">No expenses yet</div></div>';
 }
 
 function filterSuppliers(){
@@ -6938,10 +7666,27 @@ function filterSuppliers(){
   $('sup-mob-cards').innerHTML = filtered.map(s => {
     const purCount = STATE.purchases.filter(p=>p.supplierId===s.id && p.status!=='Cancelled').length;
     const bal = supplierBalance(s.id);
+    const initials = (s.name||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
     return `<div class="mob-card-item ${bal>0.004?'accent-warn':'accent-cyan'}" onclick="openSupplierModal('${s.id}')">
-      <div class="mob-card-top"><div><div class="mob-card-title">${escHtml(s.name)}</div><div class="mob-card-sub">${escHtml(s.firm)||''} · ${purCount} purchases</div></div><span class="mono">${formatPhoneDisplay(s.mobile)||'-'}</span></div>
-      ${bal>0.004 ? `<div class="mob-card-row"><span style="color:var(--muted);">Dena hai</span><span class="mono" style="color:var(--warn);font-weight:700;">${fmt(bal)}</span></div>
-      <div class="mob-card-actions" onclick="event.stopPropagation()"><button class="btn btn-good btn-xs" onclick="openSupplierPayModal('${s.id}')"><i class="fa-solid fa-hand-holding-dollar"></i> Pay</button></div>` : ''}
+      <div class="pc-head">
+        <div class="pc-avatar amber">${escHtml(initials)}</div>
+        <div class="pc-identity">
+          <div class="pc-title">${escHtml(s.name)}</div>
+          <div class="pc-sub">${formatPhoneDisplay(s.mobile)||'-'}${s.firm ? ' · '+escHtml(s.firm) : ''} · ${purCount} purchases</div>
+        </div>
+        <div class="pc-amt">
+          <div class="amt-label">Payable</div>
+          <div class="amt-val mono" style="color:${bal>0.004?'var(--warn)':'var(--jtext)'};">${bal>0.004?fmt(bal):'—'}</div>
+        </div>
+      </div>
+      ${bal>0.004 ? `
+      <div class="pc-actions-primary" onclick="event.stopPropagation()">
+        <button class="btn btn-good" onclick="openSupplierPayModal('${s.id}')"><i class="fa-solid fa-hand-holding-dollar"></i> Pay Supplier</button>
+      </div>` : ''}
+      <div class="pc-actions-secondary" onclick="event.stopPropagation()">
+        <button class="pc-icon-btn" title="Edit" onclick="openSupplierModal('${s.id}')"><i class="fa-solid fa-pen"></i></button>
+        <button class="pc-icon-btn danger" title="Delete" onclick="deleteSupplier('${s.id}')"><i class="fa-solid fa-trash"></i></button>
+      </div>
     </div>`;
   }).join('') || '<div class="empty-state"><i class="fa-solid fa-truck"></i><div class="msg">No suppliers yet</div></div>';
 }
@@ -8157,12 +8902,44 @@ function reactivateCustomer(id){
   toast('Customer reactivated','success');
 }
 
+/* ---------- Product categories ----------------------------------------------
+   Category is a plain free-text field on the product (p.cat). Older products
+   saved before this field existed simply have no value, so everything falls
+   back to UNCAT — nothing breaks and the shopkeeper can fill categories in
+   whenever convenient. */
+const UNCAT = 'Other / Uncategorized';
+
+function prodCat(p){
+  const c = (p && p.cat ? String(p.cat) : '').trim();
+  return c || UNCAT;
+}
+
+// Every distinct category currently in use, A-Z, with UNCAT pushed to the end.
+function allCategories(){
+  const set = new Set();
+  (STATE.products||[]).forEach(p => set.add(prodCat(p)));
+  const list = [...set].filter(c => c !== UNCAT).sort((a,b)=>a.localeCompare(b));
+  if(set.has(UNCAT)) list.push(UNCAT);
+  return list;
+}
+
+// Feeds the <datalist> in the product modal so categories stay consistent
+// instead of turning into 5 spellings of the same word.
+function refreshCatDatalist(){
+  const dl = $('prod-cat-list');
+  if(!dl) return;
+  dl.innerHTML = allCategories().filter(c => c !== UNCAT)
+    .map(c => `<option value="${escHtml(c)}"></option>`).join('');
+}
+
 function openProductModal(id){
   pendingProductCallback = null;
   const p = id ? STATE.products.find(x=>x.id===id) : null;
   $('prod-modal-title').textContent = p ? 'Edit Product' : 'New Product';
   $('prod-id').value = p?.id || '';
   $('prod-name').value = p?.name || '';
+  $('prod-cat').value = p?.cat || '';
+  refreshCatDatalist();
   $('prod-unit').value = p?.unit || 'Pcs';
   // Use nullish check so a saved GST/min-qty/min-stock value of 0 is not silently
   // reset to the default — defaults only apply when adding a brand-new product.
@@ -8233,6 +9010,7 @@ function saveProduct(){
   
   const data = {
     name,
+    cat: val('prod-cat'),
     unit: val('prod-unit'),
     gst: numVal('prod-gst'),
     prate: numVal('prod-prate'),
@@ -8322,6 +9100,7 @@ function parseBulkImport(){
       openingStock: bulkNum(c[4]),
       unit: 'Pcs',
       gst: 0,
+      cat: (c[7] || '').trim(),
       status: 'ok',
       note: ''
     };
@@ -8343,9 +9122,9 @@ function parseBulkImport(){
     // A thousands separator typed inside a comma-separated line ("2,450") splits
     // into an extra column and silently shifts every rate after it. Refuse the row
     // instead of importing a wrong price.
-    if(c.length > 7){
+    if(c.length > 8){
       row.status = 'error';
-      row.note = c.length + ' columns found (max 7) — remove commas inside numbers, write 2450 not 2,450';
+      row.note = c.length + ' columns found (max 8) — remove commas inside numbers, write 2450 not 2,450';
     }
     else if(!name){ row.status = 'error'; row.note = 'no name'; }
     else if(row.wrate <= 0){ row.status = 'error'; row.note = 'wholesale rate missing'; }
@@ -8437,6 +9216,7 @@ function saveBulkImport(){
       // Nudge createdAt so the imported block keeps the pasted order when sorted
       createdAt: now + i,
       name: r.name,
+      cat: r.cat || '',
       unit: r.unit,
       gst: r.gst,
       prate: r.prate,
@@ -8661,6 +9441,324 @@ function addNewOrderItem(productId){
 }
 
 // addOrderLine() removed — handled by search input now
+
+/* ==========================================================================
+   ITEM PICKER — category-wise browse with multi-select
+   --------------------------------------------------------------------------
+   Adding a 15-line order one search at a time is slow. This opens a scrollable,
+   category-grouped list where several items can be ticked (with qty) and then
+   pushed into the order in a single action. The original search box still works
+   exactly as before — this is an additional path, not a replacement.
+
+   _pickSel maps productId -> qty. It is a scratch buffer: currentOrderItems is
+   only touched inside commitItemPicker(), which reuses addNewOrderItem()'s
+   rules (party rate, GST fallback, merge-if-already-present) so a picked line
+   is indistinguishable from a searched one.
+   ========================================================================== */
+let _pickSel = {};
+let _pickCat = 'all';
+let _pickCollapsed = {};
+
+function openItemPicker(){
+  _pickSel = {};
+  _pickCat = 'all';
+  _pickCollapsed = {};
+  const s = $('pick-search'); if(s) s.value = '';
+
+  // Show which customer's rates are in play — party rates change the numbers
+  const custId = val('order-cust-id');
+  const c = custId ? STATE.customers.find(x=>x.id===custId) : null;
+  const note = $('pick-cust-note');
+  if(note){
+    if(c){
+      note.style.display = 'block';
+      note.innerHTML = `<i class="fa-solid fa-user" style="color:var(--accent2);margin-right:5px;"></i><strong>${escHtml(c.name)}</strong> — jahan party rate yaad hai wahan ★ dikhega`;
+    } else {
+      note.style.display = 'block';
+      note.innerHTML = `<i class="fa-solid fa-circle-info" style="color:var(--warn);margin-right:5px;"></i>Customer pehle chuno to party ke yaad kiye hue rate apne aap lag jayenge`;
+    }
+  }
+  renderPickerCats();
+  renderPickerQuick();
+  renderItemPicker();
+  openModal('modal-item-picker');
+}
+
+// Category tab strip. Counts are of products, not selections.
+function renderPickerCats(){
+  const box = $('pick-cats');
+  if(!box) return;
+  const cats = allCategories();
+  const total = (STATE.products||[]).length;
+  let html = `<button type="button" class="chip-tile ${_pickCat==='all'?'active':''}" onclick="setPickerCat('all')">All <span style="opacity:.6;">${total}</span></button>`;
+  html += cats.map(cat => {
+    const n = (STATE.products||[]).filter(p => prodCat(p) === cat).length;
+    return `<button type="button" class="chip-tile ${_pickCat===cat?'active':''}" onclick="setPickerCat('${escJsAttr(cat)}')" style="white-space:nowrap;">${escHtml(cat)} <span style="opacity:.6;">${n}</span></button>`;
+  }).join('');
+  box.innerHTML = html;
+}
+
+function setPickerCat(cat){
+  _pickCat = cat;
+  renderPickerCats();
+  renderItemPicker();
+}
+
+/* Quick chips — this customer's last-order items and their most-bought items.
+   For a repeat buyer this alone usually fills the whole order in two taps. */
+function renderPickerQuick(){
+  const box = $('pick-quick');
+  if(!box) return;
+  const custId = val('order-cust-id');
+  if(!custId){ box.innerHTML = ''; return; }
+
+  const orders = (STATE.orders||[])
+    .filter(o => !o.deleted && o.customerId === custId && o.status !== 'Cancelled')
+    .sort((a,b) => new Date(b.date) - new Date(a.date));
+  if(!orders.length){ box.innerHTML = ''; return; }
+
+  // Last order's inventory items, in original bill order
+  const lastIds = [];
+  (orders[0].items||[]).forEach(it => {
+    if(it.productId && !lastIds.includes(it.productId) && STATE.products.some(p=>p.id===it.productId)){
+      lastIds.push(it.productId);
+    }
+  });
+
+  // Frequency across this customer's history (how many bills an item appears on)
+  const freq = {};
+  orders.forEach(o => {
+    const seen = new Set();
+    (o.items||[]).forEach(it => {
+      if(!it.productId || seen.has(it.productId)) return;
+      seen.add(it.productId);
+      freq[it.productId] = (freq[it.productId]||0) + 1;
+    });
+  });
+  const topIds = Object.keys(freq)
+    .filter(id => freq[id] > 1 && STATE.products.some(p=>p.id===id))
+    .sort((a,b) => freq[b] - freq[a])
+    .slice(0,10);
+
+  let html = '';
+  if(lastIds.length){
+    html += `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
+      <span style="font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;">Pichla order</span>
+      <button type="button" class="btn btn-xs btn-ghost" onclick="pickAllFromList(${JSON.stringify(lastIds).replace(/"/g,'&quot;')})" style="border-color:rgba(139,108,255,0.35);color:var(--accent);">
+        <i class="fa-solid fa-check-double"></i> Sab select karo (${lastIds.length})
+      </button>
+    </div>`;
+    html += `<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">` + lastIds.map(id => {
+      const p = STATE.products.find(x=>x.id===id);
+      const on = _pickSel[id] !== undefined;
+      return `<button type="button" class="qchip" onclick="togglePick('${id}')" style="${on?'border-color:var(--accent);color:var(--accent);background:rgba(139,108,255,0.12);':''}">${on?'<i class=\"fa-solid fa-check\" style=\"font-size:8px;margin-right:4px;\"></i>':''}${escHtml(p.name)}</button>`;
+    }).join('') + `</div>`;
+  }
+  if(topIds.length){
+    html += `<div style="font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Baar baar liye gaye</div>`;
+    html += `<div style="display:flex;gap:5px;flex-wrap:wrap;">` + topIds.map(id => {
+      const p = STATE.products.find(x=>x.id===id);
+      const on = _pickSel[id] !== undefined;
+      return `<button type="button" class="qchip" onclick="togglePick('${id}')" style="${on?'border-color:var(--accent);color:var(--accent);background:rgba(139,108,255,0.12);':''}">${on?'<i class=\"fa-solid fa-check\" style=\"font-size:8px;margin-right:4px;\"></i>':''}${escHtml(p.name)} <span style="opacity:.55;">×${freq[id]}</span></button>`;
+    }).join('') + `</div>`;
+  }
+  box.innerHTML = html ? `<div style="padding:9px 10px;background:var(--panel2);border:1px solid var(--line);border-radius:9px;">${html}</div>` : '';
+}
+
+function pickAllFromList(ids){
+  (ids||[]).forEach(id => { if(_pickSel[id] === undefined) _pickSel[id] = 1; });
+  renderPickerQuick();
+  renderItemPicker();
+}
+
+// Rate shown in the picker follows the same precedence as addNewOrderItem()
+function pickerRate(productId){
+  const p = STATE.products.find(x=>x.id===productId);
+  if(!p) return { rate:0, isParty:false };
+  const custId = val('order-cust-id');
+  const partyRate = custId ? getPartyRate(custId, productId) : null;
+  return partyRate !== null ? { rate:partyRate, isParty:true } : { rate:(p.wrate||0), isParty:false };
+}
+
+function renderItemPicker(){
+  const box = $('pick-list');
+  if(!box) return;
+  const q = (val('pick-search')||'').toLowerCase();
+
+  let list = (STATE.products||[]).filter(p => {
+    if(q && !(p.name||'').toLowerCase().includes(q)) return false;
+    if(_pickCat !== 'all' && prodCat(p) !== _pickCat) return false;
+    return true;
+  });
+
+  if(!list.length){
+    box.innerHTML = `<div style="text-align:center;padding:24px 10px;color:var(--muted);font-size:11px;">
+      <i class="fa-solid fa-box-open" style="font-size:20px;margin-bottom:6px;opacity:0.3;display:block;"></i>
+      Koi product nahi mila${q?` "${escHtml(q)}" ke liye`:''}
+      ${q?`<div style="margin-top:10px;"><button type="button" class="btn btn-sm btn-ghost" onclick="pickerAddNewProduct()"><i class="fa-solid fa-plus"></i> Naya product banao</button></div>`:''}
+    </div>`;
+    updatePickSummary();
+    return;
+  }
+
+  // Group into categories (a single selected category still renders its header,
+  // which keeps the sticky-header behaviour consistent while scrolling)
+  const groups = {};
+  list.forEach(p => {
+    const c = prodCat(p);
+    (groups[c] = groups[c] || []).push(p);
+  });
+  const keys = Object.keys(groups).filter(k=>k!==UNCAT).sort((a,b)=>a.localeCompare(b));
+  if(groups[UNCAT]) keys.push(UNCAT);
+
+  let html = '';
+  keys.forEach(cat => {
+    const items = groups[cat].sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+    // While searching, keep everything expanded so results are never hidden
+    const collapsed = !q && _pickCollapsed[cat];
+    const selCount = items.filter(p => _pickSel[p.id] !== undefined).length;
+    html += `<div class="pick-cat-head ${collapsed?'collapsed':''}" onclick="togglePickCat('${escJsAttr(cat)}')">
+      <i class="fa-solid fa-chevron-down pick-cat-chev"></i>
+      <span>${escHtml(cat)}</span>
+      <span class="pick-cat-count">${selCount?`<span style="color:var(--accent);">${selCount} chune</span> · `:''}${items.length} item</span>
+    </div>`;
+    if(collapsed) return;
+
+    html += items.map(p => {
+      const sel = _pickSel[p.id] !== undefined;
+      const qty = sel ? _pickSel[p.id] : 1;
+      const { rate, isParty } = pickerRate(p.id);
+      const stk = productStock(p.id);
+      const tracks = p.trackStock !== false;
+      const low = tracks && p.minStock > 0 && stk <= p.minStock;
+      const oos = tracks && stk <= 0;
+      const meta = [
+        p.unit || 'Pcs',
+        `GST ${p.gst||0}%`,
+        tracks ? `Stock ${stk}${oos?' — khatam':low?' — kam':''}` : 'Stock off'
+      ].join(' · ');
+
+      return `<div class="pick-row ${sel?'on':''} ${oos?'oos':''}" onclick="togglePick('${p.id}')">
+        <div class="pick-check"><i class="fa-solid fa-check"></i></div>
+        <div class="pick-name">
+          <div class="n">${escHtml(p.name)}</div>
+          <div class="m" style="${oos?'color:var(--bad);':low?'color:var(--warn);':''}">${meta}</div>
+        </div>
+        <div class="pick-rate">${isParty?'★ ':''}${fmt(rate)}</div>
+        ${sel ? `<div class="pick-qty" onclick="event.stopPropagation();">
+            <button type="button" onclick="pickQty('${p.id}',-1)">−</button>
+            <input type="number" class="inp" value="${qty}" min="1"
+              onclick="event.stopPropagation();"
+              onchange="pickQtySet('${p.id}',this.value)">
+            <button type="button" onclick="pickQty('${p.id}',1)">+</button>
+          </div>` : `<div class="pick-qty" style="opacity:.35;font-size:10px;color:var(--muted);">tap</div>`}
+      </div>`;
+    }).join('');
+  });
+
+  box.innerHTML = html;
+  updatePickSummary();
+}
+
+function togglePickCat(cat){
+  _pickCollapsed[cat] = !_pickCollapsed[cat];
+  renderItemPicker();
+}
+
+function togglePick(productId){
+  if(_pickSel[productId] !== undefined) delete _pickSel[productId];
+  else _pickSel[productId] = 1;
+  renderItemPicker();
+  renderPickerQuick();
+}
+
+function pickQty(productId, delta){
+  const cur = _pickSel[productId] || 1;
+  _pickSel[productId] = Math.max(1, cur + delta);
+  renderItemPicker();
+}
+
+function pickQtySet(productId, v){
+  const n = parseFloat(v);
+  _pickSel[productId] = (!n || n < 1) ? 1 : n;
+  renderItemPicker();
+}
+
+function clearItemPicker(){
+  _pickSel = {};
+  renderItemPicker();
+  renderPickerQuick();
+}
+
+// Live running total so the shopkeeper knows the damage before committing
+function updatePickSummary(){
+  const ids = Object.keys(_pickSel);
+  const sum = $('pick-summary');
+  const lbl = $('pick-add-label');
+  if(lbl) lbl.textContent = ids.length ? `Add ${ids.length} Item${ids.length>1?'s':''}` : 'Add to Order';
+  if(!sum) return;
+  if(!ids.length){ sum.innerHTML = 'Kuch select nahi kiya'; return; }
+  let amt = 0, noRate = 0;
+  ids.forEach(id => {
+    const { rate } = pickerRate(id);
+    if(rate <= 0) noRate++;
+    amt += rate * (_pickSel[id]||1);
+  });
+  sum.innerHTML = `<strong style="color:var(--jtext);">${ids.length}</strong> item · <span class="mono" style="color:var(--accent);font-weight:700;">${fmt(amt)}</span>`
+    + (noRate ? ` · <span style="color:var(--bad);">${noRate} ka rate 0 hai</span>` : '');
+}
+
+// Opens the product modal from inside the picker for a name that doesn't exist
+// yet. On save the new product is selected in the picker rather than dropped
+// straight onto the order, so the picker session isn't lost.
+function pickerAddNewProduct(){
+  const typed = val('pick-search');
+  closeModal('modal-item-picker');
+  openProductModal();
+  $('prod-name').value = typed;
+  pendingProductCallback = (prod) => {
+    _pickSel[prod.id] = 1;
+    openModal('modal-item-picker');
+    renderPickerCats();
+    renderPickerQuick();
+    renderItemPicker();
+  };
+  updateProductSummary();
+  setTimeout(()=>$('prod-wrate')?.focus(), 60);
+}
+
+function commitItemPicker(){
+  const ids = Object.keys(_pickSel);
+  if(!ids.length){ toast('Pehle koi item select karo','error'); return; }
+  const custId = val('order-cust-id');
+  let added = 0, merged = 0;
+
+  ids.forEach(id => {
+    const p = STATE.products.find(x=>x.id===id);
+    if(!p) return;
+    const qty = _pickSel[id] || 1;
+    const existing = currentOrderItems.find(it => it.productId === id);
+    if(existing){
+      existing.qty = (existing.qty || 0) + qty;
+      merged++;
+    } else {
+      const partyRate = custId ? getPartyRate(custId, id) : null;
+      currentOrderItems.push({
+        productId: p.id,
+        qty: qty,
+        rate: partyRate !== null ? partyRate : (p.wrate || 0),
+        gst: (p.gst !== undefined && p.gst !== null && p.gst !== '') ? (parseFloat(p.gst) || 0) : 0,
+        disc: 0
+      });
+      added++;
+    }
+  });
+
+  _pickSel = {};
+  closeModal('modal-item-picker');
+  renderOrderItems();
+  toast(`${added} item add hue${merged?`, ${merged} ki qty badhi`:''}`, 'success');
+}
 
 // ---------- Custom (non-inventory) order line item ----------------------
 // For a one-off charge or item that isn't in the product catalogue — packing,
@@ -10520,7 +11618,7 @@ function openRepayModal(kind,refId){
   $('repay-date').value = today();
   $('repay-notes').value = '';
   $('repay-type').value = 'principal';
-  $('repay-mode').value = 'Cash';
+  $('repay-mode').value = getDefaultPayMode();
   
   const item = kind==='investor' ? STATE.investors.find(x=>x.id===refId) : STATE.loans.find(x=>x.id===refId);
   if(!item) return;
@@ -10574,6 +11672,7 @@ function saveRepay(){
     createdAt: Date.now()
   });
   
+  rememberPayMode(val('repay-mode') || 'Cash');
   saveState();
   closeModal('modal-repay');
   if(kind==='investor') renderInvestors();
@@ -10968,6 +12067,7 @@ function navigateTo(ev, url, label, icon){
   });
 })();
 </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
