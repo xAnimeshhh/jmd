@@ -306,6 +306,9 @@ select.csel-native { position: absolute; width: 1px; height: 1px; padding: 0; ma
 .pc-stat { text-align: right; min-width: 62px; flex-shrink: 0; }
 .pc-stat .k { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1px; }
 .pc-stat .v { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 700; }
+.pc-balance-stat { min-width: 68px; padding: 0; background: transparent; border: 0; }
+.pc-balance-stat .k { color: var(--muted); }
+.pc-balance-stat .v { font-size: 13px; }
 .pc-actions { display: flex; gap: 5px; flex-shrink: 0; }
 .pc-chevron { display: none; }
 @media(max-width: 700px){
@@ -494,12 +497,41 @@ select.csel-native { position: absolute; width: 1px; height: 1px; padding: 0; ma
 .tab-section.active { display: block; }
 
 /* ── Shop matrix table ── */
-.shop-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.shop-table { display:none; width: 100%; border-collapse: collapse; font-size: 12.5px; }
 .shop-table th { text-align: left; padding: 8px 12px; font-size: 9.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; border-bottom: 1px solid var(--line); }
 .shop-table td { padding: 10px 12px; border-bottom: 1px solid rgba(130,110,255,0.06); }
 .shop-table tr:last-child td { border-bottom: none; font-weight: 700; background: rgba(139,108,255,0.03); }
 .shop-table .editable-cell { cursor: pointer; border-radius: 4px; padding: 2px 4px; transition: all 0.15s; }
 .shop-table .editable-cell:hover { background: rgba(139,108,255,0.1); }
+.shop-mobile-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 10px 12px 4px; }
+.shop-mobile-card {
+  background: var(--panel2); border: 1px solid var(--line); border-left: 3px solid var(--shop-color, var(--accent));
+  border-radius: 10px; padding: 10px 12px; margin-bottom: 7px; cursor: pointer;
+}
+.shop-mobile-top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.shop-mobile-name { display:flex; align-items:center; gap:7px; font-weight:700; }
+.shop-mobile-net { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:800; }
+.shop-mobile-main { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:9px; }
+.shop-mobile-detail { display:none; grid-template-columns:repeat(2,1fr); gap:6px; margin-top:8px; padding-top:8px; border-top:1px dashed var(--line); }
+.shop-mobile-card.open .shop-mobile-detail { display:grid; }
+.shop-mobile-card.open .shop-mobile-chevron { transform:rotate(180deg); color:var(--accent); }
+.shop-mobile-total { grid-column: 1 / -1; cursor: default; }
+.shop-mobile-total .shop-mobile-main { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.shop-mobile-k { font-size:8.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+.shop-mobile-v { font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; margin-top:2px; }
+.shop-mobile-value-row { display:flex; align-items:center; gap:4px; }
+.shop-mobile-edit { background:transparent; border:0; color:var(--muted); cursor:pointer; padding:1px 2px; font-size:9px; }
+.shop-mobile-edit:hover { color:var(--accent); }
+.shop-mobile-chevron { color:var(--muted); transition:transform .15s; margin-left:5px; }
+.qs-combined { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+.qs-mini { min-width:0; }
+.qs-mini + .qs-mini { border-left:1px solid var(--line); padding-left:12px; }
+@media(max-width:640px){ .qs-combined { grid-template-columns:repeat(2,1fr); gap:8px; padding:10px 12px; } .qs-mini + .qs-mini { padding-left:8px; } .qs-mini:nth-child(odd) { border-left:0; padding-left:0; } }
+@media(max-width:640px){
+  .shop-table { display:none; }
+  .shop-mobile-cards { grid-template-columns: 1fr; }
+  .shop-mobile-total .shop-mobile-main { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 
 /* ── Perf cards ── */
 .perf-card {
@@ -876,6 +908,40 @@ select.csel-native { position: absolute; width: 1px; height: 1px; padding: 0; ma
 .dc-tab-done { width:15px; height:15px; border-radius:50%; background:var(--good); color:#fff; font-size:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 0 8px rgba(52,211,153,.5); }
 .dc-form-panel { display: none; }
 .dc-form-panel.active { display: block; }
+.dc-form-shell {
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--line));
+  box-shadow: 0 8px 28px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.035);
+}
+.dc-form-content > div[style*="display:grid"] { gap: 8px !important; }
+.dc-form-content .dc-input-card {
+  min-height: 77px;
+  background: rgba(255,255,255,.035) !important;
+  border-color: rgba(255,255,255,.10) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+.dc-form-content .dc-input-card:nth-child(1) { border-left: 3px solid rgba(52,211,153,.75) !important; }
+.dc-form-content .dc-input-card:nth-child(2) { border-left: 3px solid rgba(251,191,36,.75) !important; }
+.dc-form-content .dc-input-card:nth-child(3) { border-left: 3px solid rgba(34,211,238,.75) !important; }
+.dc-form-content .dc-input-card:nth-child(4) { border-left: 3px solid rgba(248,113,113,.65) !important; }
+.dc-form-content .dc-input-card-hd { margin-bottom: 6px; }
+.dc-expense-section {
+  background: rgba(255,255,255,.035) !important;
+  border-color: rgba(251,146,60,.28) !important;
+  border-left: 3px solid rgba(251,146,60,.75) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+.dc-expense-section .lbl { color: var(--jtext); }
+.dc-expense-section .lbl i { color: #fb923c !important; }
+.dc-expense-add {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+}
+@media(max-width:640px){
+  .dc-expense-section { padding: 10px 11px !important; }
+  .dc-expense-section .chip-group { gap: 4px; }
+}
 .dc-common-date-bar {
   display:flex; align-items:center; gap:14px; flex-wrap:wrap;
   background:linear-gradient(135deg, rgba(124,92,252,0.1), rgba(124,92,252,0.03));
@@ -894,11 +960,33 @@ select.csel-native { position: absolute; width: 1px; height: 1px; padding: 0; ma
   .dc-common-date-bar .dc-progress { margin-left: 0; justify-content: space-between; }
   .dc-input-card-hd { font-size: 9px; }
   .dc-input-field { font-size: 17px; }
+  .dc-form-content { padding: 11px 12px !important; }
+  .dc-form-content .dc-input-card { min-height: 68px; padding: 8px 10px; }
 }
 @media(max-width:420px){
   #dc-forms .dc-daily-expense-row { flex-direction: column; }
   #dc-forms .dc-daily-expense-row input { width: 100% !important; flex: none !important; }
   #dc-forms .dc-daily-expense-row button { width: 100% !important; height: 38px !important; }
+}
+.dc-expense-section .dc-daily-expense-row {
+  align-items: center;
+}
+@media(max-width:420px){
+  #dc-forms .dc-daily-expense-row {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 72px 38px;
+    gap: 5px !important;
+  }
+  #dc-forms .dc-daily-expense-row input {
+    width: auto !important;
+    min-width: 0;
+    height: 34px;
+  }
+  #dc-forms .dc-daily-expense-row button.dc-expense-add {
+    width: 38px !important;
+    height: 34px !important;
+    padding: 0 !important;
+  }
 }
 .dc-input-card { border-radius: 11px; padding: 10px 12px; transition: transform 0.15s; }
 .dc-input-card:focus-within { transform: translateY(-1px); }
@@ -953,7 +1041,7 @@ hr.divider { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
 .dce-today-btn:hover { border-color: var(--accent2); background: rgba(34,211,238,0.08); }
 .dce-send-btn { flex-shrink: 0; }
 .dc-entries-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
-.dc-entries-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 760px; }
+.dc-entries-table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .dc-entries-table th {
   text-align: right; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
   padding: 9px 12px; background: var(--panel2); border-bottom: 1px solid var(--line); white-space: nowrap; cursor: pointer; user-select: none;
@@ -968,10 +1056,25 @@ hr.divider { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
 .dc-entries-table tbody tr:last-child td { border-bottom: none; }
 .dc-entries-table tbody tr.dc-profit-pos { border-left-color: var(--good); }
 .dc-entries-table tbody tr.dc-profit-neg { border-left-color: var(--bad); }
+.dc-entries-table tbody tr.dce-summary-row { cursor: pointer; }
+.dc-entries-table tbody tr.dce-summary-row td { padding-top: 9px; padding-bottom: 9px; }
+.dc-entries-table tbody tr.dce-detail-row { background: rgba(139,108,255,0.035); }
+.dc-entries-table tbody tr.dce-detail-row td { padding: 0; border-bottom: 1px solid var(--line); }
+.dce-detail-panel {
+  display: grid; grid-template-columns: repeat(5, minmax(110px, 1fr)); gap: 8px;
+  padding: 12px 14px 14px; border-top: 1px dashed var(--line);
+}
+.dce-detail-item { background: rgba(255,255,255,.035); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.dce-detail-item .k { font-size: 9px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
+.dce-detail-item .v { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; }
+.dce-summary-chevron { color: var(--muted); margin-left: 5px; transition: transform .15s; }
+.dce-summary-row.expanded .dce-summary-chevron { transform: rotate(180deg); color: var(--accent); }
+@media(max-width: 800px){ .dce-detail-panel { grid-template-columns: repeat(3, minmax(90px, 1fr)); } }
+@media(max-width: 640px){ .dce-detail-panel { grid-template-columns: repeat(2, minmax(90px, 1fr)); } }
 .dce-sub { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: var(--muted); font-weight: 600; margin-top: 2px; }
 
 /* ── Day Close entries: dedicated card layout on mobile instead of a cramped scrolling table ── */
-.dc-entries-cards { display: none; flex-direction: column; gap: 8px; }
+.dc-entries-cards { display: none; flex-direction: column; gap: 5px; }
 @media(max-width: 640px){
   .dc-entries-wrap { display: none; }
   .dc-entries-cards { display: flex; }
@@ -1047,6 +1150,16 @@ hr.divider { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
   transition: all 0.15s;
 }
 .he-row:hover { border-color: var(--line-hover); }
+.he-month-toggle {
+  width: 100%; display: flex; justify-content: space-between; align-items: center;
+  background: transparent; border: 0; color: inherit; cursor: pointer;
+  padding: 4px; text-align: left;
+}
+.he-month-toggle:hover { background: rgba(139,108,255,.06); border-radius: 7px; }
+.he-month-chevron { color: var(--muted); transition: transform .15s; }
+.he-month-toggle.open .he-month-chevron { transform: rotate(180deg); color: var(--accent); }
+.he-month-items { display: none; }
+.he-month-items.open { display: block; }
 .he-cat-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 .he-row .he-row-desc { font-size: 12.5px; font-weight: 600; }
 .he-row .he-row-meta { font-size: 10px; color: var(--muted); margin-top: 2px; display: flex; gap: 7px; flex-wrap: wrap; }
@@ -1222,6 +1335,7 @@ html,body{overflow-x:hidden;max-width:100%;}
       <div class="nav-label">Records</div>
       <div class="nav-item" id="nav-staff" onclick="switchTab(&#39;staff&#39;)"><i class="fa-solid fa-user-tie" style="width:14px;"></i> Staff Salary <span class="nav-badge amber" id="badge-staff"></span></div>
       <div class="nav-item" id="nav-homeexp" onclick="switchTab(&#39;homeexp&#39;)"><i class="fa-solid fa-house" style="width:14px;"></i> Home Expenses <span class="nav-badge amber" id="badge-homeexp"></span></div>
+      <div class="nav-item" id="nav-savingsvault" onclick="openSavingsVault()"><i class="fa-solid fa-vault" style="width:14px;"></i> Savings Vault <span class="nav-badge amber" id="badge-savingsvault"></span></div>
       <div class="nav-item" id="nav-reports" onclick="switchTab(&#39;reports&#39;)"><i class="fa-solid fa-chart-line" style="width:14px;"></i> Reports</div>
       <div class="nav-item" id="nav-audit" onclick="switchTab(&#39;audit&#39;)"><i class="fa-solid fa-list-ul" style="width:14px;"></i> Audit Log</div>
       <div class="nav-item" id="nav-settings" onclick="switchTab(&#39;settings&#39;)"><i class="fa-solid fa-gear" style="width:14px;"></i> Settings</div>
@@ -1322,18 +1436,18 @@ html,body{overflow-x:hidden;max-width:100%;}
           </div>
         </div>
 
-        <div class="dashboard-attention-strip">
+        <div class="dashboard-attention-strip" id="dashboard-attention-strip">
           <div class="attention-copy">
             <span class="attention-icon"><i class="fa-solid fa-circle-exclamation"></i></span>
-            <span><strong>Needs Attention</strong><small>Pending items are highlighted in the sidebar</small></span>
+            <span><strong id="attention-title">Needs Attention</strong><small id="attention-detail">Pending items are highlighted in the sidebar</small></span>
           </div>
-          <button type="button" class="btn btn-ghost btn-xs" onclick="switchTab('udhaari')">Review Credit <i class="fa-solid fa-arrow-right"></i></button>
+          <button type="button" class="btn btn-ghost btn-xs" id="attention-action" onclick="switchTab('udhaari')">Review <i class="fa-solid fa-arrow-right"></i></button>
         </div>
 
         <!-- Shop matrix -->
         <div class="card" style="margin-bottom:18px;overflow:auto;">
           <div style="padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-            <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;">Shop Balances <span style="font-size:10px;font-weight:400;margin-left:6px;color:var(--muted);">— current balance, right now (dbl-click to edit)</span></div>
+            <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;">Shop Balances <span style="font-size:10px;font-weight:400;margin-left:6px;color:var(--muted);">— current balance, right now (tap ✎ to edit)</span></div>
           </div>
           <table class="shop-table">
             <thead><tr>
@@ -1346,21 +1460,26 @@ html,body{overflow-x:hidden;max-width:100%;}
               <th title="Loans borrowed and repaid">Loans <span style="font-weight:400;font-size:8.5px;">(Borrowed/Repaid)</span></th>
               <th>Net Worth</th>
             </tr></thead>
-            <tbody id="shop-tbody"></tbody>
-          </table>
+             <tbody id="shop-tbody"></tbody>
+           </table>
+           <div class="shop-mobile-cards" id="shop-mobile-cards"></div>
         </div>
 
         <!-- Quick stats -->
-        <div class="stat-grid-3">
-          <div class="stat-tile">
+        <div class="stat-tile qs-combined">
+          <div class="qs-mini">
             <div class="st-label"><i class="fa-solid fa-plus-circle" style="color:var(--accent);"></i> Credit Entries Today</div>
             <div class="st-val" id="qs-today">0</div>
           </div>
-          <div class="stat-tile">
+          <div class="qs-mini">
+            <div class="st-label"><i class="fa-solid fa-cash-register" style="color:var(--good);"></i> Today's Sale</div>
+            <div class="st-val" id="qs-todaysale" style="color:var(--good);">₹0</div>
+          </div>
+          <div class="qs-mini">
             <div class="st-label"><i class="fa-solid fa-calendar" style="color:var(--warn);"></i> Last Day Close</div>
             <div class="st-val" id="qs-lastdc" style="font-size:13px;">—</div>
           </div>
-          <div class="stat-tile">
+          <div class="qs-mini">
             <div class="st-label"><i class="fa-solid fa-triangle-exclamation" style="color:var(--bad);"></i> Loans Pending</div>
             <div class="st-val" id="qs-loans" style="color:var(--bad);">₹0</div>
           </div>
@@ -1416,31 +1535,31 @@ html,body{overflow-x:hidden;max-width:100%;}
               <i class="fa-solid fa-cash-register ms-hero-icon"></i>
             </div>
             <div class="ms-grid">
-              <div class="ms-tile">
+              <div class="ms-tile" role="button" tabindex="0" title="Open shop balances" onclick="openMonthlySummaryDestination('balance')">
                 <div class="ms-tile-label"><i class="fa-solid fa-scale-balanced" style="color:var(--accent2);"></i> Live Bal (Home | Bank)</div>
                 <div class="ms-tile-val" style="font-size:16px;"><span id="ms-home-val" style="color:var(--warn);">₹0</span> <span style="color:var(--muted);font-size:13px;">|</span> <span id="ms-bank-val" style="color:var(--accent2);">₹0</span></div>
                 <div class="ms-tile-sub">Adjustment: <span class="mono" id="ms-adj-val">₹0</span></div>
               </div>
-              <div class="ms-tile">
+              <div class="ms-tile" role="button" tabindex="0" title="Open home expenses" onclick="openMonthlySummaryDestination('expenses')">
                 <div class="ms-tile-label"><i class="fa-solid fa-file-invoice-dollar" style="color:var(--bad);"></i> Monthly Expenses</div>
                 <div class="ms-tile-val" id="ms-exp-val" style="color:var(--bad);">₹0</div>
               </div>
-              <div class="ms-tile">
+              <div class="ms-tile" role="button" tabindex="0" title="Open Cash Savings in Savings Vault" onclick="openMonthlySummaryDestination('cash')">
                 <div class="ms-tile-label"><i class="fa-solid fa-piggy-bank" style="color:var(--good);"></i> Cash Savings (30%)</div>
                 <div class="ms-tile-val" id="ms-cashsave-val" style="color:var(--good);">₹0</div>
                 <div class="ms-tile-sub" id="ms-cashsave-sub" style="font-size:10px;color:var(--muted);">Target: ₹0 · Confirmed: ₹0</div>
               </div>
-              <div class="ms-tile">
+              <div class="ms-tile" role="button" tabindex="0" title="Open Bank Savings in Savings Vault" onclick="openMonthlySummaryDestination('bank')">
                 <div class="ms-tile-label"><i class="fa-solid fa-building-columns" style="color:var(--accent2);"></i> Bank Savings (30%)</div>
                 <div class="ms-tile-val" id="ms-banksave-val" style="color:var(--accent2);">₹0</div>
                 <div class="ms-tile-sub" id="ms-banksave-sub" style="font-size:10px;color:var(--muted);">Target: ₹0 · Confirmed: ₹0</div>
               </div>
-              <div class="ms-tile">
+              <div class="ms-tile" role="button" tabindex="0" title="Open staff and bills records" onclick="openMonthlySummaryDestination('staff')">
                 <div class="ms-tile-label"><i class="fa-solid fa-users" style="color:var(--warn);"></i> Staff/Bills Reserve (10%)</div>
                 <div class="ms-tile-val" id="ms-staffreserve-val" style="color:var(--warn);">₹0</div>
                 <div class="ms-tile-sub" id="ms-staffreserve-sub" style="font-size:10px;color:var(--muted);">Target: ₹0 · Confirmed: ₹0</div>
               </div>
-              <div class="ms-tile">
+              <div class="ms-tile" role="button" tabindex="0" title="Open loans" onclick="openMonthlySummaryDestination('loans')">
                 <div class="ms-tile-label"><i class="fa-solid fa-hand-holding-dollar" style="color:var(--bad);"></i> Loans (Borrowed | Repaid)</div>
                 <div class="ms-tile-val" style="font-size:16px;"><span id="ms-loan-borrowed-val" style="color:var(--bad);">₹0</span> <span style="color:var(--muted);font-size:13px;">|</span> <span id="ms-loan-repaid-val" style="color:var(--good);">₹0</span></div>
               </div>
@@ -1568,10 +1687,6 @@ html,body{overflow-x:hidden;max-width:100%;}
                     <th>Report</th>
                     <th onclick="setDcEntriesSort('date')">Date <span class="sort-arrow" id="dce-arrow-date"></span></th>
                     <th onclick="setDcEntriesSort('sale')">Sale <span class="sort-arrow" id="dce-arrow-sale"></span></th>
-                    <th onclick="setDcEntriesSort('savings')">Savings (C/B) <span class="sort-arrow" id="dce-arrow-savings"></span></th>
-                    <th onclick="setDcEntriesSort('netcash')">Net Cash <span class="sort-arrow" id="dce-arrow-netcash"></span></th>
-                    <th onclick="setDcEntriesSort('gpay')">GPay Bal <span class="sort-arrow" id="dce-arrow-gpay"></span></th>
-                    <th onclick="setDcEntriesSort('expense')">Exp/Out <span class="sort-arrow" id="dce-arrow-expense"></span></th>
                     <th>Action</th>
                   </tr>
                 </thead>
@@ -1694,6 +1809,18 @@ html,body{overflow-x:hidden;max-width:100%;}
 
       <!-- ═══ HOME EXPENSES ═══ -->
       <div class="tab-section" id="tab-homeexp">
+        <!-- Profit spending is a record-only ledger. It never changes Day Close profit
+             or shop balances; it only shows how much of the 40% profit reserve was used. -->
+        <div class="section-hd">
+          <div>
+            <h2><i class="fa-solid fa-wallet" style="margin-right:5px;color:var(--good);"></i>Profit Spending Tracker</h2>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">40% profit alag rahega — phone, personal purchase ya koi bhi kharch yahan sirf record karein</div>
+          </div>
+          <button class="btn btn-good btn-sm" onclick="openProfitSpendModal()"><i class="fa-solid fa-plus"></i> Add Profit Expense</button>
+        </div>
+        <div id="profit-spend-summary" style="margin-bottom:22px;"></div>
+        <div id="profit-spend-list" style="margin-bottom:26px;"></div>
+
         <!-- Fixed Payments Reminders -->
         <div class="section-hd">
           <div>
@@ -1899,9 +2026,11 @@ html,body{overflow-x:hidden;max-width:100%;}
             <div style="font-size:11.5px;">Example: Took ₹2000 home, left ₹500 in counter, received ₹1000 GPay, spent ₹200 from counter, yesterday's counter was ₹800 →</div>
             <div style="font-family:&#39;JetBrains Mono&#39;,monospace;margin-top:6px;color:var(--jtext);">Sale = 2000 + 500 + 1000 + 200 − 800 = <strong style="color:var(--good);">₹2900</strong></div>
             <hr class="divider">
-            <div><strong style="color:var(--accent);">Profit</strong> = 40% × (Cash Taken Home + GPay/Online) — split as 30% Owner Savings + 10% Staff/Bills Reserve</div>
-            <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">Counter Cash and Expenses are NOT included in profit calculation.</div>
-            <div style="font-family:&#39;JetBrains Mono&#39;,monospace;margin-top:6px;color:var(--jtext);">Profit = 40% × (2000 + 1000) = <strong style="color:var(--accent);">₹1200</strong> (₹900 Savings @30% + ₹300 Staff/Bills Reserve @10%)</div>
+            <div><strong style="color:var(--accent);">Profit</strong> = 40% × Total Sale — split as 30% Owner Savings + 10% Staff/Bills Reserve</div>
+            <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">The full Sale is the profit base — Counter Expenses are a business cost paid separately and are NOT subtracted before taking the 40%.</div>
+            <div style="font-size:11.5px;color:var(--muted);margin-top:6px;"><strong>Owner Savings (30%)</strong> stays with its source: 30% of Cash-side Sale (Home + Counter + Expenses − Yesterday's Counter) is set aside in Cash, and 30% of GPay Sale is set aside in GPay.</div>
+            <div style="font-size:11.5px;color:var(--muted);margin-top:6px;"><strong>Staff/Bills Reserve (10%)</strong> is fully consolidated into GPay only — 10% of Cash-side Sale + 10% of GPay Sale, both held together in GPay, so staff salary/bills payments always come from one place instead of being split across Cash and GPay.</div>
+            <div style="font-family:&#39;JetBrains Mono&#39;,monospace;margin-top:6px;color:var(--jtext);">Cash-side Sale = 2900 − 1000 (GPay) = 1900 → Cash Owner Savings = ₹570<br>GPay Sale = 1000 → GPay Owner Savings = ₹300<br>Staff/Bills Reserve = 10%×1900 + 10%×1000 = ₹190 + ₹100 = <strong style="color:var(--warn);">₹290 (all in GPay)</strong></div>
           </div>
         </div>
 
@@ -1936,7 +2065,7 @@ html,body{overflow-x:hidden;max-width:100%;}
   </div>
 
   <!-- Floating Action Button -->
-  <div class="fab-container" id="fab-container">
+  <div class="fab-container dashboard-hidden" id="fab-container">
     <button class="fab-main" id="fab-main" onclick="toggleFab()"><i class="fa-solid fa-plus"></i></button>
     <div class="fab-menu">
       <div class="fab-item" onclick="switchTab('dayclose');closeFab();">
@@ -2296,6 +2425,68 @@ html,body{overflow-x:hidden;max-width:100%;}
   </div>
 </div>
 
+<!-- Savings Vault — record-only withdrawals from confirmed owner savings -->
+<div class="modal-overlay" id="modal-savings-vault" onclick="modalBgClose(event,&#39;modal-savings-vault&#39;)">
+  <div class="modal-box" style="max-width:480px;padding:0;overflow:hidden;background:#0e0d1c;">
+    <div style="padding:17px 18px 0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div style="font-size:15px;font-weight:800;"><i class="fa-solid fa-vault" style="color:#38d9b0;margin-right:7px;"></i>Savings Vault <span style="font-size:10px;font-weight:500;color:var(--muted);">(30% Owner Profit)</span></div>
+        <button class="modal-close" onclick="closeModal(&#39;modal-savings-vault&#39;)">×</button>
+      </div>
+      <div id="sv-summary"></div>
+      <div id="sv-money-filter" class="filter-bar" style="margin:12px 0 9px;display:flex;">
+        <button class="filter-btn on" onclick="setSavingsVaultMoney('all')">Cash + Bank</button>
+        <button class="filter-btn" onclick="setSavingsVaultMoney('cash')">Cash only</button>
+        <button class="filter-btn" onclick="setSavingsVaultMoney('bank')">Bank only</button>
+      </div>
+      <div id="sv-shop-filter" style="display:flex;gap:5px;overflow-x:auto;padding-bottom:3px;"></div>
+      <button class="btn btn-primary" style="width:100%;margin:10px 0 13px;background:linear-gradient(135deg,#8b5cf6,#7446ec);border:0;" onclick="openProfitWithdrawalModal()"><i class="fa-solid fa-plus"></i> Record a Withdrawal (paisa nikala)</button>
+      <div style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px;">Withdrawal Ledger</div>
+    </div>
+    <div id="sv-ledger" style="max-height:290px;overflow-y:auto;padding:0 18px 17px;"></div>
+  </div>
+</div>
+
+<!-- Savings Vault withdrawal -->
+<div class="modal-overlay" id="modal-profit-withdrawal" onclick="modalBgClose(event,&#39;modal-profit-withdrawal&#39;)">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-title">Record a Withdrawal <button class="modal-close" onclick="closeModal(&#39;modal-profit-withdrawal&#39;)">×</button></div>
+    <div style="font-size:11px;color:var(--muted);background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.25);border-radius:8px;padding:9px 11px;margin-bottom:12px;">Profit reserve se paisa nikala — yeh <strong>record only</strong> hai. Day Close profit change nahi hoga.</div>
+    <div class="fg"><div class="lbl">What was it used for?</div><input class="inp" id="svw-desc" placeholder="e.g. Naya phone"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="fg"><div class="lbl">Amount (₹)</div><input class="inp" id="svw-amt" type="number" min="1" placeholder="0" oninput="updateWithdrawalPreview()"></div>
+      <div class="fg"><div class="lbl">Date</div><input class="inp" id="svw-date" type="date"></div>
+    </div>
+    <div class="fg"><div class="lbl">Paid From</div><div class="chip-group" id="svw-mode" data-value="Cash">
+      <button type="button" class="chip-tile active" data-value="Cash" onclick="chipPick(&#39;svw-mode&#39;,&#39;Cash&#39;,&#39;updateWithdrawalPreview&#39;)"><i class="fa-solid fa-money-bill-wave"></i> Cash</button>
+      <button type="button" class="chip-tile" data-value="Bank" onclick="chipPick(&#39;svw-mode&#39;,&#39;Bank&#39;,&#39;updateWithdrawalPreview&#39;)"><i class="fa-solid fa-building-columns"></i> Bank</button>
+    </div></div>
+    <div class="fg"><div class="lbl">Shop / Source</div><div class="chip-group chip-shops" id="svw-shop" data-value="ALL"></div></div>
+    <div class="fg"><div class="lbl">Note (optional)</div><input class="inp" id="svw-note" placeholder="Any note?"></div>
+    <div id="svw-preview" style="font-size:11px;color:var(--muted);margin-bottom:10px;"></div>
+    <div style="display:flex;gap:10px;"><button class="btn btn-ghost" style="flex:1;" onclick="closeModal(&#39;modal-profit-withdrawal&#39;)">Cancel</button><button class="btn btn-primary" style="flex:2;" onclick="saveProfitWithdrawal()">Save Withdrawal</button></div>
+  </div>
+</div>
+
+<!-- Add record-only expense from the 40% profit reserve -->
+<div class="modal-overlay" id="modal-add-profit-spend" onclick="modalBgClose(event,&#39;modal-add-profit-spend&#39;)">
+  <div class="modal-box" style="max-width:430px;">
+    <div class="modal-title">Add Profit Expense <button class="modal-close" onclick="closeModal(&#39;modal-add-profit-spend&#39;)">×</button></div>
+    <div style="font-size:11px;color:var(--muted);background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:8px;padding:9px 11px;margin-bottom:12px;">
+      <i class="fa-solid fa-circle-info" style="color:var(--good);margin-right:4px;"></i>
+      This is <strong>record only</strong>. Day Close ka profit ya shop balance change nahi hoga.
+    </div>
+    <div class="fg"><div class="lbl">What did you buy / spend on?</div><input class="inp" id="ps-desc" placeholder="e.g. New phone, laptop, personal shopping"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="fg"><div class="lbl">Amount (₹)</div><input class="inp" id="pfs-amt" type="number" min="1" placeholder="0" oninput="updateProfitSpendPreview()"></div>
+      <div class="fg"><div class="lbl">Date</div><input class="inp" id="ps-date" type="date"></div>
+    </div>
+    <div class="fg"><div class="lbl">Note (optional)</div><input class="inp" id="pfs-note" placeholder="Any note?"></div>
+    <div id="ps-preview" style="font-size:11px;color:var(--muted);margin-bottom:10px;"></div>
+    <div style="display:flex;gap:10px;margin-top:6px;"><button class="btn btn-ghost" style="flex:1;" onclick="closeModal(&#39;modal-add-profit-spend&#39;)">Cancel</button><button class="btn btn-good" style="flex:2;" onclick="saveProfitSpend()">Save Record</button></div>
+  </div>
+</div>
+
 <!-- Add / Edit Reminder -->
 <div class="modal-overlay" id="modal-add-reminder" onclick="modalBgClose(event,&#39;modal-add-reminder&#39;)">
   <div class="modal-box">
@@ -2481,7 +2672,7 @@ html,body{overflow-x:hidden;max-width:100%;}
 // The Settings URL field will be hidden/locked automatically.
 //
 // Leave empty if each user should manually enter the URL in Settings.
-const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbzcqu43djuAIYPts3hjFaGFRZ9LX2StxWCxtvrobn49Jv8Xw3WX2HC4IqmbO_Dczb8N/exec'
+const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbx_UIDNNEn3hqDp-pwmhvpZgNFLnbl3xe4jWYFaCKB_GJZLi9pbVRpXqYq3gNLSYT3c/exec'
 // ═══════════════════════════════════════════════════════════════════
 
 // ─── Initial State ──────────────────────────────────────────────
@@ -2606,7 +2797,7 @@ function defaultState() {
     pin: '1234',
     shops: JSON.parse(JSON.stringify(DEFAULT_SHOPS)),
     udhaari: [], outflows: [], intershop: [], dayClose: [], loans: [], audit: [],
-    homeExpenses: [], reminders: [], waContacts: [], dailyExpenses: [], investors: [],
+    homeExpenses: [], profitSpends: [], reminders: [], waContacts: [], dailyExpenses: [], investors: [],
     staff: [], salaryPayments: [], festivals: JSON.parse(JSON.stringify(DEFAULT_FESTIVALS)),
     sheetUrl: '', filters: {}, lockEnabled: false, lastSyncAt: ''
   };
@@ -2628,6 +2819,7 @@ function migrateState(s) {
   (s.loans||[]).forEach(l => { if (!l.mode) l.mode = 'Cash'; if (!l.repayments) l.repayments = []; });
   if (!s.intershop) s.intershop = [];
   if (!s.homeExpenses) s.homeExpenses = [];
+  if (!s.profitSpends) s.profitSpends = [];
   if (!s.dailyExpenses) s.dailyExpenses = [];
   if (!s.reminders) s.reminders = [];
   // Festival Calendar — seed with defaults on first load; on existing saves just ensure
@@ -2650,23 +2842,61 @@ function migrateState(s) {
   if (!s.migrations.staffReserveSplit302010) {
     (s.dayClose||[]).forEach(r => {
       if (r.shopId === 'SHOP04') return; // Graphics has no savings split
-      if (!r.cashSaveDone) {
-        r.cashSaveTarget = roundTo100((r.cashHome || 0) * 0.3);
-        r.staffCashTarget = roundTo100((r.cashHome || 0) * 0.1);
-        r.staffCashDone = false;
-      } else if (r.staffCashTarget == null) {
+      if (r.cashSaveDone && r.staffCashTarget == null) {
         // Already confirmed under the old 40% rule — nothing further owed for staff reserve.
         r.staffCashTarget = 0; r.staffCashDone = true;
       }
-      if (!r.bankSaveDone) {
-        r.bankSaveTarget = roundTo100((r.gpay || 0) * 0.3);
-        r.staffBankTarget = roundTo100((r.gpay || 0) * 0.1);
-        r.staffBankDone = false;
-      } else if (r.staffBankTarget == null) {
+      if (r.bankSaveDone && r.staffBankTarget == null) {
         r.staffBankTarget = 0; r.staffBankDone = true;
       }
     });
     s.migrations.staffReserveSplit302010 = true;
+  }
+  // Savings base ab Home/GPay amount nahi, ACTUAL NET PROFIT hai. Jo entries ab bhi
+  // pending hain unke target dobara net-profit rule par banao — purane target us din ke
+  // kharche ignore karte the, isliye sab kharch ho jaane wale din bhi target dikhta tha.
+  // Jo already "Done" ho chuke hain unhe chhod dete hain: paisa physically side ho chuka hai,
+  // ab unka target badalna sirf accounting mismatch banayega.
+  if (!s.migrations.savingsOnNetProfit) {
+    const prevState = (typeof STATE !== 'undefined') ? STATE : null;
+    // profitAllocationForEntry STATE.dailyExpenses padhta hai — migration ke waqt naya state do.
+    STATE = s;
+    try {
+      (s.dayClose||[]).forEach(r => {
+        if (r.shopId === 'SHOP04') return;
+        const a = profitAllocationForRecord(r);
+        if (!r.cashSaveDone)  r.cashSaveTarget  = a.cashSave;
+        if (!r.bankSaveDone)  r.bankSaveTarget  = a.bankSave;
+        if (!r.staffCashDone) r.staffCashTarget = a.staffCash;
+        if (!r.staffBankDone) r.staffBankTarget = a.staffBank;
+      });
+    } finally {
+      if (prevState !== null) STATE = prevState;
+    }
+    s.migrations.savingsOnNetProfit = true;
+  }
+  // Savings base FULL SALE ka 40% hai (owner ka rule: poori Sale hi profit hai, Counter Expense
+  // ek business cost hai jo minus nahi hota). Jo entries ab bhi pending hain unke target dobara
+  // is rule par banao — purana net-profit-basis migration (neeche) sirf ek pehle wale iteration
+  // ke liye tha aur is naye rule ko cover nahi karta.
+  // Jo already "Done" ho chuke hain unhe chhod dete hain: paisa physically side ho chuka hai,
+  // ab unka target badalna sirf accounting mismatch banayega.
+  if (!s.migrations.savingsOnFullSale) {
+    const prevState2 = (typeof STATE !== 'undefined') ? STATE : null;
+    STATE = s;
+    try {
+      (s.dayClose||[]).forEach(r => {
+        if (r.shopId === 'SHOP04') return;
+        const a = profitAllocationForRecord(r);
+        if (!r.cashSaveDone)  r.cashSaveTarget  = a.cashSave;
+        if (!r.bankSaveDone)  r.bankSaveTarget  = a.bankSave;
+        if (!r.staffCashDone) r.staffCashTarget = a.staffCash;
+        if (!r.staffBankDone) r.staffBankTarget = a.staffBank;
+      });
+    } finally {
+      if (prevState2 !== null) STATE = prevState2;
+    }
+    s.migrations.savingsOnFullSale = true;
   }
   if (!s.waContacts) s.waContacts = [];
   if (!s.staff) s.staff = [];
@@ -2706,7 +2936,15 @@ let uFilter = 'all', oFilter = 'all', isFilter = 'all', lFilter = 'all';
 let sheetSyncTimer = null;
 
 function saveStateLocal() {
-  localStorage.setItem('jmd_state', JSON.stringify(STATE));
+  try {
+    localStorage.setItem('jmd_state', JSON.stringify(STATE));
+  } catch (err) {
+    // Storage full, private/incognito mode blocking it, or state too large to stringify —
+    // whatever the cause, silently swallowing this means the entry looks saved on screen
+    // but is gone on next reload. Surface it loudly instead of hiding a real data-loss risk.
+    console.error('saveStateLocal failed:', err);
+    toast('⚠️ Save failed! Data may not persist — free up storage or check browser settings.', 'error');
+  }
   pushToSheet();
 }
 
@@ -2847,6 +3085,7 @@ function switchTab(tab) {
   $('tab-'+tab).classList.add('active');
   if ($('nav-'+tab)) $('nav-'+tab).classList.add('active');
   if ($('bnav-'+tab)) $('bnav-'+tab).classList.add('active');
+  $('fab-container')?.classList.toggle('dashboard-hidden', tab === 'dashboard');
   $('header-title').textContent = TAB_TITLES[tab] || tab;
   if (tab==='settings') renderSettings();
   else renderAll();
@@ -3383,9 +3622,14 @@ function renderGraphicsSwapBanner() {
 }
 
 // ─── Spendable Balance (post-40%-savings) ─────────────────────────
-// The 60/40 split applies ONLY to Home Cash (paisa jo ghar le jaate ho) — NOT to galla/counter
-// cash, which is pure shop opening/working capital for the next day's sales and stays fully
-// spendable as-is. So galla needs NO reservation at all.
+// Owner Savings (30%) stays with its source: cashSaveTarget = 30% of that day's Cash-side Sale
+// (reserved in Home Cash), bankSaveTarget = 30% of GPay Sale (reserved in GPay).
+// Staff/Bills Reserve (10%) is fully consolidated into GPay: staffCashTarget is always 0 now,
+// and staffBankTarget holds BOTH the cash-side and gpay-side 10% combined — see
+// profitAllocationForEntry(). This keeps all staff/bills payments coming from one wallet (GPay)
+// instead of being split across Home Cash and GPay, which used to cause confusion at payment time.
+// Counter/galla cash itself is never reserved or drawn down here; it's pure working capital, but
+// it still counts toward the Cash-side Sale used to size the Owner Savings and Staff Reserve targets.
 //
 // Cash-40%: "Confirm/Ho Gaya" logs a Home dailyExpense that really subtracts from Home Cash
 // (see confirmSavingsDone) — so once confirmed, that money is already gone from Home Cash.
@@ -3492,6 +3736,11 @@ function activeInvestors() { return (STATE.investors || []).filter(i => i.status
 // never shows two different numbers for the same thing. setShopBalPeriod is kept as a safe no-op
 // (forces 'all') in case any old reference calls it.
 let _shopBalPeriod = 'all';
+let expandedShopMobileId = null;
+function toggleShopMobileCard(shopId) {
+  expandedShopMobileId = expandedShopMobileId === shopId ? null : shopId;
+  renderDashboard();
+}
 function setShopBalPeriod(_period) {
   _shopBalPeriod = 'all';
   renderDashboard();
@@ -3541,6 +3790,26 @@ function renderDashboard() {
   $('nw-liab').textContent   = fmt(totalLiab);
   $('nw-savings').textContent = fmt(confirmedSavings);
 
+  // Keep the attention strip useful instead of showing a permanent generic warning.
+  const attention = $('dashboard-attention-strip');
+  const attentionTitle = $('attention-title');
+  const attentionDetail = $('attention-detail');
+  const attentionAction = $('attention-action');
+  if (attention && attentionTitle && attentionDetail && attentionAction) {
+    const attentionItems = [];
+    if (totalUd > 0) attentionItems.push({ label: `Credit ${fmt(totalUd)}`, tab: 'udhaari', action: 'Review Credit' });
+    if (totalLiab > 0) attentionItems.push({ label: `Bills ${fmt(totalLiab)}`, tab: 'outflows', action: 'Review Bills' });
+    if (totalLoanPending > 0) attentionItems.push({ label: `Loans ${fmt(totalLoanPending)}`, tab: 'loans', action: 'Review Loans' });
+    attention.style.display = attentionItems.length ? 'flex' : 'none';
+    if (attentionItems.length) {
+      attentionTitle.textContent = `Needs Attention · ${attentionItems.length}`;
+      attentionDetail.textContent = attentionItems.map(item => item.label).join('  •  ');
+      const first = attentionItems[0];
+      attentionAction.innerHTML = `${first.action} <i class="fa-solid fa-arrow-right"></i>`;
+      attentionAction.onclick = () => switchTab(first.tab);
+    }
+  }
+
   // Shop matrix
   const shopUd = id => STATE.udhaari.filter(u=>u.shopId===id&&u.status==='Active').reduce((s,u)=>s+(u.totalBill-u.received),0);
   const shopLiab = id => STATE.outflows.filter(o=>o.shopId===id&&o.status==='Pending').reduce((s,o)=>s+(o.amount+o.lateFee-o.paid),0);
@@ -3563,6 +3832,7 @@ function renderDashboard() {
   const isMonthPeriod = _shopBalPeriod === 'month';
   const monthYm = isMonthPeriod ? msTargetYm() : null;
   let tbody = '';
+  let mobileCards = '';
   STATE.shops.forEach(sh => {
     const net = shopNet(sh.id);
     // OWNER'S 60/40 MODEL: All-Time shows SPENDABLE (60%) — i.e. current balance minus the still-
@@ -3578,8 +3848,8 @@ function renderDashboard() {
     const loanPending = shopLoanPending(sh.id);
     // dbl-click editing an "opening balance" only makes sense for the all-time running total —
     // disabled in Month mode since that figure is a computed monthly flow, not a stored balance.
-    const hcAttr = isMonthPeriod ? '' : ` ondblclick="inlineEditHomeCash(this,'${sh.id}',${shopHomeCash(sh.id)})"`;
-    const gpAttr = isMonthPeriod ? '' : ` ondblclick="inlineEdit(this,'${sh.id}','online',${sh.online})"`;
+     const hcAttr = isMonthPeriod ? '' : ` ondblclick="event.stopPropagation();inlineEditHomeCash(this,'${sh.id}',${shopHomeCash(sh.id)})"`;
+     const gpAttr = isMonthPeriod ? '' : ` ondblclick="event.stopPropagation();inlineEdit(this,'${sh.id}','online',${sh.online})"`;
     const hcCls  = isMonthPeriod ? 'mono' : 'mono editable-cell';
     const gpCls  = isMonthPeriod ? 'mono' : 'mono editable-cell';
     const hcTitle = isMonthPeriod
@@ -3598,6 +3868,24 @@ function renderDashboard() {
       <td><span class="mono" style="color:var(--bad);font-size:10px;" title="Borrowed: ${fmt(loanBorrowed)}, Repaid: ${fmt(loanRepaid)}">${fmt(loanBorrowed)} / ${fmt(loanRepaid)}</span></td>
       <td><span class="mono" style="color:${net>=0?'var(--good)':'var(--bad)'};font-weight:800;" title="Home Cash ${fmt(shopHomeCash(sh.id))} + GPay ${fmt(sh.online)} + Credit ${fmt(shopUd(sh.id))} + Confirmed Savings ${fmt(shopConfirmedSavings(sh.id))} - Bills ${fmt(shopLiab(sh.id))} - Loans Pending ${fmt(loanPending)}">${fmtSigned(net)}</span></td>
     </tr>`;
+    const mobileOpen = expandedShopMobileId === sh.id;
+    mobileCards += `<div class="shop-mobile-card${mobileOpen?' open':''}" style="--shop-color:${shopColor(sh.id)};" onclick="toggleShopMobileCard('${sh.id}')">
+      <div class="shop-mobile-top">
+        <div class="shop-mobile-name"><span style="width:8px;height:8px;border-radius:50%;background:${shopColor(sh.id)};"></span>${escHtml(sh.name)}</div>
+        <div class="shop-mobile-net" style="color:${net>=0?'var(--good)':'var(--bad)'};">${fmtSigned(net)} <i class="fa-solid fa-chevron-down shop-mobile-chevron"></i></div>
+      </div>
+      <div class="shop-mobile-main">
+        <div><div class="shop-mobile-k">Home Cash</div><div class="shop-mobile-value-row"><div class="shop-mobile-v editable-cell" style="color:${hc<0?'var(--bad)':'var(--accent)'};"${hcAttr}>${fmtSigned(hc)}</div><button class="shop-mobile-edit" onclick="event.stopPropagation();inlineEditHomeCash(this.previousElementSibling,'${sh.id}',${shopHomeCash(sh.id)})" title="Edit Home Cash"><i class="fa-solid fa-pen"></i></button></div></div>
+        <div><div class="shop-mobile-k">GPay</div><div class="shop-mobile-value-row"><div class="shop-mobile-v editable-cell" style="color:${gp<0?'var(--bad)':'var(--accent2)'};"${gpAttr}>${fmtSigned(gp)}</div><button class="shop-mobile-edit" onclick="event.stopPropagation();inlineEdit(this.previousElementSibling,'${sh.id}','online',${sh.online})" title="Edit GPay"><i class="fa-solid fa-pen"></i></button></div></div>
+        <div><div class="shop-mobile-k">Credit</div><div class="shop-mobile-v" style="color:var(--warn);">${fmt(shopUd(sh.id))}</div></div>
+      </div>
+      <div class="shop-mobile-detail">
+        <div><div class="shop-mobile-k">Counter Working</div><div class="shop-mobile-value-row"><div class="shop-mobile-v editable-cell" ondblclick="event.stopPropagation();inlineEdit(this,'${sh.id}','galla',${sh.galla})">${fmt(sh.galla)}</div><button class="shop-mobile-edit" onclick="event.stopPropagation();inlineEdit(this.previousElementSibling,'${sh.id}','galla',${sh.galla})" title="Edit Counter"><i class="fa-solid fa-pen"></i></button></div></div>
+        <div><div class="shop-mobile-k">Pending Bills</div><div class="shop-mobile-v" style="color:var(--bad);">${fmt(shopLiab(sh.id))}</div></div>
+        <div><div class="shop-mobile-k">Loans Borrowed</div><div class="shop-mobile-v" style="color:var(--bad);">${fmt(loanBorrowed)}</div></div>
+        <div><div class="shop-mobile-k">Loans Repaid</div><div class="shop-mobile-v" style="color:var(--good);">${fmt(loanRepaid)}</div></div>
+      </div>
+    </div>`;
   });
   const totHc   = STATE.shops.reduce((s,sh)=>s+shopHomeCash(sh.id),0);          // gross — for Net Worth math
   // Total row's Home Cash / GPay must equal the sum of whichever column mode is currently shown
@@ -3628,11 +3916,30 @@ function renderDashboard() {
     <td class="mono" style="color:var(--bad);font-size:10px;">${fmt(totLoanBorrowed)} / ${fmt(totLoanRepaid)}</td>
     <td class="mono" style="color:${totNet>=0?'var(--good)':'var(--bad)'};font-weight:800;" title="Sum of all shop rows above (${fmt(confirmedSavings)} confirmed savings already included per-shop). Matches the Hero 'Total Net Position' card exactly.">${fmtSigned(totNet)}</td>
   </tr>`;
+  mobileCards += `<div class="shop-mobile-card shop-mobile-total" style="--shop-color:var(--accent);">
+    <div class="shop-mobile-top">
+      <div class="shop-mobile-name"><i class="fa-solid fa-layer-group" style="color:var(--accent);"></i>Total</div>
+      <div class="shop-mobile-net" style="color:${totNet>=0?'var(--good)':'var(--bad)'};">${fmtSigned(totNet)}</div>
+    </div>
+    <div class="shop-mobile-main">
+      <div><div class="shop-mobile-k">Home Cash</div><div class="shop-mobile-v">${fmtSigned(totHcSpendable)}</div></div>
+      <div><div class="shop-mobile-k">Counter</div><div class="shop-mobile-v">${fmt(totalGalla)}</div></div>
+      <div><div class="shop-mobile-k">GPay</div><div class="shop-mobile-v">${fmtSigned(totGpSpendable)}</div></div>
+      <div><div class="shop-mobile-k">Credit</div><div class="shop-mobile-v">${fmt(totUd)}</div></div>
+      <div><div class="shop-mobile-k">Bills</div><div class="shop-mobile-v" style="color:var(--bad);">${fmt(totLiab2)}</div></div>
+      <div><div class="shop-mobile-k">Loans</div><div class="shop-mobile-v" style="color:var(--bad);">${fmt(totLoanBorrowed)} / ${fmt(totLoanRepaid)}</div></div>
+    </div>
+  </div>`;
   $('shop-tbody').innerHTML = tbody;
+  const mobileWrap = $('shop-mobile-cards');
+  if (mobileWrap) mobileWrap.innerHTML = mobileCards;
 
   // Quick stats
   const today = todayStr();
   $('qs-today').textContent = STATE.udhaari.filter(u=>u.date===today).length;
+  const todaySale = STATE.dayClose.filter(r => !r.deleted && r.date === today).reduce((sum, r) => sum + (r.sale || 0), 0);
+  const todaySaleEl = $('qs-todaysale');
+  if (todaySaleEl) todaySaleEl.textContent = fmtSigned(todaySale);
   const lastDC = STATE.dayClose.find(r=>!r.deleted);
   $('qs-lastdc').textContent = lastDC ? fmtDate(lastDC.date) : '—';
   $('qs-lastdc').style.fontSize = lastDC ? '14px' : '24px';
@@ -3736,7 +4043,69 @@ function msSelectShop(id) {
   _msShopFilter = id;
   renderMonthlySummary();
 }
+// Monthly Summary tiles are shortcuts, so the number on the dashboard is also
+// the doorway to the records behind it.
+function openMonthlySummaryDestination(type) {
+  if (type === 'cash' || type === 'bank') {
+    _svMoney = type;
+    _svShop = _msShopFilter === 'ALL' ? 'ALL' : _msShopFilter;
+    renderSavingsVault();
+    openModal('modal-savings-vault');
+    return;
+  }
+  if (type === 'expenses' || type === 'staff') {
+    switchTab('homeexp');
+    if (type === 'staff') toast('Staff/Bills reserve records Home Expenses aur Staff Salary me milenge');
+    return;
+  }
+  if (type === 'loans') { switchTab('loans'); return; }
+  switchTab('dashboard');
+  const balance = document.querySelector('.card.ms-card');
+  if (balance) balance.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
 function roundTo100(n) { return Math.round(n / 100) * 100; }
+// Savings/reserve set-aside kis basis par? -> FULL SALE ka 40%.
+// Owner's rule: pura Total Sale ka 40% hi profit hai — chahe wo paisa Home mein gaya ho, GPay
+// mein aaya ho, ya Counter Expense mein kharch ho gaya ho. Expense ek business cost hai, profit
+// margin se alag — isliye expense ko yahan minus NAHI karte pehle. 30% Owner Savings + 10%
+// Staff/Bills Reserve, seedhe Total Sale ke Cash-side aur GPay-side hisson par.
+function profitAllocationForEntry(shopId, date, home, counter, gpay, expense, prev) {
+  if (shopId === 'SHOP04') return { profit: 0, netProfit: 0, cashSave: 0, bankSave: 0, staffCash: 0, staffBank: 0 };
+  const sale = (home || 0) + (counter || 0) + (gpay || 0) + (expense || 0) - (prev || 0);
+  // Sale ko do hisson me todo: Cash-side (Home + Counter + Expense − Prev) aur GPay-side.
+  const cashSale = Math.max(0, sale - (gpay || 0));
+  const gpaySale = Math.max(0, gpay || 0);
+  // 30% Owner Savings: cash-side ka 30% Home mein, gpay-side ka 30% GPay mein — apne apne
+  // source par hi rehta hai, kyunki ye savings/withdrawal hai, rozana payment nahi karni hoti.
+  const cashOwner = roundTo100(cashSale * 0.3);
+  const gpayOwner = roundTo100(gpaySale * 0.3);
+  // 10% Staff/Bills Reserve: cash-side ka 10% + gpay-side ka 10%, DONO milaake sirf GPay side
+  // par rakhte hain (staffCash hamesha 0). Wajah: salary/bills jaisi payments karte waqt agar
+  // reserve do jagah (Home + GPay) bikhra ho to nikalte/pay karte waqt confusion hoti hai —
+  // isliye poora Staff/Bills Reserve ek hi jagah (GPay) se manage hota hai.
+  const cashStaffPortion = roundTo100(cashSale * 0.1);
+  const gpayStaffPortion = roundTo100(gpaySale * 0.1);
+  const staffTotal = cashStaffPortion + gpayStaffPortion;
+  const totalProfit = cashOwner + gpayOwner + staffTotal; // ~40% of Total Sale
+  return {
+    profit: totalProfit,
+    netProfit: totalProfit,
+    cashSave: cashOwner,
+    bankSave: gpayOwner,
+    staffCash: 0,
+    staffBank: staffTotal
+  };
+}
+// Same rule ek saved Day Close record ke liye — migration aur purane records ke
+// fallback display me isi ko use karo, taaki kahin bhi purana Home/GPay-basis wala
+// hisaab wapas na aa jaye.
+function profitAllocationForRecord(r) {
+  if (!r) return { profit: 0, netProfit: 0, cashSave: 0, bankSave: 0, staffCash: 0, staffBank: 0 };
+  return profitAllocationForEntry(
+    r.shopId, r.date, r.cashHome || 0, r.counterCash || 0,
+    r.gpay || 0, r.expense || 0, r.prevCounter || 0
+  );
+}
 
 function renderMsShopTabs() {
   const wrap = $('ms-shop-tabs'); if (!wrap) return;
@@ -3903,31 +4272,68 @@ function dismissNewMonthBanner(monthKey) {
 // collapsed count keeps the page short while all the same info/actions remain one click away.
 let _savingsPendingOpen = {};
 let _dashboardAlertsOpen = {};
+// Type filter for the Savings Pending banner: 'all' | 'cash' | 'bank' | 'staff'. 'staff' covers
+// both staffcash + staffbank together since they're conceptually one pool (Staff/Bills Reserve),
+// just split by which wallet they were sourced from.
+let _savingsPendingTypeFilter = 'all';
+function setSavingsPendingTypeFilter(f) { _savingsPendingTypeFilter = f; renderSavingsPendingBanner(); }
 function toggleSavingsPendingGroup(shopId) { _savingsPendingOpen[shopId] = !_savingsPendingOpen[shopId]; renderSavingsPendingBanner(); }
 function toggleDashboardAlertsGroup(key) { _dashboardAlertsOpen[key] = !_dashboardAlertsOpen[key]; renderDashboardAlerts(); }
 
 function renderSavingsPendingBanner() {
   const wrap = $('savings-pending-banner');
   if (!wrap) return;
-  const pend = getPendingSavings();
-  if (!pend.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+  const allPend = getPendingSavings();
+  if (!allPend.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
   wrap.style.display = 'block';
+
+  // Type filter: 'staff' groups staffcash+staffbank together (same Staff/Bills Reserve pool,
+  // just sourced from Cash-side or GPay-side sale) — see profitAllocationForEntry().
+  const matchesFilter = p => _savingsPendingTypeFilter === 'all' ? true
+    : _savingsPendingTypeFilter === 'staff' ? (p.type === 'staffcash' || p.type === 'staffbank')
+    : p.type === _savingsPendingTypeFilter;
+  const pend = allPend.filter(matchesFilter);
+
+  const filterChip = (key, label) => {
+    const n = key === 'all' ? allPend.length : allPend.filter(p => key === 'staff' ? (p.type === 'staffcash' || p.type === 'staffbank') : p.type === key).length;
+    const active = _savingsPendingTypeFilter === key;
+    return `<button class="btn btn-xs" style="background:${active ? 'var(--warn)' : 'var(--panel2)'};color:${active ? '#1a1200' : 'var(--muted)'};border:1px solid ${active ? 'var(--warn)' : 'var(--line)'};font-weight:700;" onclick="setSavingsPendingTypeFilter('${key}')">${label} (${n})</button>`;
+  };
 
   const groups = {};
   pend.forEach(p => { (groups[p.shopId] = groups[p.shopId] || []).push(p); });
   const shopIds = Object.keys(groups).sort((a, b) => shopName(a).localeCompare(shopName(b)));
 
+  const monthLabel = ym => {
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const [y, m] = ym.split('-');
+    return `${monthNames[parseInt(m) - 1]} ${y}`;
+  };
+  const typeLabel = t => t === 'cash' ? 'Cash Savings (30%)' : t === 'bank' ? 'GPay Savings (30%)' : t === 'staffcash' ? 'Staff/Bills Reserve — Cash (10%)' : 'Staff/Bills Reserve — GPay (10%)';
+  const typeColor = t => t === 'cash' ? 'var(--warn)' : t === 'bank' ? 'var(--accent2)' : 'var(--bad)';
+
   wrap.innerHTML = `
     <div class="card" style="padding:14px 16px;border-left:3px solid var(--warn);margin-bottom:14px;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
         <i class="fa-solid fa-piggy-bank" style="color:var(--warn);"></i>
-        <div style="font-size:13px;font-weight:700;">Savings Pending — ${pend.length} confirmations pending</div>
+        <div style="font-size:13px;font-weight:700;">Savings Pending — ${pend.length} confirmation${pend.length === 1 ? '' : 's'} pending${_savingsPendingTypeFilter !== 'all' ? ' (filtered)' : ''}</div>
       </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:wrap;">
+        ${filterChip('all', 'All')}
+        ${filterChip('cash', 'Cash')}
+        ${filterChip('bank', 'GPay')}
+        ${filterChip('staff', 'Staff')}
+      </div>
+      ${!pend.length ? `<div style="font-size:12px;color:var(--muted);padding:6px 2px;">Nothing pending in this filter.</div>` : `
       <div style="display:flex;flex-direction:column;gap:7px;">
         ${shopIds.map(shopId => {
           const list = groups[shopId];
           const total = list.reduce((s, p) => s + p.amount, 0);
           const open = !!_savingsPendingOpen[shopId];
+          // Sub-group this shop's pending items by month, newest month first.
+          const byMonth = {};
+          list.forEach(p => { const ym = (p.date || '').slice(0, 7); (byMonth[ym] = byMonth[ym] || []).push(p); });
+          const monthKeys = Object.keys(byMonth).sort((a, b) => a < b ? 1 : -1);
           return `
           <div>
             <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer;" onclick="toggleSavingsPendingGroup('${shopId}')">
@@ -3939,22 +4345,35 @@ function renderSavingsPendingBanner() {
               <span class="mono" style="font-weight:700;font-size:12px;color:var(--warn);">${fmt(total)}</span>
             </div>
             ${open ? `
-            <div style="display:flex;flex-direction:column;gap:6px;margin:7px 0 0 22px;">
-              ${list.map(p => `
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;">
-                  <div style="font-size:12px;">
-                    <span style="font-weight:700;">${escHtml(fmtDate(p.date))}</span>
-                    <span style="color:var(--muted);"> — ${p.type === 'cash' ? 'Cash Savings (30%)' : p.type === 'bank' ? 'GPay Savings (30%)' : p.type === 'staffcash' ? 'Staff/Bills Reserve — Cash (10%)' : 'Staff/Bills Reserve — GPay (10%)'} to be set aside</span>
+            <div style="display:flex;flex-direction:column;gap:10px;margin:8px 0 0 22px;">
+              ${monthKeys.map(ym => {
+                const mList = byMonth[ym].sort((a, b) => a.date < b.date ? 1 : -1);
+                const mTotal = mList.reduce((s, p) => s + p.amount, 0);
+                return `
+                <div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--muted);font-weight:700;margin-bottom:5px;padding:0 2px;">
+                    <span>${ym ? monthLabel(ym) : 'No Date'}</span>
+                    <span class="mono">${fmt(mTotal)}</span>
                   </div>
-                  <div style="display:flex;align-items:center;gap:10px;">
-                    <span class="mono" style="font-weight:700;color:${p.type === 'cash' ? 'var(--warn)' : p.type === 'bank' ? 'var(--accent2)' : 'var(--bad)'};">${fmt(p.amount)}</span>
-                    <button class="btn btn-good btn-xs" onclick="event.stopPropagation();confirmSavingsDone('${p.dcId}','${p.type}')"><i class="fa-solid fa-check"></i> Done</button>
+                  <div style="display:flex;flex-direction:column;gap:6px;">
+                    ${mList.map(p => `
+                      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;">
+                        <div style="font-size:12px;">
+                          <span style="font-weight:700;">${escHtml(fmtDate(p.date))}</span>
+                          <span style="color:var(--muted);"> — ${typeLabel(p.type)} to be set aside</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                          <span class="mono" style="font-weight:700;color:${typeColor(p.type)};">${fmt(p.amount)}</span>
+                          <button class="btn btn-good btn-xs" onclick="event.stopPropagation();confirmSavingsDone('${p.dcId}','${p.type}')"><i class="fa-solid fa-check"></i> Done</button>
+                        </div>
+                      </div>`).join('')}
                   </div>
-                </div>`).join('')}
+                </div>`;
+              }).join('')}
             </div>` : ''}
           </div>`;
         }).join('')}
-      </div>
+      </div>`}
     </div>`;
 }
 
@@ -4147,10 +4566,15 @@ function renderMonthlySummary() {
   // Confirmed + Pending always reconcile exactly to the target shown here.
   const cashSavings = recs.reduce((s, r) => s + (r.cashSaveTarget || 0), 0);
   const bankSavings = recs.reduce((s, r) => s + (r.bankSaveTarget || 0), 0);
-  // Monthly Summary fix: also calculate confirmed savings for this month/shop filter
-  const monthShopExps = (STATE.dailyExpenses || []).filter(e => !e.deleted && (e.date || '').slice(0, 7) === ym && (_msShopFilter === 'ALL' || e.shopId === _msShopFilter));
-  const confirmedCashSave = monthShopExps.filter(e => e.desc && e.desc.startsWith('Savings (') && e.desc.includes('Cash')).reduce((s, e) => s + (e.amount || 0), 0);
-  const confirmedBankSave = monthShopExps.filter(e => e.desc && e.desc.startsWith('Savings (') && e.desc.includes('GPay')).reduce((s, e) => s + (e.amount || 0), 0);
+  // BUG FIX: Confirmed/Pending must read the SAME source of truth as the Savings Pending
+  // dropdown/banner (r.cashSaveDone / r.bankSaveDone), not reconstruct it by string-matching
+  // dailyExpenses descriptions. The old approach could drift out of sync with the dropdown
+  // whenever the matching expense entry got edited, renamed, or deleted separately (e.g. from
+  // the Daily Expenses list) — the flag would say "Done" (dropdown shows 0 pending) while this
+  // tile still searched for an expense line that no longer matched, showing a phantom pending
+  // amount. Reading the flag directly guarantees the two views can never disagree.
+  const confirmedCashSave = recs.filter(r => r.cashSaveDone).reduce((s, r) => s + (r.cashSaveTarget || 0), 0);
+  const confirmedBankSave = recs.filter(r => r.bankSaveDone).reduce((s, r) => s + (r.bankSaveTarget || 0), 0);
   $('ms-cashsave-val').textContent = fmt(cashSavings);
   $('ms-banksave-val').textContent = fmt(bankSavings);
   const pendingCash = Math.max(0, cashSavings - confirmedCashSave);
@@ -4161,10 +4585,14 @@ function renderMonthlySummary() {
   $('ms-banksave-sub').style.color = pendingBank > 0 ? 'var(--warn)' : 'var(--muted)';
 
   // Staff/Bills Reserve (10%) — same pattern as Cash/Bank Savings above, combined into one tile.
+  // BUG FIX: same fix as Cash/Bank Savings above — read staffCashDone/staffBankDone flags
+  // directly instead of string-matching dailyExpenses descriptions, so this can never disagree
+  // with the Savings Pending dropdown/banner.
   const staffCashTarget = recs.reduce((s, r) => s + (r.staffCashTarget || 0), 0);
   const staffBankTarget = recs.reduce((s, r) => s + (r.staffBankTarget || 0), 0);
   const staffReserveTarget = staffCashTarget + staffBankTarget;
-  const confirmedStaffReserve = monthShopExps.filter(e => e.desc && e.desc.startsWith('Staff/Bills Reserve (')).reduce((s, e) => s + (e.amount || 0), 0);
+  const confirmedStaffReserve = recs.filter(r => r.staffCashDone).reduce((s, r) => s + (r.staffCashTarget || 0), 0)
+    + recs.filter(r => r.staffBankDone).reduce((s, r) => s + (r.staffBankTarget || 0), 0);
   const pendingStaffReserve = Math.max(0, staffReserveTarget - confirmedStaffReserve);
   if ($('ms-staffreserve-val')) {
     $('ms-staffreserve-val').textContent = fmt(staffReserveTarget);
@@ -4186,14 +4614,17 @@ function renderMonthlySummary() {
   $('ms-exp-val').textContent = fmt(counterExp + itemExp);
 
   // Calculate loans for this month
-  let loans = STATE.loans.filter(l => (l.date || '').slice(0, 7) === ym);
+  const loanDate = l => l.date || l.loanDate || l.borrowedDate || l.entryDate || '';
+  const repaymentRows = l => l.repayments || l.repaymentLog || [];
+  let loans = STATE.loans.filter(l => loanDate(l).slice(0, 7) === ym);
   if (_msShopFilter !== 'ALL') {
     loans = loans.filter(l => l.shopId === _msShopFilter);
   }
   const loanBorrowed = loans.reduce((s, l) => s + (l.amount || 0), 0);
   const loanRepaid = loans.reduce((s, l) => {
-    if (!l.repayments) return s;
-    const monthRepayments = l.repayments.filter(r => (r.date || '').slice(0, 7) === ym);
+    const rows = repaymentRows(l);
+    if (!rows.length) return s + (l.repaid || 0);
+    const monthRepayments = rows.filter(r => (r.date || r.repaymentDate || '').slice(0, 7) === ym);
     return s + monthRepayments.reduce((sum, r) => sum + (r.amount || 0), 0);
   }, 0);
 
@@ -4572,7 +5003,7 @@ function initDcForms() {
     const draft = dcDrafts[sh.id]?.date === today ? dcDrafts[sh.id] : null;
     const pf = draft || todaysDc || {};
     return `<div class="dc-form-panel${sh.id===activeDcShop?' active':''}" id="dcpanel-${sh.id}">
-      <div class="card" style="padding:0;overflow:hidden;border-top:2px solid ${shopColor(sh.id)};">
+      <div class="card dc-form-shell" style="padding:0;overflow:hidden;border-top:2px solid ${shopColor(sh.id)};">
         <!-- Shop Header with gradient -->
         <div style="padding:14px 16px;background:linear-gradient(135deg, ${shopColor(sh.id)}10, transparent 60%);border-bottom:1px solid var(--line);">
           <div style="display:flex;align-items:center;gap:10px;">
@@ -4587,7 +5018,7 @@ function initDcForms() {
           </div>
         </div>
         <!-- Form Content -->
-        <div style="padding:14px 16px;">
+        <div class="dc-form-content" style="padding:14px 16px;">
         <input type="hidden" id="dc-date-${sh.id}" value="${pf.date || today}" />
         <div id="dc-cash-reminder-${sh.id}" style="margin-bottom:10px;"></div>
         <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-bottom:12px;">
@@ -4610,7 +5041,7 @@ function initDcForms() {
         </div>
 
         <!-- Daily Expense (Counter / Home / GP) -->
-        <div style="background:linear-gradient(135deg, rgba(251,191,36,0.06), rgba(251,191,36,0.02));border:1px solid rgba(251,191,36,0.15);border-radius:11px;padding:12px 14px;margin-bottom:12px;">
+        <div class="dc-expense-section" style="background:linear-gradient(135deg, rgba(251,191,36,0.06), rgba(251,191,36,0.02));border:1px solid rgba(251,191,36,0.15);border-radius:11px;padding:12px 14px;margin-bottom:12px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
             <div class="lbl" style="margin:0;"><i class="fa-solid fa-receipt" style="margin-right:5px;color:var(--warn);"></i>Daily Expense</div>
             <div style="font-size:9px;color:var(--muted);font-weight:500;">Counter / Home / GP</div>
@@ -4618,7 +5049,7 @@ function initDcForms() {
           <div class="dc-daily-expense-row" style="display:flex;gap:6px;margin-bottom:8px;">
             <input class="inp" id="de-desc-${sh.id}" placeholder="What was purchased?" style="flex:2;padding:7px 10px;font-size:12px;" />
             <input class="inp no-titlecase" id="de-amt-${sh.id}" type="number" inputmode="numeric" placeholder="₹" style="flex:1;padding:7px 10px;font-size:12px;" onkeydown="if(event.key==='Enter'){event.preventDefault();addDailyExpense('${sh.id}');}" />
-            <button class="btn btn-primary" style="padding:0 12px;height:34px;font-size:11px;" onclick="addDailyExpense('${sh.id}')"><i class="fa-solid fa-plus"></i></button>
+            <button class="btn btn-primary dc-expense-add" style="padding:0 12px;height:34px;font-size:11px;" onclick="addDailyExpense('${sh.id}')"><i class="fa-solid fa-plus"></i></button>
           </div>
           ${sh.id === 'SHOP01' ? `<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">
             <button type="button" class="chip-tile no-titlecase" style="padding:4px 10px;font-size:10px;" onclick="deSetDesc('${sh.id}','Nariyal')">Nariyal</button>
@@ -4839,6 +5270,7 @@ function renderDailyExpenses(shopId) {
 
 function updateDcCalc(shopId) {
   const g = id => parseFloat($(id)?.value)||0;
+  const entryDate = $(`dc-date-${shopId}`)?.value || todayStr();
   const home    = g(`dc-home-${shopId}`);
   const counter = g(`dc-counter-${shopId}`);
   const gpay    = g(`dc-gpay-${shopId}`);
@@ -4857,7 +5289,7 @@ function updateDcCalc(shopId) {
 
   // Live profit — auto = sale × profitPct, editable if user overrides
   const sh = STATE.shops.find(s=>s.id===shopId);
-  const autoProfit = (sh?.id === 'SHOP04') ? (home + gpay) : Math.round((home + gpay) * (sh?.profitPct||40)/100);
+  const autoProfit = profitAllocationForEntry(shopId, entryDate, home, counter, gpay, exp, prev).profit;
   set(`dc-autoprof-${shopId}`, autoProfit);
   const pInp = $(`dc-profit-${shopId}`);
   if (pInp && !pInp.dataset.userEdited) {
@@ -4890,11 +5322,12 @@ function submitDayClose(shopId) {
   const prev    = g(`dc-prev-${shopId}`);
   const sale = home + counter + gpay + exp - prev;
   const sh = STATE.shops.find(s=>s.id===shopId);
-  const autoProfit = (sh?.id === 'SHOP04') ? (home + gpay) : Math.round((home + gpay) * (sh?.profitPct||40)/100);
+  const entryDate = $(`dc-date-${shopId}`)?.value || todayStr();
+  const alloc = profitAllocationForEntry(shopId, entryDate, home, counter, gpay, exp, prev);
+  const autoProfit = alloc.profit;
   const profitVal  = $(`dc-profit-${shopId}`)?.value;
   const profit     = (profitVal!=='' && profitVal!=null && !isNaN(parseFloat(profitVal))) ? parseFloat(profitVal) : autoProfit;
   const note = $(`dc-note-${shopId}`)?.value?.trim() || '';
-  const entryDate = $(`dc-date-${shopId}`)?.value || todayStr();
   const isToday = entryDate === todayStr();
 
   // Check if a DC already exists for this shop+date (edit-in-place)
@@ -4946,10 +5379,11 @@ function submitDayClose(shopId) {
     // Counter cash (galla) is pure shop working capital and is never part of this split.
     // Graphics (SHOP04) is order-based — no savings/reserve split applies to it, whatever remains
     // after order costs IS the profit already, nothing further to set aside.
-    const newCashSaveTarget = shopId === 'SHOP04' ? 0 : roundTo100(home * 0.3);
-    const newBankSaveTarget = shopId === 'SHOP04' ? 0 : roundTo100(gpay * 0.3);
-    const newStaffCashTarget = shopId === 'SHOP04' ? 0 : roundTo100(home * 0.1);
-    const newStaffBankTarget = shopId === 'SHOP04' ? 0 : roundTo100(gpay * 0.1);
+    const newAlloc = profitAllocationForEntry(shopId, entryDate, home, counter, gpay, exp, prev);
+    const newCashSaveTarget = newAlloc.cashSave;
+    const newBankSaveTarget = newAlloc.bankSave;
+    const newStaffCashTarget = newAlloc.staffCash;
+    const newStaffBankTarget = newAlloc.staffBank;
     // If a Graphics cash swap was already confirmed for this entry but the cash amount is now
     // being edited, undo the old swap first — it was against the old (now-wrong) amount.
     if (shopId === 'SHOP04' && existing.cashSwapDone && (existing.cashHome||0) !== home) {
@@ -5037,10 +5471,10 @@ function submitDayClose(shopId) {
     // 30% owner savings + 10% staff/bills/EMI reserve targets for this specific day — tracked
     // per-entry so we can remind separately for cash vs GPay until each is confirmed "set aside".
     // Cash-30%/10% = 30%/10% of Home Cash (paisa jo ghar le jaate ho); galla/counter is untouched.
-    cashSaveTarget: shopId === 'SHOP04' ? 0 : roundTo100(home * 0.3),
-    bankSaveTarget: shopId === 'SHOP04' ? 0 : roundTo100(gpay * 0.3),
-    staffCashTarget: shopId === 'SHOP04' ? 0 : roundTo100(home * 0.1),
-    staffBankTarget: shopId === 'SHOP04' ? 0 : roundTo100(gpay * 0.1),
+    cashSaveTarget: alloc.cashSave,
+    bankSaveTarget: alloc.bankSave,
+    staffCashTarget: alloc.staffCash,
+    staffBankTarget: alloc.staffBank,
     cashSaveDone: false, bankSaveDone: false,
     staffCashDone: false, staffBankDone: false,
     cashSwapDone: false, cashSwapToShop: null
@@ -5235,6 +5669,7 @@ let dcEntriesSort = { key: 'date', dir: 'desc' };
 let dcEntriesMonth = todayStr().slice(0, 7); // YYYY-MM
 let dcEntriesShopFilter = 'all';
 let dcEntriesPage = 1;
+let dcExpandedEntryId = null;
 const DCE_PAGE_SIZE = 10;
 const DCE_MONTH_NAMES = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
@@ -5248,11 +5683,13 @@ function shiftDcEntriesMonth(delta) {
   const dt = new Date(y, m - 1 + delta, 1);
   dcEntriesMonth = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0');
   dcEntriesPage = 1;
+  dcExpandedEntryId = null;
   renderDcEntriesTable();
 }
 function setDcEntriesShopFilter(shopId) {
   dcEntriesShopFilter = shopId || 'all';
   dcEntriesPage = 1;
+  dcExpandedEntryId = null;
   const select = $('dce-shop-filter');
   if (select) select.value = dcEntriesShopFilter;
   document.querySelectorAll('#dce-shop-filters .dce-shop-filter').forEach(btn => {
@@ -5262,6 +5699,12 @@ function setDcEntriesShopFilter(shopId) {
 }
 function setDcEntriesPage(page) {
   dcEntriesPage = Math.max(1, parseInt(page, 10) || 1);
+  dcExpandedEntryId = null;
+  renderDcEntriesTable();
+}
+function toggleDcEntryCard(id, ev) {
+  if (ev) ev.stopPropagation();
+  dcExpandedEntryId = dcExpandedEntryId === id ? null : id;
   renderDcEntriesTable();
 }
 function setDcEntriesSort(key) {
@@ -5273,12 +5716,11 @@ function setDcEntriesSort(key) {
 // Per-record derived stats: 40% savings split, Home/GP-sourced daily expenses, 40% adjustment, combined Exp/Out
 function computeDcEntryStats(r) {
   const cashSale = (r.sale || 0) - (r.gpay || 0);
-  // BUG FIX: Cash Savings (40%) must be 40% of HOME CASH only (r.cashHome) — same basis as
-  // r.cashSaveTarget, which is what the Savings Pending reminder / confirm system actually
-  // tracks. It must NOT be 40% of total cash sale (home + counter) — counter cash (galla) is
-  // pure shop working capital and was never part of the 60/40 split (see save-entry comment).
-  // Using cashSale here previously made this number permanently larger than what could ever
-  // be confirmed, so "Pending" never reached ₹0 even after confirming everything.
+  // Every current entry stores its own cashSaveTarget/bankSaveTarget/staffCashTarget/
+  // staffBankTarget at save time, computed by profitAllocationForEntry() as 30%/10% of that
+  // day's Cash-side Sale and GPay-side Sale directly (the full Sale IS the profit — expenses are
+  // a separate cost, not subtracted first). The home/gpay-based formulas below only ever fire as
+  // a fallback for legacy pre-migration records that predate per-entry targets.
   const cashSavings = r.cashSaveTarget != null ? r.cashSaveTarget : roundTo100((r.cashHome || 0) * 0.3);
   const bankSavings = r.bankSaveTarget != null ? r.bankSaveTarget : roundTo100((r.gpay || 0) * 0.3);
   const staffCashReserve = r.staffCashTarget != null ? r.staffCashTarget : roundTo100((r.cashHome || 0) * 0.1);
@@ -5322,7 +5764,7 @@ function renderDcEntriesTable() {
   if (q) visible = visible.filter(r => (r.shopName || shopName(r.shopId) || '').toLowerCase().includes(q) || (r.date || '').includes(q));
 
   if (!visible.length) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--muted);font-family:inherit;">${showDeleted ? 'No deleted entries this month' : 'No Day Close entries this month'}</td></tr>`;
+     tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted);font-family:inherit;">${showDeleted ? 'No deleted entries this month' : 'No Day Close entries this month'}</td></tr>`;
     renderDcEntriesCards([]);
     renderDcPagination(0, 0);
     return;
@@ -5350,30 +5792,29 @@ function renderDcEntriesTable() {
   tbody.innerHTML = pageRows.map(({ r, s }) => {
     const del = !!r.deleted;
     const profitCls = (r.sale||0) >= 0 ? 'dc-profit-pos' : 'dc-profit-neg';
-    return `<tr class="${profitCls}${del?' dc-deleted':''}" onclick="${del?'':`openDcDetail('${r.id}')`}">
+    const expanded = dcExpandedEntryId === r.id;
+    const detail = expanded ? `<tr class="dce-detail-row${del?' dc-deleted':''}">
+      <td colspan="4">
+        <div class="dce-detail-panel">
+          <div class="dce-detail-item"><div class="k">Cash Savings</div><div class="v" style="color:var(--good);">${fmt(s.cashSavings)}</div></div>
+          <div class="dce-detail-item"><div class="k">Bank Savings</div><div class="v" style="color:var(--accent2);">${fmt(s.bankSavings)}</div></div>
+          <div class="dce-detail-item"><div class="k">Net Cash</div><div class="v" style="color:var(--warn);">${fmt(r.cashHome)}</div></div>
+          <div class="dce-detail-item"><div class="k">GPay Balance</div><div class="v">${fmt(r.gpay)}</div></div>
+          <div class="dce-detail-item"><div class="k">30% Adjustment</div><div class="v">${fmt(s.adj40)}</div></div>
+          <div class="dce-detail-item"><div class="k">Home Expense</div><div class="v">${fmt(s.homeExpReal)}</div></div>
+          <div class="dce-detail-item"><div class="k">GPay Expense</div><div class="v">${fmt(s.gpExpReal)}</div></div>
+          <div class="dce-detail-item"><div class="k">Total Expense</div><div class="v" style="color:var(--bad);">${fmt(s.expTotalReal)}</div></div>
+          <div class="dce-detail-item"><div class="k">Outflow</div><div class="v" style="color:var(--bad);">${fmt(s.outTotal)}</div></div>
+        </div>
+      </td>
+    </tr>` : '';
+    return `<tr class="dce-summary-row ${profitCls}${del?' dc-deleted':''}${expanded?' expanded':''}" onclick="${del?'':`toggleDcEntryCard('${r.id}', event)`}" title="${del?'':'Click to expand details'}">
       <td onclick="event.stopPropagation();"><button class="btn btn-good btn-xs" style="border-radius:50%;width:30px;height:30px;padding:0;justify-content:center;background:#25D366;border-color:#25D366;box-shadow:0 0 0 1px rgba(37,211,102,0.35);" onclick="shareDcDayReport('${r.id}')" title="Share on WhatsApp"><i class="fa-brands fa-whatsapp" style="font-size:14px;color:#fff;"></i></button></td>
       <td>
-        <div style="font-weight:700;">${fmtDateShort(r.date)}</div>
-        <span style="display:inline-block;margin-top:4px;padding:2px 8px;border-radius:20px;font-size:9.5px;font-weight:700;letter-spacing:0.02em;white-space:nowrap;background:${shopColor(r.shopId)}22;color:${shopColor(r.shopId)};border:1px solid ${shopColor(r.shopId)}44;">${escHtml(r.shopName || shopName(r.shopId))}</span>
+        <div style="font-weight:700;">${fmtDateShort(r.date)} <i class="fa-solid fa-chevron-down dce-summary-chevron"></i></div>
+        <span style="display:inline-block;margin-top:3px;padding:2px 8px;border-radius:20px;font-size:9.5px;font-weight:700;letter-spacing:0.02em;white-space:nowrap;background:${shopColor(r.shopId)}22;color:${shopColor(r.shopId)};border:1px solid ${shopColor(r.shopId)}44;">${escHtml(r.shopName || shopName(r.shopId))}</span>
       </td>
       <td style="color:${(r.sale||0)>=0?'var(--good)':'var(--bad)'};font-weight:700;">${fmtSigned(r.sale)}</td>
-      <td>
-        <div style="color:var(--good);">C: ${fmt(s.cashSavings)}</div>
-        <div style="color:var(--accent2);">B: ${fmt(s.bankSavings)}</div>
-      </td>
-      <td>
-        <div style="color:var(--warn);font-weight:700;">${fmt(r.cashHome)}</div>
-        <div class="dce-sub">30% Adj: ${fmt(s.adj40)}</div>
-        <div class="dce-sub">Exp (H): ${fmt(s.homeExpReal)}</div>
-      </td>
-      <td>
-        <div style="font-weight:700;">${fmt(r.gpay)}</div>
-        <div class="dce-sub">Exp (G): ${fmt(s.gpExpReal)}</div>
-      </td>
-      <td>
-        <div style="color:var(--bad);">Exp: ${fmt(s.expTotalReal)}</div>
-        <div style="color:var(--bad);">Out: ${fmt(s.outTotal)}</div>
-      </td>
       <td onclick="event.stopPropagation();">
         ${del
           ? `<button class="btn btn-good btn-xs" style="padding:4px 6px;" onclick="restoreDayClose('${r.id}')" title="Restore"><i class="fa-solid fa-rotate-left" style="font-size:10px;"></i></button>
@@ -5381,7 +5822,7 @@ function renderDcEntriesTable() {
           : `<button class="btn btn-ghost btn-xs" style="padding:4px 6px;" onclick="openDcDetail('${r.id}')" title="Edit"><i class="fa-solid fa-pen" style="font-size:10px;"></i></button>
              <button class="btn btn-bad btn-xs" style="padding:4px 6px;" onclick="deleteDayClose('${r.id}')" title="Delete"><i class="fa-solid fa-xmark" style="font-size:10px;"></i></button>`}
       </td>
-    </tr>`;
+    </tr>${detail}`;
   }).join('');
 
   renderDcEntriesCards(pageRows);
@@ -5397,12 +5838,19 @@ function renderDcPagination(totalPages, totalRows) {
   }
   const start = (dcEntriesPage - 1) * DCE_PAGE_SIZE + 1;
   const end = Math.min(dcEntriesPage * DCE_PAGE_SIZE, totalRows);
+  const pageItems = totalPages <= 7
+    ? Array.from({length: totalPages}, (_, i) => i + 1)
+    : [1, ...(dcEntriesPage > 3 ? ['…'] : []),
+       ...Array.from(new Set([Math.max(2, dcEntriesPage - 1), dcEntriesPage, Math.min(totalPages - 1, dcEntriesPage + 1)]))
+         .filter(p => p > 1 && p < totalPages).sort((a, b) => a - b),
+       ...(dcEntriesPage < totalPages - 2 ? ['…'] : []), totalPages];
   wrap.innerHTML = `
     <span class="dce-page-count">Showing ${start}–${end} of ${totalRows}</span>
     <div class="dce-page-buttons">
       <button type="button" class="dce-page-btn" onclick="setDcEntriesPage(${dcEntriesPage - 1})" ${dcEntriesPage === 1 ? 'disabled' : ''} aria-label="Previous page"><i class="fa-solid fa-chevron-left"></i></button>
-      ${Array.from({length: totalPages}, (_, i) => i + 1).map(p =>
-        `<button type="button" class="dce-page-btn${p === dcEntriesPage ? ' on' : ''}" onclick="setDcEntriesPage(${p})">${p}</button>`
+      ${pageItems.map(p => p === '…'
+        ? `<span class="dce-page-ellipsis" aria-hidden="true">…</span>`
+        : `<button type="button" class="dce-page-btn${p === dcEntriesPage ? ' on' : ''}" onclick="setDcEntriesPage(${p})">${p}</button>`
       ).join('')}
       <button type="button" class="dce-page-btn" onclick="setDcEntriesPage(${dcEntriesPage + 1})" ${dcEntriesPage === totalPages ? 'disabled' : ''} aria-label="Next page"><i class="fa-solid fa-chevron-right"></i></button>
     </div>`;
@@ -5420,22 +5868,27 @@ function renderDcEntriesCards(rows) {
   wrap.innerHTML = rows.map(({ r, s }) => {
     const del = !!r.deleted;
     const profitCls = (r.sale||0) >= 0 ? 'dc-profit-pos' : 'dc-profit-neg';
-    return `<div class="dce-card ${profitCls}${del?' dc-deleted':''}" onclick="${del?'':`openDcDetail('${r.id}')`}">
+    const expanded = dcExpandedEntryId === r.id;
+    return `<div class="dce-card ${profitCls}${del?' dc-deleted':''}${expanded?' expanded':''}" onclick="toggleDcEntryCard('${r.id}', event)">
       <div class="dce-card-top">
         <div>
           <span class="dce-card-date">${fmtDateShort(r.date)}</span>
           <span class="dce-card-shop" style="background:${shopColor(r.shopId)}22;color:${shopColor(r.shopId)};border:1px solid ${shopColor(r.shopId)}44;">${escHtml(r.shopName || shopName(r.shopId))}</span>
         </div>
-        <span class="dce-card-sale" style="color:${(r.sale||0)>=0?'var(--good)':'var(--bad)'};">${fmtSigned(r.sale)}</span>
+        <div class="dce-card-top-right">
+          <span class="dce-card-sale" style="color:${(r.sale||0)>=0?'var(--good)':'var(--bad)'};">${fmtSigned(r.sale)}</span>
+          <i class="fa-solid fa-chevron-down dce-card-chevron"></i>
+        </div>
       </div>
-      <div class="dce-card-grid">
+      <div class="dce-entry-details">
+       <div class="dce-card-grid">
         <div><div class="k">Savings</div><div class="v" style="color:var(--good);">${fmt(s.cashSavings)} <span style="color:var(--accent2);">/ ${fmt(s.bankSavings)}</span></div></div>
         <div><div class="k">Net Cash</div><div class="v" style="color:var(--warn);">${fmt(r.cashHome)}</div></div>
         <div><div class="k">GPay</div><div class="v">${fmt(r.gpay)}</div></div>
         <div><div class="k">Exp</div><div class="v" style="color:var(--bad);">${fmt(s.expTotalReal)}</div></div>
         <div><div class="k">Out</div><div class="v" style="color:var(--bad);">${fmt(s.outTotal)}</div></div>
         <div><div class="k">30% Adj</div><div class="v">${fmt(s.adj40)}</div></div>
-      </div>
+       </div>
       <div class="dce-card-actions" onclick="event.stopPropagation();">
         <button class="btn btn-good btn-xs" style="border-radius:50%;width:30px;height:30px;padding:0;justify-content:center;background:#25D366;border-color:#25D366;" onclick="shareDcDayReport('${r.id}')" title="Share on WhatsApp"><i class="fa-brands fa-whatsapp" style="font-size:14px;color:#fff;"></i></button>
         ${del
@@ -5443,6 +5896,7 @@ function renderDcEntriesCards(rows) {
              <button class="btn btn-bad btn-xs" style="padding:4px 8px;" onclick="hardDeleteDayClose('${r.id}')" title="Permanently delete"><i class="fa-solid fa-xmark"></i></button>`
           : `<button class="btn btn-ghost btn-xs" style="padding:4px 8px;" onclick="openDcDetail('${r.id}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
              <button class="btn btn-bad btn-xs" style="padding:4px 8px;" onclick="deleteDayClose('${r.id}')" title="Delete"><i class="fa-solid fa-xmark"></i></button>`}
+      </div>
       </div>
     </div>`;
   }).join('');
@@ -5839,7 +6293,7 @@ function renderUdhaari() {
         </div>
       </div>
       <div class="pc-stat"><div class="k">Total</div><div class="v">${fmt(g.totalBill)}</div></div>
-      <div class="pc-stat"><div class="k">Pending</div><div class="v" style="color:${pending>0?'var(--bad)':'var(--good)'};">${fmt(pending)}</div></div>
+      <div class="pc-stat pc-balance-stat"><div class="k">Balance Due</div><div class="v" style="color:${pending>0?'var(--bad)':'var(--good)'};">${fmt(pending)}</div></div>
       <i class="fa-solid fa-chevron-down pc-chevron"></i>
       <div class="pc-progress">
         <div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:var(--good);"></div></div>
@@ -7983,7 +8437,203 @@ function deleteHomeExpense(id) {
   });
 }
 
+// ─── Record-only Profit Spending ─────────────────────────────────
+// These entries explain where the owner's 40% profit went. They deliberately do
+// not touch Day Close, shop cash, GPay, or the profit reports.
+function profitReserveTotals() {
+  const gross = (STATE.dayClose || []).filter(r => !r.deleted).reduce((sum, r) => sum + profitForRecord(r), 0);
+  const spent = (STATE.profitSpends || []).filter(e => !e.deleted).reduce((sum, e) => sum + (e.amount || 0), 0);
+  return { gross, spent, remaining: gross - spent };
+}
+
+let _svMoney = 'all';
+let _svShop = 'ALL';
+let _svEditId = null;
+function ownerSavingsEntries() {
+  return (STATE.dailyExpenses || []).filter(e => !e.deleted && (e.desc || '').startsWith('Savings ('));
+}
+function savingsVaultItems() {
+  const mode = _svMoney;
+  const shop = _svShop;
+  const saved = ownerSavingsEntries().filter(e =>
+    (shop === 'ALL' || e.shopId === shop) &&
+    (mode === 'all' || (mode === 'cash' ? e.source === 'HOME' : e.source === 'GP'))
+  );
+  const spent = (STATE.profitSpends || []).filter(e => !e.deleted && e.kind === 'withdrawal').filter(e =>
+    (shop === 'ALL' || e.shopId === shop) &&
+    (mode === 'all' || (mode === 'cash' ? e.mode === 'Cash' : e.mode === 'Bank'))
+  );
+  return { saved, spent, setAside: saved.reduce((s,e)=>s+(e.amount||0),0), used: spent.reduce((s,e)=>s+(e.amount||0),0) };
+}
+function setSavingsVaultMoney(mode) {
+  _svMoney = mode;
+  renderSavingsVault();
+}
+function setSavingsVaultShop(shop) {
+  _svShop = shop;
+  renderSavingsVault();
+}
+function openSavingsVault() {
+  _svMoney = 'all'; _svShop = 'ALL';
+  renderSavingsVault();
+  openModal('modal-savings-vault');
+}
+function renderSavingsVault() {
+  const summary = $('sv-summary'), ledger = $('sv-ledger');
+  if (!summary || !ledger) return;
+  const t = savingsVaultItems();
+  const balance = t.setAside - t.used;
+  const pct = t.setAside ? Math.round(t.used / t.setAside * 100) : 0;
+  summary.innerHTML = `<div style="background:#121126;border:1px solid rgba(124,92,252,.22);border-radius:9px;padding:12px 10px;">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;text-align:center;">
+      <div><div style="font-size:8.5px;color:var(--muted);text-transform:uppercase;">Set Aside</div><div class="mono" style="font-size:15px;font-weight:800;color:#36d9bb;margin-top:4px;">${fmt(t.setAside)}</div></div>
+      <div><div style="font-size:8.5px;color:var(--muted);text-transform:uppercase;">Spent</div><div class="mono" style="font-size:15px;font-weight:800;color:${t.used?'var(--bad)':'var(--muted)'};margin-top:4px;">${t.used?'-':''}${fmt(t.used)}</div></div>
+      <div><div style="font-size:8.5px;color:var(--muted);text-transform:uppercase;">Balance</div><div class="mono" style="font-size:15px;font-weight:800;color:${balance<0?'var(--bad)':'#36d9bb'};margin-top:4px;">${fmt(balance)}</div></div>
+    </div>
+    <div style="text-align:center;font-size:10px;color:var(--muted);margin-top:8px;">${pct}% of the saved profit has been used</div>
+  </div>`;
+  document.querySelectorAll('#sv-money-filter .filter-btn').forEach((b,i) => b.classList.toggle('on', ['all','cash','bank'][i] === _svMoney));
+  const shopButtons = [`<button class="filter-btn ${_svShop==='ALL'?'on':''}" onclick="setSavingsVaultShop('ALL')"><i class="fa-solid fa-layer-group"></i> All Shops</button>`]
+    .concat((STATE.shops||[]).map(s => `<button class="filter-btn ${_svShop===s.id?'on':''}" onclick="setSavingsVaultShop('${s.id}')"><span style="color:${shopColor(s.id)};">●</span> ${escHtml(s.name)}</button>`));
+  $('sv-shop-filter').innerHTML = shopButtons.join('');
+  const rows = t.spent.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  ledger.innerHTML = rows.length ? rows.map(e => `<div style="display:flex;align-items:center;gap:8px;padding:9px 2px;border-bottom:1px solid var(--line);">
+    <span style="font-size:9px;color:${e.mode==='Bank'?'var(--accent2)':'var(--accent)'};">●</span>
+    <div style="flex:1;min-width:0;"><div style="font-size:12px;font-weight:700;">${escHtml(e.desc)}</div><div style="font-size:10px;color:var(--muted);">${fmtDateShort(e.date)} · ${escHtml(e.shopId==='ALL'?'All Shops':shopName(e.shopId))} · <span style="color:${e.mode==='Bank'?'var(--accent2)':'var(--good)'};">${e.mode||'Cash'}</span>${e.note?' · '+escHtml(e.note):''}</div></div>
+    <span class="mono" style="font-size:12px;font-weight:800;color:var(--bad);">-${fmt(e.amount)}</span>
+    <button class="btn btn-ghost btn-xs" style="padding:3px 6px;" onclick="editProfitWithdrawal('${e.id}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
+    <button class="btn btn-bad btn-xs" style="padding:3px 6px;" onclick="deleteProfitSpend('${e.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
+  </div>`).join('') : `<div style="text-align:center;padding:38px 12px;color:var(--muted);font-size:11.5px;"><i class="fa-solid fa-receipt" style="font-size:26px;display:block;margin-bottom:12px;opacity:.45;"></i>Koi withdrawal record nahi hai.<br>Profit se kharch kiya ho to “Record a Withdrawal” dabao — balance turant update ho jayega.</div>`;
+}
+function openProfitWithdrawalModal(editId) {
+  _svEditId = editId || null;
+  const old = _svEditId ? (STATE.profitSpends||[]).find(e=>e.id===_svEditId&&!e.deleted) : null;
+  $('svw-desc').value=old?.desc||''; $('svw-amt').value=old?.amount||''; $('svw-date').value=old?.date||todayStr(); $('svw-note').value=old?.note||'';
+  chipPick('svw-mode',old?.mode||'Cash');
+  $('svw-shop').innerHTML = `<button type="button" class="chip-tile active" data-value="ALL" onclick="chipPick('svw-shop','ALL')"><i class="fa-solid fa-layer-group"></i> All Shops</button>` +
+    (STATE.shops||[]).map(s=>`<button type="button" class="chip-tile" data-value="${s.id}" onclick="chipPick('svw-shop','${s.id}')"><span class="chip-dot" style="background:${shopColor(s.id)};"></span>${escHtml(s.name)}</button>`).join('');
+  chipPick('svw-shop',old?.shopId||'ALL');
+  updateWithdrawalPreview();
+  openModal('modal-profit-withdrawal');
+}
+function updateWithdrawalPreview() {
+  const mode = chipValue('svw-mode') || 'Cash', shop = chipValue('svw-shop') || 'ALL';
+  const saved = ownerSavingsEntries().filter(e => (shop==='ALL'||e.shopId===shop) && (mode==='Cash'?e.source==='HOME':e.source==='GP')).reduce((s,e)=>s+(e.amount||0),0);
+  const used = (STATE.profitSpends||[]).filter(e=>!e.deleted&&e.kind==='withdrawal'&&(shop==='ALL'||e.shopId===shop)&&(e.mode===mode)).reduce((s,e)=>s+(e.amount||0),0);
+  const after = saved-used-(parseFloat($('svw-amt')?.value)||0);
+  const el=$('svw-preview'); if(el) el.innerHTML=`Selected ${mode} reserve: <strong style="color:var(--jtext);">${fmt(saved-used)}</strong> · After entry: <strong style="color:${after<0?'var(--bad)':'var(--good)'};">${fmt(after)}</strong>`;
+}
+function saveProfitWithdrawal() {
+  const desc=$('svw-desc').value.trim(), amount=parseFloat($('svw-amt').value)||0, date=$('svw-date').value||todayStr(), mode=chipValue('svw-mode')||'Cash', shopId=chipValue('svw-shop')||'ALL', note=$('svw-note').value.trim();
+  if(!desc||amount<=0){toast('Description and a valid amount are required','error');return;}
+  STATE.profitSpends=STATE.profitSpends||[];
+  if (_svEditId) {
+    const old = STATE.profitSpends.find(e=>e.id===_svEditId);
+    if (old) Object.assign(old,{desc,amount,date,mode,shopId,note});
+  } else {
+    STATE.profitSpends.unshift({id:newId('PS'),kind:'withdrawal',desc,amount,date,mode,shopId,note,deleted:false});
+  }
+  auditLog('PROFIT_SPEND',`${_svEditId?'Updated':'Recorded'}: ${desc} — ${fmt(amount)} from ${mode} savings (record only)`);
+  saveStateLocal(); closeModal('modal-profit-withdrawal'); renderSavingsVault(); renderProfitSpendTracker(); renderDashboard(); openModal('modal-savings-vault');
+  toast(`Withdrawal recorded — ${desc}`,'success');
+}
+function editProfitWithdrawal(id) {
+  const e=(STATE.profitSpends||[]).find(x=>x.id===id&&!x.deleted); if(!e)return;
+  closeModal('modal-savings-vault'); openProfitWithdrawalModal(id);
+}
+
+function openProfitSpendModal() {
+  $('ps-desc').value = '';
+  $('pfs-amt').value = '';
+  $('ps-date').value = todayStr();
+  $('pfs-note').value = '';
+  updateProfitSpendPreview();
+  openModal('modal-add-profit-spend');
+}
+
+function updateProfitSpendPreview() {
+  const totals = profitReserveTotals();
+  const amount = parseFloat($('pfs-amt')?.value) || 0;
+  const after = totals.remaining - amount;
+  const color = after < 0 ? 'var(--bad)' : 'var(--good)';
+  const el = $('ps-preview');
+  if (el) el.innerHTML = `Profit reserve: <strong style="color:var(--jtext);">${fmt(totals.remaining)}</strong> · After this entry: <strong style="color:${color};">${fmt(after)}</strong>${after < 0 ? ' (reserve se zyada — record phir bhi save ho sakta hai)' : ''}`;
+}
+
+function saveProfitSpend() {
+  const desc = $('ps-desc').value.trim();
+  const amount = parseFloat($('pfs-amt').value) || 0;
+  const date = $('ps-date').value || todayStr();
+  const note = $('pfs-note').value.trim();
+  if (!desc || amount <= 0) { toast('Description and a valid amount are required', 'error'); return; }
+  STATE.profitSpends = STATE.profitSpends || [];
+  STATE.profitSpends.unshift({ id: newId('PS'), desc, amount, date, note, deleted: false });
+  auditLog('PROFIT_SPEND', `${desc} — ${fmt(amount)} (record only)`);
+  saveStateLocal();
+  closeModal('modal-add-profit-spend');
+  renderProfitSpendTracker();
+  renderDashboard();
+  toast(`Profit expense recorded — ${desc}`, 'success');
+}
+
+function deleteProfitSpend(id) {
+  const entry = (STATE.profitSpends || []).find(e => e.id === id);
+  if (!entry) return;
+  showConfirm({
+    title: 'Delete Profit Expense?',
+    msg: `<strong>${escHtml(entry.desc)}</strong> — ${fmt(entry.amount)}<br>Only this record will be removed; Day Close profit stays unchanged.`,
+    icon: '!', yesText: 'Delete', yesCls: 'btn-bad',
+    onYes: () => {
+      entry.deleted = true;
+      auditLog('PROFIT_SPEND', `Deleted: ${entry.desc} — ${fmt(entry.amount)}`);
+      saveStateLocal();
+      renderProfitSpendTracker();
+      if ($('modal-savings-vault')?.classList.contains('open')) renderSavingsVault();
+      renderDashboard();
+      toast('Profit expense record deleted');
+    }
+  });
+}
+
+function renderProfitSpendTracker() {
+  const summary = $('profit-spend-summary');
+  const listEl = $('profit-spend-list');
+  if (!summary || !listEl) return;
+  const totals = profitReserveTotals();
+  const entries = (STATE.profitSpends || []).filter(e => !e.deleted).slice().sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  const leftColor = totals.remaining < 0 ? 'var(--bad)' : 'var(--good)';
+  summary.innerHTML = `
+    <div class="card" style="padding:14px 16px;border-left:3px solid var(--good);">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+        <div class="rec-cell"><div class="k">Total Profit (40%)</div><div class="v" style="color:var(--accent);">${fmt(totals.gross)}</div></div>
+        <div class="rec-cell"><div class="k">Used / Spent</div><div class="v" style="color:var(--bad);">${fmt(totals.spent)}</div></div>
+        <div class="rec-cell"><div class="k">Profit Left</div><div class="v" style="color:${leftColor};">${fmt(totals.remaining)}</div></div>
+      </div>
+      <div style="font-size:10.5px;color:var(--muted);margin-top:10px;border-top:1px solid var(--line);padding-top:9px;">
+        <i class="fa-solid fa-book" style="color:var(--good);margin-right:4px;"></i>
+        Example: ₹40,000 profit − ₹12,000 phone = <strong style="color:${leftColor};">${fmt(totals.remaining)}</strong> remaining. Original profit record remains ₹40,000.
+      </div>
+    </div>`;
+  listEl.innerHTML = entries.length ? `
+    <div class="card" style="padding:12px 14px;">
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px;">Where the profit was used</div>
+      ${entries.map(e => `<div style="display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--line);">
+        <div style="width:30px;height:30px;border-radius:8px;background:rgba(248,113,113,.12);display:grid;place-items:center;color:var(--bad);"><i class="fa-solid fa-receipt"></i></div>
+        <div style="flex:1;min-width:0;"><div style="font-size:12.5px;font-weight:700;">${escHtml(e.desc)}</div><div style="font-size:10.5px;color:var(--muted);">${fmtDateShort(e.date)}${e.note ? ' · ' + escHtml(e.note) : ''}</div></div>
+        <div class="mono" style="font-size:13px;font-weight:800;color:var(--bad);">${fmt(e.amount)}</div>
+        <button class="btn btn-bad btn-xs" style="padding:4px 7px;" onclick="deleteProfitSpend('${e.id}')" title="Delete record"><i class="fa-solid fa-trash"></i></button>
+      </div>`).join('')}
+    </div>` : `<div class="card" style="padding:18px;text-align:center;color:var(--muted);font-size:11.5px;">No profit expenses recorded yet. Phone ya koi bhi personal kharch yahan add karein.</div>`;
+}
+
+let expandedHomeExpenseMonth = todayStr().slice(0, 7);
+function toggleHomeExpenseMonth(monthKey) {
+  expandedHomeExpenseMonth = expandedHomeExpenseMonth === monthKey ? null : monthKey;
+  renderHomeExpenses();
+}
+
 function renderHomeExpenses() {
+  renderProfitSpendTracker();
   const list = STATE.homeExpenses || [];
   const ym = todayStr().slice(0,7); // YYYY-MM (local, not UTC)
   const thisMonth = list.filter(e => (e.date||'').startsWith(ym));
@@ -8040,12 +8690,20 @@ function renderHomeExpenses() {
   cont.innerHTML = monthKeys.map(mk => {
     const items = groups[mk].slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
     const total = items.reduce((s,e)=>s+(e.amount||0),0);
+    const isOpen = expandedHomeExpenseMonth === mk;
     return `
       <div style="margin-bottom:18px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding:0 4px;">
-          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;">${monthName(mk)}</div>
-          <div class="mono" style="font-size:12px;font-weight:700;color:var(--bad);">${fmt(total)}</div>
-        </div>
+        <button type="button" class="he-month-toggle${isOpen?' open':''}" onclick="toggleHomeExpenseMonth('${mk}')" aria-expanded="${isOpen}">
+          <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;">
+            <i class="fa-solid fa-calendar-days" style="margin-right:5px;color:var(--warn);"></i>${monthName(mk)}
+            <span style="font-size:10px;font-weight:600;letter-spacing:0;margin-left:5px;">${items.length} entr${items.length===1?'y':'ies'}</span>
+          </span>
+          <span style="display:flex;align-items:center;gap:8px;">
+            <span class="mono" style="font-size:12px;font-weight:700;color:var(--bad);">${fmt(total)}</span>
+            <i class="fa-solid fa-chevron-down he-month-chevron"></i>
+          </span>
+        </button>
+        <div class="he-month-items${isOpen?' open':''}">
         ${items.map(e => `
           <div class="he-row">
             <span class="he-cat-dot" style="background:${HE_CAT_COLORS[e.category]||'#8888a8'};"></span>
@@ -8064,6 +8722,7 @@ function renderHomeExpenses() {
             <div class="mono he-row-amt">${fmt(e.amount)}</div>
             <button class="btn btn-bad btn-xs" style="flex-shrink:0;padding:3px 6px;" onclick="deleteHomeExpense('${e.id}')" title="Delete"><i class="fa-solid fa-trash" style="font-size:10px;"></i></button>
           </div>`).join('')}
+        </div>
       </div>`;
   }).join('');
 }
@@ -9719,7 +10378,8 @@ function speakFestivalNow(id) {
   if (!f) return;
   const du = daysUntil(f.date);
   if (du === null) { toast('Set a date for this festival first', 'error'); return; }
-  speakText(du === 0 ? `${f.name}, aaj hai!` : du < 0 ? `${f.name}, ${Math.abs(du)} din pehle tha` : `${f.name}, ${du} din mein hai`, true);
+  const hindiNumber = n => ['shoonya','ek','do','teen','chaar','paanch','chhe','saat','aath','nau','das','gyaarah','baarah','terah','chaudah','pandrah','solah','satrah','athaarah','unnees','bees'][n] || String(n);
+  speakText(du === 0 ? `${f.name}, aaj hai!` : du < 0 ? `${f.name}, ${hindiNumber(Math.abs(du))} din pehle tha` : `${f.name}, ${hindiNumber(du)} din mein hai, bhai sab taiyari kar le`, true);
 }
 
 function renderFestivalBanner() {
@@ -10413,15 +11073,16 @@ async function pullFromSheet(opts) {
   try {
     const res=await fetch(url+'?action=load');
     const json=await res.json();
-    if(json&&json.data){
-      // Bug fix: the old code applied the pulled data (and re-rendered the forms)
-      // as soon as the fetch resolved, with no check at that point. _userIsTyping()
-      // was only checked *before* starting the fetch, but fetch itself takes a
-      // second or two — plenty of time for someone to start typing into Day Close
-      // in between. When that happened, the response would land mid-edit and
-      // initDcForms()/renderAll() would wipe whatever they'd just written. Now we
-      // re-check focus right before applying, and if the user is typing we retry
-      // shortly after instead of clobbering (or silently dropping) the update.
+    // BUG FIX: if a push was already queued (hadPendingEdits) — e.g. the user tapped several
+    // Savings "Done" buttons back-to-back across shops right after opening the app, before the
+    // very first readiness-pull had finished — this pull's ONLY job is to confirm it's safe to
+    // push, NOT to apply what it fetched. Local STATE already holds those Done taps and is
+    // strictly newer than whatever this fetch just returned. Overwriting STATE with the older
+    // remote snapshot here would erase those taps a split-second before pushToSheet() below
+    // re-sends them — which is exactly the "Done, then it reverts back" bug this fixes. So when
+    // hadPendingEdits is true we skip applying the fetched snapshot entirely and just push
+    // straight away with the local (fresher) state as source of truth.
+    if(json && json.data && !hadPendingEdits){
       const applyPull = () => {
         Object.assign(STATE,json.data);
         // Bug 7 fix: run migration on pulled data to ensure all required fields exist
@@ -10798,28 +11459,36 @@ body.page-enter #bnav{animation:navIn .34s cubic-bezier(.4,0,.2,1) both;}
   font-size: 12.5px;
 }
 .dc-entries-table th {
-  padding: 12px 14px;
+  padding: 8px 10px;
   background: rgba(139,108,255,0.075);
   color: #a4a4c4;
 }
 .dc-entries-table td {
-  padding: 12px 14px;
+  padding: 7px 10px;
 }
 .dc-entries-table tbody tr:hover {
   background: rgba(139,108,255,0.09);
 }
 .dce-card {
-  padding: 10px 12px;
-  border-radius: 13px;
+  padding: 7px 10px;
+  border-radius: 10px;
   background: linear-gradient(135deg, rgba(139,108,255,0.06), rgba(16,16,30,0.8));
+  box-shadow: 0 1px 8px rgba(0,0,0,0.10);
 }
-.dce-card-top { margin-bottom: 6px; }
-.dce-card-date { font-size: 12px; }
-.dce-card-sale { font-size: 14px; }
-.dce-card-grid { gap: 6px; margin-bottom: 6px; }
+.dce-card-top { margin-bottom: 4px; }
+.dce-card-top-right { display: flex; align-items: center; gap: 8px; }
+.dce-card-chevron { color: var(--muted); font-size: 10px; transition: transform .18s ease; }
+.dce-entry-details { display: none; }
+.dce-card.expanded .dce-entry-details { display: block; }
+.dce-card.expanded .dce-card-chevron { transform: rotate(180deg); color: var(--accent2); }
+.dce-card-date { font-size: 11px; }
+.dce-card-shop { padding: 1px 6px; font-size: 8.5px; }
+.dce-card-sale { font-size: 13px; }
+.dce-card-grid { gap: 4px; margin-bottom: 4px; }
 .dce-card-grid .k { font-size: 8.5px; }
-.dce-card-grid .v { font-size: 11.5px; }
-.dce-card-actions { padding-top: 6px; }
+.dce-card-grid .v { font-size: 10.5px; }
+.dce-card-actions { gap: 5px; padding-top: 4px; }
+.dce-card-actions button { width: 24px !important; height: 24px !important; }
 .dce-pagination {
   display: flex;
   align-items: center;
@@ -10867,6 +11536,14 @@ body.page-enter #bnav{animation:navIn .34s cubic-bezier(.4,0,.2,1) both;}
   opacity: .3;
   cursor: not-allowed;
 }
+.dce-page-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  color: var(--muted);
+  font-size: 11px;
+}
 @media(max-width:640px) {
   #dc-entries-view {
     padding: 12px;
@@ -10907,8 +11584,43 @@ body.page-enter #bnav{animation:navIn .34s cubic-bezier(.4,0,.2,1) both;}
     justify-content: center;
   }
   .dce-card {
-    padding: 10px 12px;
+    padding: 7px 10px;
   }
+}
+
+/* ── Final visual cleanup: calmer surfaces, less glow, clearer hierarchy ── */
+body::before {
+  opacity: .48;
+  animation: none;
+}
+body::after { opacity: .22; }
+.card {
+  box-shadow: 0 2px 14px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.025);
+}
+.card:hover {
+  box-shadow: 0 3px 18px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.03);
+}
+.perf-card {
+  box-shadow: 0 1px 10px rgba(0,0,0,.10), inset 0 1px 0 rgba(255,255,255,.02);
+}
+.perf-card:hover {
+  transform: none;
+  box-shadow: 0 2px 14px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.025);
+}
+.dashboard-quick-actions {
+  background: rgba(255,255,255,.025);
+  border-color: var(--line);
+  box-shadow: 0 2px 14px rgba(0,0,0,.10);
+}
+.quick-action:hover { transform: none; }
+.section-hd { margin-bottom: 12px; }
+@media(max-width:640px) {
+  .fab-container.dashboard-hidden { display: none !important; }
+  .card { border-radius: 10px; }
+  .dashboard-quick-actions { padding: 11px 12px 12px; }
+  .quick-actions-grid { gap: 6px; }
+  .quick-action { padding: 8px 9px; gap: 7px; }
+  .quick-action .qa-icon { width: 27px; height: 27px; flex-basis: 27px; }
 }
 </style>
 <div id="page-veil">
@@ -10948,5 +11660,6 @@ function navigateTo(ev, url, label, icon){
   });
 })();
 </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1}' crossorigin="anonymous"></script>
 </body>
 </html>
