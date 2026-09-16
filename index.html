@@ -10921,6 +10921,8 @@ async function pushToSheetNow(force) {
   const json = await res.json().catch(() => null);
   if (json && json.success === false) {
     toast('⚠️ Sheet sync failed: ' + (json.error || 'server rejected the save'), 'error');
+  } else {
+    _hasUnsyncedChanges = false;
   }
   localStorage.setItem('jmd_state', JSON.stringify(STATE));
 }
@@ -11046,10 +11048,20 @@ let syncTimer=null;
 // talked to the Sheet at least once this session; until then, pushes are held back and a
 // pull is retried instead.
 let _sheetSyncReady = !effectiveSheetUrl();
+// BUG FIX: tracks "there's a local change that hasn't been confirmed saved to the Sheet yet".
+// pushToSheet() debounces 800ms before actually sending, and the network call itself takes time
+// on top of that — but the periodic 40s background sync and the "switch back to this tab" sync
+// (see startLiveSync()) had no idea any of that was in flight, so a poll landing in that window
+// would pull the Sheet's still-OLD data and overwrite the fresh local change right back out from
+// under it (e.g. clicking several Savings "Done" buttons back-to-back, then a background sync
+// fires before the first one has actually reached the Sheet — the Done taps silently revert).
+// Now pullFromSheet() checks this flag and refuses to apply a fetched snapshot while it's true.
+let _hasUnsyncedChanges = false;
 
 function pushToSheet() {
   const url = effectiveSheetUrl();
   if(!url) return;
+  _hasUnsyncedChanges = true; // mark dirty immediately — cleared only once the push truly lands
   clearTimeout(syncTimer);
   syncTimer=setTimeout(async()=>{
     const dot=$('sync-dot'), lbl=$('sync-label');
@@ -11057,7 +11069,7 @@ function pushToSheet() {
       // Never overwrite the shared Sheet before confirming what's already on it.
       lbl.textContent = 'Waiting to sync…';
       dot.className = 'sync-dot syncing';
-      pullFromSheet(); // will retry the push automatically once this succeeds (see below)
+      pullFromSheet({ triggeredByPendingPush: true }); // will retry the push automatically once this succeeds (see below)
       return;
     }
     dot.className='sync-dot syncing'; lbl.textContent='Syncing...';
@@ -11076,10 +11088,11 @@ function pushToSheet() {
         return;
       }
       localStorage.setItem('jmd_state', JSON.stringify(STATE));
+      _hasUnsyncedChanges = false; // confirmed landed on the Sheet — safe for pulls to apply again
       updateLastSyncUI();
       dot.className='sync-dot'; dot.style.background='var(--good)';
       lbl.textContent = INBUILT_SHEET_URL ? 'Team Synced' : 'Synced';
-    } catch(e){ dot.className='sync-dot error'; lbl.textContent='Sync Error'; }
+    } catch(e){ dot.className='sync-dot error'; lbl.textContent='Sync Error'; } // stays dirty — will retry on next change/timer
   }, 800);
 }
 async function pullFromSheet(opts) {
@@ -11092,20 +11105,38 @@ async function pullFromSheet(opts) {
     updateSyncUI();
     return;
   }
-  const hadPendingEdits = !_sheetSyncReady; // a push was waiting on this exact pull
+  // BUG FIX: this used to be inferred as `!_sheetSyncReady`, on the assumption that
+  // pullFromSheet() is only ever called this way when a push was waiting on it. But
+  // _sheetSyncReady is ALSO false on the very first, completely normal pull right after
+  // the app loads (before anything has synced yet) — every other call site (app startup,
+  // periodic silent refresh, the manual "Pull Latest" button) hits this same branch with
+  // no pending edits at all. That misfire skipped applying the real Sheet data on first
+  // load, then immediately pushed the still-empty/default local STATE back up — which is
+  // exactly what the new server-side guard in Code.gs is designed to block, surfacing as
+  // "Sync Blocked" on totally normal startups. Now this is only true when the ONE actual
+  // pending-push call site below passes it explicitly — never inferred from shared state.
+  const pushWasPending = !!(opts && opts.triggeredByPendingPush);
+  // BUG FIX: skipping the apply used to depend ONLY on pushWasPending, which only covers the
+  // narrow case of a push held back by !_sheetSyncReady. But the periodic 40s background sync
+  // and the "tab became visible again" sync (startLiveSync()) call pullFromSheet() too, with
+  // neither flag nor any awareness that a push is mid-flight (debounced 800ms + network time).
+  // If one of those lands in that window, it fetches the Sheet's still-OLD data and applies it
+  // — wiping out a just-made local change (e.g. several Savings "Done" taps in a row) a moment
+  // before the pending push would have sent it. _hasUnsyncedChanges closes that gap: it's true
+  // from the instant ANY local change requests a push, until that push actually confirms landing.
+  const skipApply = pushWasPending || _hasUnsyncedChanges;
   try {
     const res=await fetch(url+'?action=load');
     const json=await res.json();
-    // BUG FIX: if a push was already queued (hadPendingEdits) — e.g. the user tapped several
-    // Savings "Done" buttons back-to-back across shops right after opening the app, before the
-    // very first readiness-pull had finished — this pull's ONLY job is to confirm it's safe to
-    // push, NOT to apply what it fetched. Local STATE already holds those Done taps and is
-    // strictly newer than whatever this fetch just returned. Overwriting STATE with the older
-    // remote snapshot here would erase those taps a split-second before pushToSheet() below
-    // re-sends them — which is exactly the "Done, then it reverts back" bug this fixes. So when
-    // hadPendingEdits is true we skip applying the fetched snapshot entirely and just push
-    // straight away with the local (fresher) state as source of truth.
-    if(json && json.data && !hadPendingEdits){
+    // If a push was already queued/pending (skipApply) — e.g. the user tapped several
+    // Savings "Done" buttons back-to-back across shops — this pull's ONLY job is to confirm
+    // it's safe to sync, NOT to apply what it fetched. Local STATE already holds those Done
+    // taps and is strictly newer than whatever this fetch just returned. Overwriting STATE
+    // with the older remote snapshot here would erase those taps a split-second before
+    // pushToSheet() sends them — which is exactly the "Done, then it reverts back" bug this
+    // fixes. So when skipApply is true we skip applying the fetched snapshot entirely and let
+    // the already-in-flight (or about to be re-triggered) push carry the local state forward.
+    if(json && json.data && !skipApply){
       const applyPull = () => {
         Object.assign(STATE,json.data);
         // Bug 7 fix: run migration on pulled data to ensure all required fields exist
@@ -11128,7 +11159,7 @@ async function pullFromSheet(opts) {
       }
     }
     _sheetSyncReady = true; // we've successfully confirmed what's on the Sheet — safe to push now
-    if (hadPendingEdits) pushToSheet(); // retry the push that was held back, now against confirmed data
+    if (skipApply) pushToSheet(); // make sure the pending/unsynced local change actually gets flushed
   } catch(e){}
   updateSyncUI();
 }
