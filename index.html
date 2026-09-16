@@ -2672,7 +2672,7 @@ html,body{overflow-x:hidden;max-width:100%;}
 // The Settings URL field will be hidden/locked automatically.
 //
 // Leave empty if each user should manually enter the URL in Settings.
-const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbx_UIDNNEn3hqDp-pwmhvpZgNFLnbl3xe4jWYFaCKB_GJZLi9pbVRpXqYq3gNLSYT3c/exec'
+const INBUILT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbyvasrTx0fDemG0rp8ukI8OLJMqo2yRE2z_YyY0Z7YgI-SjpoGfysC64FCnPQZZnYCB/exec'
 // ═══════════════════════════════════════════════════════════════════
 
 // ─── Initial State ──────────────────────────────────────────────
@@ -10883,6 +10883,10 @@ function changePin() {
 async function resetAll() {
   STATE = defaultState();
   localStorage.setItem('jmd_state', JSON.stringify(STATE));
+  // BUG FIX: this never actually pushed the reset to the Sheet, despite the confirmation
+  // dialog explicitly promising "This will delete ALL data including the shared Google
+  // Sheet." force=true bypasses the new data-loss guard since this wipe is intentional.
+  try { await pushToSheetNow(true); } catch (e) {}
   location.reload();
 }
 
@@ -10899,17 +10903,25 @@ async function selectiveReset() {
   // homeExpenses, reminders, udhaari, outflows, loans are deliberately left untouched
   localStorage.setItem('jmd_state', JSON.stringify(STATE));
   toast('Selective reset done — Home Expenses/Reminders/Credit/Outflows/Loans preserved', 'success');
-  try { await pushToSheetNow(); } catch(e) {}
+  // force=true: this intentionally wipes Day Close/Daily Expenses/InterShop/Audit, which
+  // would otherwise look like an accidental data-loss to the server's new safety guard.
+  try { await pushToSheetNow(true); } catch(e) {}
   location.reload();
 }
 
 // Immediate (non-debounced) push used right after a reset, so the sheet
 // reflects the cleared state right away instead of waiting for the debounce timer.
-async function pushToSheetNow() {
+// force=true tells the server's data-loss safety guard this is an intentional wipe
+// (Reset All / Selective Reset), not an accidental empty/partial sync — see Code.gs.
+async function pushToSheetNow(force) {
   const url = effectiveSheetUrl();
   if (!url) return;
   STATE.lastSyncAt = new Date().toISOString();
-  await fetch(url, {method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'save', data: STATE})});
+  const res = await fetch(url, {method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'save', data: STATE, force: !!force})});
+  const json = await res.json().catch(() => null);
+  if (json && json.success === false) {
+    toast('⚠️ Sheet sync failed: ' + (json.error || 'server rejected the save'), 'error');
+  }
   localStorage.setItem('jmd_state', JSON.stringify(STATE));
 }
 
@@ -11051,7 +11063,18 @@ function pushToSheet() {
     dot.className='sync-dot syncing'; lbl.textContent='Syncing...';
     try {
       STATE.lastSyncAt = new Date().toISOString();
-      await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'save',data:STATE})});
+      const res = await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'save',data:STATE})});
+      const json = await res.json().catch(() => null);
+      if (json && json.success === false) {
+        // BUG FIX: the server's data-loss safety guard (or any other server-side error) used to
+        // be silently swallowed here — the sync dot just quietly went back to normal, so a
+        // blocked/failed save looked identical to a successful one. Now it's surfaced loudly:
+        // this is exactly the kind of failure (e.g. "would have wiped your data") the person
+        // needs to see, not one to hide.
+        dot.className='sync-dot error'; lbl.textContent='Sync Blocked';
+        toast('⚠️ Sync blocked: ' + (json.error || 'server rejected the save') , 'error');
+        return;
+      }
       localStorage.setItem('jmd_state', JSON.stringify(STATE));
       updateLastSyncUI();
       dot.className='sync-dot'; dot.style.background='var(--good)';
@@ -11131,7 +11154,14 @@ function manualSync() {
     dot.className='sync-dot syncing'; lbl.textContent='Pushing...';
     try {
       STATE.lastSyncAt = new Date().toISOString();
-      await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'save',data:STATE})});
+      const res = await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'save',data:STATE})});
+      const json = await res.json().catch(() => null);
+      if (json && json.success === false) {
+        icon.style.animation = '';
+        dot.className='sync-dot error'; lbl.textContent='Sync Blocked';
+        toast('⚠️ Sync blocked: ' + (json.error || 'server rejected the save'), 'error');
+        return;
+      }
       localStorage.setItem('jmd_state', JSON.stringify(STATE));
       updateLastSyncUI();
       dot.className='sync-dot'; dot.style.background='var(--good)';
