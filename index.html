@@ -3363,6 +3363,28 @@ function speakText(text, force) {
   } catch (e) { /* speech unsupported/blocked — silently skip, beep still played */ }
 }
 
+// Spells out a number in Hindi words for text-to-speech, so a Hindi voice says "chaubis"
+// instead of reading the digit string "24" in English-style pronunciation ("twenty four").
+// BUG FIX: this was called from the Test Voice button but never actually defined anywhere —
+// and the real festival alert below was just interpolating the raw number, so every countdown
+// ("24 din mein hai") came out in English digit-speech regardless. Covers 1-100, which is every
+// realistic "days until a festival" case; anything further out just falls back to plain digits.
+const HINDI_NUMBER_WORDS = ['', 'ek','do','teen','chaar','paanch','chhah','saat','aath','nau','das',
+  'gyarah','baarah','terah','chaudah','pandrah','solah','satrah','atharah','unnees','bees',
+  'ikkis','baais','teis','chaubis','pachchis','chhabbis','sattais','athais','unatees','tees',
+  'ikatees','battees','taintees','chauntees','paintees','chhattees','saintees','adtees','untalees','chalees',
+  'iktalees','bayalees','taintalees','chauvalees','paintalees','chhiyalees','saintalees','adtalees','unchaas','pachaas',
+  'ikyavan','baavan','tirpan','chauvan','pachpan','chhappan','sattavan','athavan','unsath','saath',
+  'iksath','baasath','tirsath','chausath','painsath','chhiyasath','sadsath','adsath','unhattar','sattar',
+  'ikhattar','bahattar','tihattar','chauhattar','pachhattar','chhihattar','sathattar','athhattar','unnasi','assi',
+  'ikyasi','bayasi','tirasi','chaurasi','pachasi','chhiyasi','sattasi','athasi','nawasi','nabbe',
+  'ikyanave','banave','tiranave','chauranave','pachanave','chhiyanave','sattanave','anthanave','ninyanave','sau'];
+function hindiNumber(n) {
+  n = Math.round(Math.abs(n || 0));
+  if (n >= 1 && n <= 100) return HINDI_NUMBER_WORDS[n];
+  return String(n); // beyond a realistic festival countdown — just speak the digits
+}
+
 function fireFestivalAlert(f, du) {
   const title = du === 0 ? `🎉 ${f.name} is Today!` : `${f.icon || '🎉'} ${f.name} in ${du} day${du !== 1 ? 's' : ''}`;
   const body = 'Tap the Festival Calendar to check your stock-prep checklist';
@@ -3372,7 +3394,7 @@ function fireFestivalAlert(f, du) {
   } else {
     toast(`${title} — ${body}`, 'info');
   }
-  speakText(du === 0 ? `${f.name}, aaj hai!` : `${f.name}, ${du} din mein hai`);
+  speakText(du === 0 ? `${f.name}, aaj hai!` : `${f.name}, ${hindiNumber(du)} din mein hai`);
 }
 
 function _notifiedLog() { try { return JSON.parse(localStorage.getItem('jmd_notified_log') || '{}'); } catch(e) { return {}; } }
@@ -4146,6 +4168,81 @@ function getPendingSavings() {
 // record karte hain taaki Net Bal (Home|Bank), Dashboard Net Worth, aur shop ka live GPay balance
 // (sh.online) — sab jagah ye paisa "consumed/set-aside" maana jaaye, na ki abhi bhi "available" jaisa.
 // type: 'cash'/'bank' = 30% owner savings. 'staffcash'/'staffbank' = 10% staff/bills/EMI reserve.
+// ─── Undo a Savings/Staff Reserve confirmation ──────────────────────────────
+// The reverse of confirmSavingsDone(): deletes the linked dailyExpense (which automatically
+// restores Home Cash via shopHomeCash()'s live formula), reverses the GPay/online deduction and
+// Staff Reserve wallet credit if applicable, and flips the Done flag back off — so the item
+// reappears in the Savings Pending dropdown exactly like it was never confirmed. This is the
+// exact same reversal the app already does internally when an entry's target changes after
+// editing (see saveDcEntry's cashTargetChanged/staffCashTargetChanged handling) — pulled out
+// here as a reusable action so it can be triggered directly, not just as an editing side-effect.
+// Pure state mutation only — no save/render/toast — so bulk-undo can batch many of these into
+// one save+render instead of one per item. Returns the amount reversed (0 if there was nothing
+// to undo for this type).
+function _reverseSavingsConfirm(r, type) {
+  const isStaff = type === 'staffcash' || type === 'staffbank';
+  const isCashSide = type === 'cash' || type === 'staffcash';
+  const doneFlag = type === 'cash' ? 'cashSaveDone' : type === 'bank' ? 'bankSaveDone' : type === 'staffcash' ? 'staffCashDone' : 'staffBankDone';
+  if (!r[doneFlag]) return 0;
+  const exp = (STATE.dailyExpenses || []).find(e => e.linkedDcId === r.id && !e.deleted &&
+    e.desc && e.desc.startsWith(isStaff ? 'Staff/Bills Reserve' : 'Savings') &&
+    e.desc.includes(isCashSide ? 'Cash' : 'GPay'));
+  const amt = exp ? (exp.amount || 0) : 0;
+  if (exp) {
+    exp.deleted = true; // restores Home Cash automatically — shopHomeCash() sums non-deleted HOME expenses
+    const sh = STATE.shops.find(s => s.id === r.shopId);
+    if (sh) {
+      if (!isCashSide) sh.online = (sh.online || 0) + amt;             // reverse the GPay deduction
+      if (isStaff) sh.staffReserveBalance = Math.max(0, (sh.staffReserveBalance || 0) - amt); // reverse the wallet credit
+    }
+  }
+  r[doneFlag] = false;
+  return amt;
+}
+
+// Single-item undo — used by an "Undo" button next to a confirmed entry.
+function undoSavingsConfirm(dcId, type) {
+  const r = STATE.dayClose.find(x => x.id === dcId);
+  if (!r) return;
+  const isStaff = type === 'staffcash' || type === 'staffbank';
+  const isCashSide = type === 'cash' || type === 'staffcash';
+  const amt = _reverseSavingsConfirm(r, type);
+  if (!amt) { toast('Nothing to undo for this entry', 'info'); return; }
+  auditLog('SAVINGS', `${shopName(r.shopId)} ${fmtDate(r.date)} — ${isStaff ? 'Staff/Bills Reserve' : 'Savings'} (${isCashSide ? 'Cash' : 'GPay'}) confirmation undone, ${fmt(amt)} moved back to Pending`);
+  saveStateLocal();
+  renderSavingsPendingBanner();
+  renderMonthlySummary();
+  renderDashboard();
+  updateBadges();
+  toast(`Undone — ${fmt(amt)} moved back to Pending`, 'success');
+}
+
+// Bulk undo — reverses EVERY confirmed Staff/Bills Reserve entry (Cash + GPay) for one shop in
+// one go, e.g. when several "Done" taps turn out to have been against money that was never
+// really available. Pending (not-yet-confirmed) entries are untouched by design — this only
+// unwinds what was marked Done.
+function undoAllConfirmedStaffReserve(shopId) {
+  const recs = STATE.dayClose.filter(r => !r.deleted && r.shopId === shopId && (r.staffCashDone || r.staffBankDone));
+  if (!recs.length) { toast('Nothing confirmed to undo for this shop', 'info'); return; }
+  const total = recs.reduce((s, r) => s + (r.staffCashDone ? (r.staffCashTarget || 0) : 0) + (r.staffBankDone ? (r.staffBankTarget || 0) : 0), 0);
+  showConfirm({
+    title: 'Undo All Confirmed Staff Reserve?',
+    msg: `This moves ${fmt(total)} back to Pending for <strong>${escHtml(shopName(shopId))}</strong>. The Staff/Bills Reserve wallet balance drops by the same amount (since that money isn't really available), and Home Cash/GPay get credited back. Pending (not-yet-confirmed) entries are not touched.<br><br>Continue?`,
+    icon: '!', yesText: 'Undo All', yesCls: 'btn-bad',
+    onYes: () => {
+      let moved = 0;
+      recs.forEach(r => {
+        moved += _reverseSavingsConfirm(r, 'staffcash');
+        moved += _reverseSavingsConfirm(r, 'staffbank');
+      });
+      auditLog('SAVINGS', `${shopName(shopId)} — bulk-undid ${fmt(moved)} of confirmed Staff/Bills Reserve (moved back to Pending)`);
+      saveStateLocal();
+      renderAll();
+      toast(`Undone — ${fmt(moved)} moved back to Pending`, 'success');
+    }
+  });
+}
+
 function confirmSavingsDone(dcId, type) {
   const r = STATE.dayClose.find(x => x.id === dcId);
   if (!r) return;
@@ -4860,6 +4957,47 @@ function inlineEdit(el, shopId, field, current) {
 // This lets you punch in the ACTUAL home cash you're holding right now as a one-time "opening
 // balance", by solving homeTransfer so shopHomeCash() comes out to exactly what you typed —
 // no need to recreate past Day Close history to get there.
+// ─── Staff/Bills Reserve — manual correction ────────────────────────────────
+// The reserve balance is a stored running total (credited by confirmSavingsDone, debited by
+// 'STAFF' source Daily Expenses). If it ever drifts from the real money set aside — a payment
+// made outside the app, an entry deleted after the fact, a confirmation done twice — there was
+// no way to correct it. This sets it directly to the true figure, same as inlineEditHomeCash()
+// does for Home Cash, and writes an audit entry so the adjustment is traceable later.
+function inlineEditStaffReserve(el, shopId, current) {
+  const inp = document.createElement('input');
+  inp.className='inp-inline'; inp.type='number'; inp.value=current; inp.style.width='90px';
+  el.replaceWith(inp); inp.focus(); inp.select();
+  let saved = false;
+  function save() {
+    if (saved) return; // blur fires again after Enter → keydown blur; don't double-apply
+    saved = true;
+    const val = parseFloat(inp.value);
+    const sh = STATE.shops.find(s=>s.id===shopId);
+    const restore = () => {
+      const span = document.createElement('span');
+      span.className='mono editable-cell';
+      span.id = `de-staffbal-${shopId}`;
+      span.style.fontWeight = '700';
+      span.style.color = shopStaffReserveBalance(shopId) < 0 ? 'var(--bad)' : '#c084fc';
+      span.title = 'Double-click to correct this balance';
+      span.ondblclick = () => inlineEditStaffReserve(span, shopId, shopStaffReserveBalance(shopId));
+      span.textContent = `₹${fmtNum(shopStaffReserveBalance(shopId))}`;
+      inp.replaceWith(span);
+    };
+    if (isNaN(val) || !sh) { restore(); return; } // blank/invalid entry — leave the balance alone
+    const prev = sh.staffReserveBalance || 0;
+    if (val === prev) { restore(); return; }
+    sh.staffReserveBalance = val;
+    restore();
+    auditLog('MANUAL_ADJUST', `${shopName(shopId)} → Staff/Bills Reserve ${fmt(prev)} → ${fmt(val)}`);
+    saveStateLocal();
+    renderAll();
+    toast(`${shopName(shopId)} Staff/Bills Reserve updated to ${fmt(val)}`);
+  }
+  inp.addEventListener('blur', save);
+  inp.addEventListener('keydown', e=>{if(e.key==='Enter')inp.blur();if(e.key==='Escape'){saved=true;inp.replaceWith(el);}});
+}
+
 function inlineEditHomeCash(el, shopId, current) {
   const inp = document.createElement('input');
   inp.className='inp-inline'; inp.type='number'; inp.value=current; inp.style.width='100px';
@@ -5049,7 +5187,8 @@ function initDcForms() {
           <div class="dc-daily-expense-row" style="display:flex;gap:6px;margin-bottom:8px;">
             <input class="inp" id="de-desc-${sh.id}" placeholder="What was purchased?" style="flex:2;padding:7px 10px;font-size:12px;" />
             <input class="inp no-titlecase" id="de-amt-${sh.id}" type="number" inputmode="numeric" placeholder="₹" style="flex:1;padding:7px 10px;font-size:12px;" onkeydown="if(event.key==='Enter'){event.preventDefault();addDailyExpense('${sh.id}');}" />
-            <button class="btn btn-primary dc-expense-add" style="padding:0 12px;height:34px;font-size:11px;" onclick="addDailyExpense('${sh.id}')"><i class="fa-solid fa-plus"></i></button>
+            <button class="btn btn-primary dc-expense-add" id="de-addbtn-${sh.id}" style="padding:0 12px;height:34px;font-size:11px;" onclick="addDailyExpense('${sh.id}')"><i class="fa-solid fa-plus"></i></button>
+            <button class="btn btn-sm" id="de-cancelbtn-${sh.id}" style="display:none;padding:0 10px;height:34px;font-size:11px;" onclick="cancelEditDailyExpense('${sh.id}')" title="Cancel edit"><i class="fa-solid fa-xmark"></i></button>
           </div>
           ${sh.id === 'SHOP01' ? `<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">
             <button type="button" class="chip-tile no-titlecase" style="padding:4px 10px;font-size:10px;" onclick="deSetDesc('${sh.id}','Nariyal')">Nariyal</button>
@@ -5061,7 +5200,7 @@ function initDcForms() {
             <button type="button" class="chip-tile" data-value="GP" onclick="chipPick('de-source-${sh.id}','GP')" style="padding:5px 10px;font-size:10.5px;"><i class="fa-solid fa-mobile-screen"></i>GP</button>
             ${(sh.id === 'SHOP01' || sh.id === 'SHOP02') ? `<button type="button" class="chip-tile" data-value="STAFF" onclick="chipPick('de-source-${sh.id}','STAFF')" style="padding:5px 10px;font-size:10.5px;color:#c084fc;"><i class="fa-solid fa-users"></i>Staff Reserve</button>` : ''}
           </div>
-          ${(sh.id === 'SHOP01' || sh.id === 'SHOP02') ? `<div style="font-size:10px;color:var(--muted);margin:-3px 0 8px;">Staff/Bills Reserve balance: <span class="mono" style="font-weight:700;color:${shopStaffReserveBalance(sh.id) < 0 ? 'var(--bad)' : '#c084fc'};" id="de-staffbal-${sh.id}">₹${fmtNum(shopStaffReserveBalance(sh.id))}</span></div>` : ''}
+          ${(sh.id === 'SHOP01' || sh.id === 'SHOP02') ? `<div style="font-size:10px;color:var(--muted);margin:-3px 0 8px;">Staff/Bills Reserve balance: <span class="mono editable-cell" style="font-weight:700;color:${shopStaffReserveBalance(sh.id) < 0 ? 'var(--bad)' : '#c084fc'};" id="de-staffbal-${sh.id}" title="Double-click to correct this balance" ondblclick="inlineEditStaffReserve(this,'${sh.id}',${shopStaffReserveBalance(sh.id)})">₹${fmtNum(shopStaffReserveBalance(sh.id))}</span> <span style="opacity:.6;">(dbl-click to fix)</span> · <a href="javascript:void(0)" onclick="undoAllConfirmedStaffReserve('${sh.id}')" style="color:var(--bad);text-decoration:underline;">Undo all confirmed</a></div>` : ''}
           <div id="de-list-${sh.id}" style="display:flex;flex-direction:column;gap:5px;"></div>
           <div id="de-summary-${sh.id}" style="font-size:10px;color:var(--muted);margin-top:6px;padding-top:6px;border-top:1px solid rgba(251,191,36,0.1);"></div>
         </div>
@@ -5144,9 +5283,46 @@ function clearIfZero(inp) {
 const DE_SOURCE_LABEL = { COUNTER:'Counter', HOME:'Home', GP:'GP', STAFF:'Staff Reserve' };
 const DE_SOURCE_COLOR = { COUNTER:'var(--warn)', HOME:'var(--accent)', GP:'var(--accent2)', STAFF:'#c084fc' };
 
+let _deEditingId = null; // id of the daily-expense entry currently being edited, or null
+
 function deSetDesc(shopId, text) {
   const el = $(`de-desc-${shopId}`);
   if (el) { el.value = text; el.focus(); }
+}
+
+// Loads an existing entry's desc/amount/source into the same add-form so it can be corrected
+// without deleting and re-typing it from scratch (e.g. "Dudh from Home ₹60" was actually
+// "Dudh from Counter ₹120"). Auto-generated Savings/Staff Reserve entries are excluded — those
+// aren't hand-typed expenses, they're created by confirmSavingsDone() and should be corrected
+// via "Undo" there instead, not edited directly here.
+function editDailyExpense(id) {
+  const e = STATE.dailyExpenses.find(x => x.id === id && !x.deleted);
+  if (!e) return;
+  if ((e.desc || '').startsWith('Savings (') || (e.desc || '').startsWith('Staff/Bills Reserve (')) {
+    toast('This is an auto-generated Savings/Reserve entry — use "Undo all confirmed" instead', 'error');
+    return;
+  }
+  _deEditingId = id;
+  const descEl = $(`de-desc-${e.shopId}`), amtEl = $(`de-amt-${e.shopId}`);
+  if (descEl) descEl.value = e.desc;
+  if (amtEl) amtEl.value = e.amount;
+  chipPick(`de-source-${e.shopId}`, e.source);
+  const addBtn = $(`de-addbtn-${e.shopId}`), cancelBtn = $(`de-cancelbtn-${e.shopId}`);
+  if (addBtn) addBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
+  if (cancelBtn) cancelBtn.style.display = '';
+  if (descEl) { descEl.focus(); descEl.select(); }
+  toast('Editing — update the fields and tap ✓ to save', 'info');
+}
+
+function cancelEditDailyExpense(shopId) {
+  _deEditingId = null;
+  const descEl = $(`de-desc-${shopId}`), amtEl = $(`de-amt-${shopId}`);
+  if (descEl) descEl.value = '';
+  if (amtEl) amtEl.value = '';
+  chipPick(`de-source-${shopId}`, 'COUNTER');
+  const addBtn = $(`de-addbtn-${shopId}`), cancelBtn = $(`de-cancelbtn-${shopId}`);
+  if (addBtn) addBtn.innerHTML = '<i class="fa-solid fa-plus"></i>';
+  if (cancelBtn) cancelBtn.style.display = 'none';
 }
 
 function addDailyExpense(shopId) {
@@ -5159,13 +5335,27 @@ function addDailyExpense(shopId) {
   if (!amt || amt <= 0) { toast('Enter amount', 'error'); return; }
 
   const entryDate = $(`dc-date-${shopId}`)?.value || todayStr();
+  const editingId = _deEditingId;
+  const editingEntry = editingId ? STATE.dailyExpenses.find(x => x.id === editingId && x.shopId === shopId) : null;
 
   function _finishDailyExpense() {
-    STATE.dailyExpenses.unshift({
-      id: newId('DE'), shopId, date: entryDate, desc, source, amount: amt, deleted: false
-    });
-    descEl.value = ''; amtEl.value = '';
-    chipPick(`de-source-${shopId}`, 'COUNTER');
+    if (editingEntry) {
+      // Reverse whatever balance effect the OLD source/amount had, before applying the new one.
+      const oldSh = STATE.shops.find(s => s.id === shopId);
+      if (oldSh) {
+        if (editingEntry.source === 'GP') oldSh.online = (oldSh.online || 0) + (editingEntry.amount || 0);
+        if (editingEntry.source === 'STAFF') oldSh.staffReserveBalance = (oldSh.staffReserveBalance || 0) + (editingEntry.amount || 0);
+      }
+      editingEntry.desc = desc;
+      editingEntry.amount = amt;
+      editingEntry.source = source;
+      editingEntry.date = entryDate;
+    } else {
+      STATE.dailyExpenses.unshift({
+        id: newId('DE'), shopId, date: entryDate, desc, source, amount: amt, deleted: false
+      });
+    }
+    cancelEditDailyExpense(shopId); // clears the form and edit-mode UI either way
     renderDailyExpenses(shopId);
     syncDcExpenseFromItems(shopId);
     if (source === 'GP') {
@@ -5180,9 +5370,9 @@ function addDailyExpense(shopId) {
       if (balEl) { balEl.textContent = `₹${fmtNum(shopStaffReserveBalance(shopId))}`; balEl.style.color = shopStaffReserveBalance(shopId) < 0 ? 'var(--bad)' : '#c084fc'; }
       renderDashboard();
     }
-    auditLog('DAILY_EXPENSE', `${shopName(shopId)} — ${desc} (${DE_SOURCE_LABEL[source]}) ₹${amt}`);
+    auditLog('DAILY_EXPENSE', editingEntry ? `${shopName(shopId)} — edited to ${desc} (${DE_SOURCE_LABEL[source]}) ₹${amt}` : `${shopName(shopId)} — ${desc} (${DE_SOURCE_LABEL[source]}) ₹${amt}`);
     saveStateLocal();
-    toast(`${desc} — ₹${fmtNum(amt)} added (${DE_SOURCE_LABEL[source]})`, 'success');
+    toast(editingEntry ? `Updated — ${desc}, ₹${fmtNum(amt)} (${DE_SOURCE_LABEL[source]})` : `${desc} — ₹${fmtNum(amt)} added (${DE_SOURCE_LABEL[source]})`, 'success');
   }
 
   // Warn before making GPay, Home Cash, or Staff Reserve (Cash/GPay) negative
@@ -5259,7 +5449,8 @@ function renderDailyExpenses(shopId) {
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 10px;">
       <div style="flex:1;font-size:12px;">${escHtml(e.desc)} <span style="color:${DE_SOURCE_COLOR[e.source]};font-weight:600;">(${DE_SOURCE_LABEL[e.source]})</span></div>
       <div class="mono" style="font-size:12px;font-weight:700;">₹${fmtNum(e.amount)}</div>
-      <button type="button" onclick="removeDailyExpense('${e.id}')" style="background:none;border:none;color:var(--bad);cursor:pointer;font-size:13px;padding:2px 4px;"><i class="fa-solid fa-xmark"></i></button>
+      <button type="button" onclick="editDailyExpense('${e.id}')" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:13px;padding:2px 4px;" title="Edit this expense"><i class="fa-solid fa-pen"></i></button>
+      <button type="button" onclick="removeDailyExpense('${e.id}')" style="background:none;border:none;color:var(--bad);cursor:pointer;font-size:13px;padding:2px 4px;" title="Delete this expense"><i class="fa-solid fa-xmark"></i></button>
     </div>`).join('') || `<div style="font-size:11px;color:var(--muted);">No expenses added on ${fmtDate(entryDate)}</div>`;
 
   const bySource = { COUNTER:0, HOME:0, GP:0, STAFF:0 };
@@ -6006,6 +6197,25 @@ function shareDcMonthReport() {
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
+// Loads a specific Day Close history record straight into the edit form — sets the shared
+// date box to that record's date (so every shop's panel shows that day's data, not just this
+// one) and switches to that record's shop tab. Previously the only "Edit" action opened a
+// read-only summary popup with no way to actually change anything; this is the real edit path.
+function editDcEntryFromHistory(id) {
+  const r = STATE.dayClose.find(x => x.id === id && !x.deleted);
+  if (!r) { toast('Entry not found (it may have been deleted)', 'error'); return; }
+  closeModal('modal-dc-detail'); // harmless no-op if it wasn't open
+  switchTab('dayclose');
+  dcCommonDate = r.date;
+  const dateEl = $('dc-common-date');
+  if (dateEl) dateEl.value = r.date;
+  initDcForms();
+  switchDcShop(r.shopId);
+  const panel = $('dcpanel-' + r.shopId);
+  if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  toast(`Loaded ${shopName(r.shopId)} — ${fmtDate(r.date)} for editing`, 'info');
+}
+
 function openDcDetail(id) {
   const r = STATE.dayClose.find(x=>x.id===id); if(!r) return;
   const sh = STATE.shops.find(s=>s.id===r.shopId);
@@ -6070,7 +6280,10 @@ function openDcDetail(id) {
       <span>Outflows today: <b style="color:var(--jtext);">${fmt(s.outTotal)}</b></span>
       <span>Total Exp: <b style="color:var(--bad);">${fmt(s.expTotalReal)}</b></span>
     </div>
-    <button class="btn btn-good" style="width:100%;margin-top:16px;" onclick="shareDcDayReport('${r.id}')"><i class="fa-brands fa-whatsapp"></i> Share on WhatsApp</button>`;
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn btn-primary" style="flex:1;" onclick="editDcEntryFromHistory('${r.id}')"><i class="fa-solid fa-pen-to-square"></i> Edit This Entry</button>
+      <button class="btn btn-good" style="flex:1;" onclick="shareDcDayReport('${r.id}')"><i class="fa-brands fa-whatsapp"></i> Share</button>
+    </div>`;
   openModal('modal-dc-detail');
 }
 
