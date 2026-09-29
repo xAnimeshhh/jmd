@@ -842,7 +842,7 @@ select.csel-native { position: absolute; width: 1px; height: 1px; padding: 0; ma
   background: linear-gradient(135deg, #fff, #c4b5fd);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
-.nw-breakdown { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 16px; }
+.nw-breakdown { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-top: 16px; }
 @media(max-width: 768px){ .nw-breakdown { grid-template-columns: repeat(3, 1fr); } }
 @media(max-width: 480px){ .nw-breakdown { grid-template-columns: repeat(2, 1fr); } }
 .nw-bd-item .k { font-size: 9.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
@@ -1395,7 +1395,8 @@ html,body{overflow-x:hidden;max-width:100%;}
             <div class="nw-bd-item"><div class="k">GPay / Online</div><div class="v" style="color:var(--accent2);" id="nw-online">₹0</div></div>
             <div class="nw-bd-item"><div class="k">Credit Due</div><div class="v" style="color:var(--warn);" id="nw-udhaar">₹0</div></div>
             <div class="nw-bd-item"><div class="k">Bills Pending</div><div class="v" style="color:var(--bad);" id="nw-liab">₹0</div></div>
-            <div class="nw-bd-item"><div class="k">Confirmed Savings</div><div class="v" style="color:var(--good);" id="nw-savings" title="Total confirmed 30% owner savings (Cash + Bank) — excludes the 10% staff/bills reserve">₹0</div></div>
+            <div class="nw-bd-item"><div class="k">Loans Pending</div><div class="v" style="color:var(--bad);" id="nw-loans" title="Total borrowed money not yet repaid, across all shops">₹0</div></div>
+            <div class="nw-bd-item"><div class="k">Confirmed Savings (40%)</div><div class="v" style="color:var(--good);" id="nw-savings" title="Combined confirmed 30% Owner Savings (Cash + Bank) plus the currently-held 10% Staff/Bills Reserve balance">₹0</div></div>
           </div>
           <div style="margin-top:14px;font-size:10.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;">
             <i class="fa-solid fa-circle-info" style="margin-right:4px;color:var(--accent2);"></i>
@@ -2035,6 +2036,12 @@ html,body{overflow-x:hidden;max-width:100%;}
         </div>
 
         <div class="settings-section">
+          <h3><i class="fa-solid fa-screwdriver-wrench"></i> Tools</h3>
+          <button class="btn btn-primary btn-sm" onclick="openAffectedSavingsReport()"><i class="fa-solid fa-magnifying-glass" style="margin-right:4px;"></i>Check for Bug-Affected Savings Confirmations</button>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px;">Finds Savings/Staff Reserve confirmations that got wiped by an old edit bug (where confirmed money was already taken out, but the app forgot and asked again). One-tap restore per entry, no re-confirmation needed.</div>
+        </div>
+
+        <div class="settings-section">
           <h3><i class="fa-solid fa-trash"></i> Danger Zone</h3>
           <button class="btn btn-ghost btn-sm" onclick="downloadBackup()" style="margin-right:8px;"><i class="fa-solid fa-download" style="margin-right:4px;"></i>Download JSON Backup</button>
           <button class="btn btn-ghost btn-sm" onclick="triggerRestoreBackup()" style="margin-right:8px;"><i class="fa-solid fa-upload" style="margin-right:4px;"></i>Restore JSON Backup</button>
@@ -2383,6 +2390,14 @@ html,body{overflow-x:hidden;max-width:100%;}
   <div class="modal-box" style="max-width:500px;">
     <div class="modal-title">Day Close Detail <button class="modal-close" onclick="closeModal(&#39;modal-dc-detail&#39;)">×</button></div>
     <div id="dc-detail-body"></div>
+  </div>
+</div>
+
+<!-- Affected Savings Confirmations report (bug-fix tool) -->
+<div class="modal-overlay" id="modal-affected-savings" onclick="modalBgClose(event,&#39;modal-affected-savings&#39;)">
+  <div class="modal-box" style="max-width:640px;">
+    <div class="modal-title">Affected Savings Confirmations <button class="modal-close" onclick="closeModal(&#39;modal-affected-savings&#39;)">×</button></div>
+    <div id="affected-savings-body"></div>
   </div>
 </div>
 
@@ -3802,7 +3817,16 @@ function renderDashboard() {
   // option is chosen. So this money never came out of the shop-sourced Home Cash pool, and must
   // NOT be subtracted from it here. personalWalletDrain() is kept as a pure info figure only.
   const personalWallet = Math.max(0, totalHomeCash);        // net home savings (shop-sourced only)
-  const confirmedSavings = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.desc && e.desc.startsWith('Savings (')).reduce((s, e) => s + (e.amount || 0), 0);
+  const confirmedOwnerSavings = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.desc && e.desc.startsWith('Savings (')).reduce((s, e) => s + (e.amount || 0), 0);
+  // BUG FIX: the Staff/Bills Reserve (10%) wallet balance was never counted anywhere in Net
+  // Position — only the 30% Owner Savings was added back. But confirmed Staff Reserve is real
+  // held money too (a genuine spendable wallet — see confirmSavingsDone), already subtracted out
+  // of Home Cash/GPay the same way Owner Savings is, so it needs the same add-back treatment or
+  // it just vanishes from the person's net worth the moment they confirm it. staffReserveBalance
+  // already nets out spending (staff salary/bills paid from it), so it's the right "currently
+  // held" figure — not the lifetime-confirmed total, which would wrongly include money already spent.
+  const totalStaffReserveBalance = STATE.shops.reduce((s, sh) => s + (sh.staffReserveBalance || 0), 0);
+  const confirmedSavings = confirmedOwnerSavings + totalStaffReserveBalance; // combined 30%+10% = 40%
   const nw = personalWallet + totalOnlineGross + totalUd - totalLiab - totalLoanPending + confirmedSavings;         // TRUE NET POSITION (loans reduce net worth, confirmed savings add back)
 
   $('nw-val').textContent = fmtSigned(nw);
@@ -3810,6 +3834,7 @@ function renderDashboard() {
   $('nw-online').textContent = fmt(totalOnlineGross);
   $('nw-udhaar').textContent = fmt(totalUd);
   $('nw-liab').textContent   = fmt(totalLiab);
+  $('nw-loans').textContent  = fmt(totalLoanPending);
   $('nw-savings').textContent = fmt(confirmedSavings);
 
   // Keep the attention strip useful instead of showing a permanent generic warning.
@@ -4011,7 +4036,7 @@ function renderProfitBox() {
   let total = 0, graphicsProfit = 0, html = '';
   STATE.shops.forEach(sh => {
     const recs = activeDC.filter(r => r.shopId === sh.id);
-    const shopProfit = recs.reduce((s, r) => s + (r.profit != null ? r.profit : Math.round(((r.cashHome || 0) + (r.gpay || 0)) * (sh.profitPct || 40) / 100)), 0);
+    const shopProfit = recs.reduce((s, r) => s + profitForRecord(r), 0);
     // Graphics' economics (job/printing margins) differ from the pooja/retail shops, so its
     // profit is tracked and shown separately here instead of being folded into the combined total.
     if (sh.id === 'SHOP04') graphicsProfit = shopProfit;
@@ -5564,8 +5589,9 @@ function submitDayClose(shopId) {
       // every time (see shopHomeCash()), so correcting existing.cashHome below is enough on its own.
     }
     // Recompute the 30% savings + 10% staff/bills reserve targets against the new home/gpay.
-    // Agar target badal gaya aur pehle "confirm" ho chuka tha, to dobara confirm maango (flag
-    // reset) — kyunki purana confirm ab galat amount ke against tha.
+    // Agar target badal gaya aur pehle se "confirm" tha, to poora dobara confirm nahi maangte —
+    // sirf FARAK (delta) adjust karte hain, jo already confirmed tha wo confirmed hi rehta hai
+    // (see _adjustConfirmedTarget below).
     // Cash-30%/10% target = 30%/10% of Home Cash (paisa jo ghar le jaate ho) — NOT of total cash sale.
     // Counter cash (galla) is pure shop working capital and is never part of this split.
     // Graphics (SHOP04) is order-based — no savings/reserve split applies to it, whatever remains
@@ -5580,50 +5606,51 @@ function submitDayClose(shopId) {
     if (shopId === 'SHOP04' && existing.cashSwapDone && (existing.cashHome||0) !== home) {
       reverseGraphicsSwap(existing);
     }
-    // Bug 2 fix: If savings was previously confirmed but target changed, delete old savings
-    // dailyExpenses linked to this DC and reverse the GPay deduction. Otherwise we'd get
-    // duplicate savings expenses when user confirms the new (different) target.
+    // BUG FIX: previously, if savings/reserve was already confirmed ("Done") and editing this
+    // entry changed the target — even by a small amount — the old confirmed expense was deleted
+    // outright and Done reset to false, so the Savings Pending reminder then asked for the WHOLE
+    // NEW target again (e.g. target went ₹5000 → ₹5300 and it asked to set aside ₹5300 fresh),
+    // even though the user had already physically taken out ~₹5000. Now only the DELTA between
+    // old and new target is adjusted on the existing linked expense — Home Cash reflects it
+    // automatically (shopHomeCash() sums live), GPay/Staff Reserve get nudged by just the
+    // difference — and the confirmation stays Done. Nothing is asked for twice.
     const cashTargetChanged = existing.cashSaveTarget !== newCashSaveTarget;
     const bankTargetChanged = existing.bankSaveTarget !== newBankSaveTarget;
     const staffCashTargetChanged = (existing.staffCashTarget||0) !== newStaffCashTarget;
     const staffBankTargetChanged = (existing.staffBankTarget||0) !== newStaffBankTarget;
-    if (existing.cashSaveDone && cashTargetChanged) {
-      const oldCashSaveExp = (STATE.dailyExpenses||[]).find(e => e.linkedDcId === existing.id && !e.deleted && e.desc && e.desc.includes('Cash') && e.desc.startsWith('Savings'));
-      if (oldCashSaveExp) oldCashSaveExp.deleted = true;
-    }
-    if (existing.bankSaveDone && bankTargetChanged) {
-      const oldBankSaveExp = (STATE.dailyExpenses||[]).find(e => e.linkedDcId === existing.id && !e.deleted && e.desc && e.desc.includes('GPay') && e.desc.startsWith('Savings'));
-      if (oldBankSaveExp) {
-        oldBankSaveExp.deleted = true;
-        // Reverse the GPay deduction that confirmSavingsDone applied
-        const oldSh = STATE.shops.find(s=>s.id===existing.shopId);
-        if (oldSh) oldSh.online = (oldSh.online||0) + (oldBankSaveExp.amount||0);
+    const savingsAdjustments = [];
+    // Adjusts an already-confirmed savings/reserve entry's amount (and wallet effect) by the
+    // delta between its old and new target, instead of deleting it and un-confirming. Returns
+    // the delta actually applied (0 if there was nothing linked to adjust).
+    function _adjustConfirmedTarget(type, newTarget, label) {
+      const isStaff = type === 'staffcash' || type === 'staffbank';
+      const isCashSide = type === 'cash' || type === 'staffcash';
+      const exp = (STATE.dailyExpenses||[]).find(e => e.linkedDcId === existing.id && !e.deleted &&
+        e.desc && e.desc.startsWith(isStaff ? 'Staff/Bills Reserve' : 'Savings') &&
+        e.desc.includes(isCashSide ? 'Cash' : 'GPay'));
+      if (!exp) return 0;
+      const delta = newTarget - (exp.amount || 0);
+      if (!delta) return 0;
+      exp.amount = newTarget;
+      const oldSh = STATE.shops.find(s=>s.id===existing.shopId);
+      if (oldSh) {
+        if (!isCashSide) oldSh.online = Math.max(0, (oldSh.online||0) - delta);        // higher target = more taken from GPay
+        if (isStaff) oldSh.staffReserveBalance = Math.max(0, (oldSh.staffReserveBalance||0) + delta); // higher target = more credited to reserve
       }
+      savingsAdjustments.push(`${label} ${delta>0?'+':''}${fmt(delta)}`);
+      return delta;
     }
-    if (existing.staffCashDone && staffCashTargetChanged) {
-      const oldExp = (STATE.dailyExpenses||[]).find(e => e.linkedDcId === existing.id && !e.deleted && e.desc && e.desc.startsWith('Staff/Bills Reserve') && e.desc.includes('Cash'));
-      if (oldExp) {
-        oldExp.deleted = true;
-        // Reverse the Staff Reserve wallet credit that confirmSavingsDone applied
-        const oldSh = STATE.shops.find(s=>s.id===existing.shopId);
-        if (oldSh) oldSh.staffReserveBalance = Math.max(0, (oldSh.staffReserveBalance||0) - (oldExp.amount||0));
-      }
-    }
-    if (existing.staffBankDone && staffBankTargetChanged) {
-      const oldExp = (STATE.dailyExpenses||[]).find(e => e.linkedDcId === existing.id && !e.deleted && e.desc && e.desc.startsWith('Staff/Bills Reserve') && e.desc.includes('GPay'));
-      if (oldExp) {
-        oldExp.deleted = true;
-        const oldSh = STATE.shops.find(s=>s.id===existing.shopId);
-        if (oldSh) {
-          oldSh.online = (oldSh.online||0) + (oldExp.amount||0);
-          oldSh.staffReserveBalance = Math.max(0, (oldSh.staffReserveBalance||0) - (oldExp.amount||0));
-        }
-      }
-    }
-    const cashSaveDone = (existing.cashSaveDone && !cashTargetChanged) || false;
-    const bankSaveDone = (existing.bankSaveDone && !bankTargetChanged) || false;
-    const staffCashDone = (existing.staffCashDone && !staffCashTargetChanged) || false;
-    const staffBankDone = (existing.staffBankDone && !staffBankTargetChanged) || false;
+    if (existing.cashSaveDone && cashTargetChanged) _adjustConfirmedTarget('cash', newCashSaveTarget, 'Cash Savings');
+    if (existing.bankSaveDone && bankTargetChanged) _adjustConfirmedTarget('bank', newBankSaveTarget, 'Bank Savings');
+    if (existing.staffCashDone && staffCashTargetChanged) _adjustConfirmedTarget('staffcash', newStaffCashTarget, 'Staff Reserve (Cash)');
+    if (existing.staffBankDone && staffBankTargetChanged) _adjustConfirmedTarget('staffbank', newStaffBankTarget, 'Staff Reserve (GPay)');
+    // Confirmation status is preserved across the edit — a target recalculation is not a reason
+    // to ask the person to re-confirm money they've already set aside.
+    const cashSaveDone = existing.cashSaveDone;
+    const bankSaveDone = existing.bankSaveDone;
+    const staffCashDone = existing.staffCashDone;
+    const staffBankDone = existing.staffBankDone;
+
 
     Object.assign(existing, {
       cashHome: home, counterCash: counter, gpay, expense: exp, prevCounter: prev,
@@ -5647,7 +5674,8 @@ function submitDayClose(shopId) {
   renderGraphicsSwapBanner();
   renderGraphicsSwapHistory();
     if (deltaBits.length) {
-      toast(`${shopName(shopId)} Day Close updated — only the difference applied: ${deltaBits.join(', ')}`, 'success');
+      const savingsNote = savingsAdjustments.length ? ` · Savings adjusted: ${savingsAdjustments.join(', ')}` : '';
+      toast(`${shopName(shopId)} Day Close updated — only the difference applied: ${deltaBits.join(', ')}${savingsNote}`, 'success');
     } else {
       toast(`${shopName(shopId)} Day Close — no changes, nothing updated`, 'success');
     }
@@ -6219,7 +6247,7 @@ function editDcEntryFromHistory(id) {
 function openDcDetail(id) {
   const r = STATE.dayClose.find(x=>x.id===id); if(!r) return;
   const sh = STATE.shops.find(s=>s.id===r.shopId);
-  const profit = r.profit != null ? r.profit : (sh?.id === 'SHOP04' ? ((r.cashHome||0)+(r.gpay||0)) : Math.round(((r.cashHome||0)+(r.gpay||0)) * (sh?.profitPct||40)/100));
+  const profit = profitForRecord(r); // single source of truth — matches Total Profit and every other profit display
   const s = computeDcEntryStats(r);
   const bal = computeDcBalanceStory(r);
   const anyNegative = bal.homeNegative || bal.onlineNegative;
@@ -8960,6 +8988,27 @@ function reportPeriod() {
 function inPeriodDate(date, rp) { return !!date && date >= rp.start && date <= rp.end; }
 function profitForRecord(r) {
   const sh = STATE.shops.find(s => s.id === r.shopId);
+  // BUG FIX: this used to always trust the STORED r.profit value, forever — but the profit
+  // formula has been recalculated multiple times (Home+GPay-only → Net Profit → Full Sale with
+  // GPay-consolidated reserve) since some entries were first saved. Old entries kept their
+  // OLD-formula profit number frozen in place, so "Total Profit (40%)" silently mixed different
+  // formula-vintages together and drifted from what today's formula actually says. A genuine
+  // manual override (the person typed a different number than the auto-suggested one) is still
+  // respected as-is — that was a deliberate choice, not a stale calculation.
+  const wasManuallyOverridden = r.autoProfit != null && r.profit !== r.autoProfit;
+  if (wasManuallyOverridden) return parseFloat(r.profit) || 0;
+  if (r.shopId === 'SHOP04') {
+    // Graphics is order-based — no savings/reserve split applies, so 100% of what remains is
+    // profit (matches profitAllocationForEntry, which deliberately returns all-zero targets here).
+    return (r.cashHome || 0) + (r.gpay || 0);
+  }
+  if (r.cashSaveTarget != null || r.bankSaveTarget != null || r.staffCashTarget != null || r.staffBankTarget != null) {
+    // The four reserve targets ARE today's formula's real numbers for this entry (kept accurate
+    // by the delta-based edit fix and the savingsOnFullSale migration) — summing them gives the
+    // current 40%, always, rather than whatever was frozen into r.profit at original save time.
+    return (r.cashSaveTarget || 0) + (r.bankSaveTarget || 0) + (r.staffCashTarget || 0) + (r.staffBankTarget || 0);
+  }
+  // Legacy entries with no per-entry targets recorded at all — fall back to the old flat formula.
   return r.profit != null ? (parseFloat(r.profit) || 0) : Math.round(((r.cashHome || 0) + (r.gpay || 0)) * ((sh && sh.profitPct) || 40) / 100);
 }
 function buildReportData() {
@@ -9300,7 +9349,8 @@ function exportPdfReport() {
   const totHc = STATE.shops.reduce((s,sh)=>s+shopHomeCash(sh.id), 0);
   const personalWallet = Math.max(0, totHc); // PERSONAL expenses are an outside source, not shop cash — not subtracted
   const pendLoanAmt = STATE.loans.filter(l=>l.status==='Pending').reduce((s,l)=>s+(l.amount-l.repaid),0);
-  const confirmedSavings = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.desc && e.desc.startsWith('Savings (')).reduce((s, e) => s + (e.amount || 0), 0);
+  const confirmedSavings = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.desc && e.desc.startsWith('Savings (')).reduce((s, e) => s + (e.amount || 0), 0)
+    + STATE.shops.reduce((s, sh) => s + (sh.staffReserveBalance || 0), 0); // combined 30%+10% — matches Dashboard's Net Position
   const netPos = personalWallet + totalOnlineGross + totalUd - totalLiab - pendLoanAmt + confirmedSavings;
 
   // Net Position highlight box
@@ -9777,8 +9827,8 @@ function buildDailySummary() {
   const pendLoanAmt = STATE.loans.filter(l=>l.status==='Pending').reduce((s,l)=>s+(l.amount-l.repaid),0);
   const totHc = STATE.shops.reduce((s,sh)=>s+shopHomeCash(sh.id), 0);
   const personalWallet = Math.max(0, totHc); // PERSONAL expenses are an outside source, not shop cash — not subtracted
-  const confirmedSavings = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.desc && e.desc.startsWith('Savings (')).reduce((s, e) => s + (e.amount || 0), 0);
-  const cashSavingsToday = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.date === today && e.desc && e.desc.startsWith('Savings (') && e.source === 'HOME').reduce((s, e) => s + (e.amount || 0), 0);
+  const confirmedSavings = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.desc && e.desc.startsWith('Savings (')).reduce((s, e) => s + (e.amount || 0), 0)
+    + STATE.shops.reduce((s, sh) => s + (sh.staffReserveBalance || 0), 0); // combined 30%+10% — matches Dashboard's Net Position
   const bankSavingsToday = (STATE.dailyExpenses || []).filter(e => !e.deleted && e.date === today && e.desc && e.desc.startsWith('Savings (') && e.source === 'GP').reduce((s, e) => s + (e.amount || 0), 0);
   const netPos = personalWallet + totalOnlineGross + totalUd - totalLiab - pendLoanAmt + confirmedSavings;
 
@@ -11053,6 +11103,99 @@ function renderAudit() {
 }
 
 // ─── Settings ────────────────────────────────────────────────────
+// ─── Bug-fix tool: find Savings/Reserve confirmations wiped by the old bug ──────
+// Before the delta-fix above, editing an entry after its savings/reserve was confirmed could
+// delete the linked expense outright and reset the Done flag — even though the money had
+// already been physically taken out. This scans for exactly that signature: a Day Close record
+// that is NOT currently marked Done for a given type, but DOES have a matching DELETED linked
+// expense — meaning it used to be confirmed and the confirmation was wiped, most likely by that
+// bug, rather than a deliberate Undo (which is a different, intentional action).
+function findAffectedSavingsEntries() {
+  const TYPES = [
+    { type: 'cash', doneFlag: 'cashSaveDone', label: 'Cash Savings (30%)' },
+    { type: 'bank', doneFlag: 'bankSaveDone', label: 'GPay Savings (30%)' },
+    { type: 'staffcash', doneFlag: 'staffCashDone', label: 'Staff/Bills Reserve — Cash (10%)' },
+    { type: 'staffbank', doneFlag: 'staffBankDone', label: 'Staff/Bills Reserve — GPay (10%)' }
+  ];
+  const results = [];
+  (STATE.dayClose || []).forEach(r => {
+    if (r.deleted) return;
+    TYPES.forEach(({ type, doneFlag, label }) => {
+      if (r[doneFlag]) return; // currently marked Done — not affected
+      const isStaff = type === 'staffcash' || type === 'staffbank';
+      const isCashSide = type === 'cash' || type === 'staffcash';
+      const deletedExp = (STATE.dailyExpenses || []).find(e => e.linkedDcId === r.id && e.deleted &&
+        e.desc && e.desc.startsWith(isStaff ? 'Staff/Bills Reserve' : 'Savings') &&
+        e.desc.includes(isCashSide ? 'Cash' : 'GPay'));
+      if (!deletedExp) return; // never confirmed, or a genuine intentional Undo — nothing to flag
+      const currentTarget = type === 'cash' ? r.cashSaveTarget : type === 'bank' ? r.bankSaveTarget
+        : type === 'staffcash' ? r.staffCashTarget : r.staffBankTarget;
+      results.push({ dcId: r.id, shopId: r.shopId, date: r.date, type, label,
+        previouslyConfirmedAmount: deletedExp.amount || 0, currentTarget: currentTarget || 0, expId: deletedExp.id });
+    });
+  });
+  return results.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+}
+
+function openAffectedSavingsReport() {
+  renderAffectedSavingsReport();
+  openModal('modal-affected-savings');
+}
+
+function renderAffectedSavingsReport() {
+  const body = $('affected-savings-body');
+  if (!body) return;
+  const list = findAffectedSavingsEntries();
+  if (!list.length) {
+    body.innerHTML = `<div style="padding:16px;text-align:center;color:var(--good);font-size:13px;"><i class="fa-solid fa-circle-check" style="margin-right:6px;"></i>Nothing found — no confirmations look wiped by the old bug.</div>`;
+    return;
+  }
+  body.innerHTML = `
+    <div style="font-size:11.5px;color:var(--muted);margin-bottom:12px;">
+      These entries were confirmed ("Done") at some point, but the confirmation got wiped — most likely by the old edit bug, since the amount was already taken out physically. Tap <b>Restore</b> to bring back that confirmation (re-credits/re-debits the wallet the same way it did originally) without asking you to set the money aside again.
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto;">
+      ${list.map(a => `
+        <div style="background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;display:flex;align-items:center;justify-content:between;gap:10px;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:12.5px;font-weight:700;">${escHtml(shopName(a.shopId))} — ${escHtml(fmtDate(a.date))}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">${escHtml(a.label)}</div>
+            <div style="font-size:11px;margin-top:3px;">Was confirmed: <b class="mono" style="color:var(--warn);">${fmt(a.previouslyConfirmedAmount)}</b>${a.currentTarget !== a.previouslyConfirmedAmount ? ` · Current target: <b class="mono">${fmt(a.currentTarget)}</b>` : ''}</div>
+          </div>
+          <button class="btn btn-good btn-sm" onclick="restoreAffectedSavingsEntry('${a.dcId}','${a.type}','${a.expId}')"><i class="fa-solid fa-rotate-left"></i> Restore</button>
+        </div>`).join('')}
+    </div>`;
+}
+
+// Restores exactly one flagged confirmation: undeletes the old linked expense (which
+// auto-restores Home Cash via the live shopHomeCash() formula) and re-applies the GPay/Staff
+// Reserve wallet effect it originally had, then marks the record Done again — bringing it back
+// to the state it was in before the old bug wiped it, using the ORIGINAL confirmed amount (not
+// today's possibly-different recalculated target).
+function restoreAffectedSavingsEntry(dcId, type, expId) {
+  const r = STATE.dayClose.find(x => x.id === dcId);
+  const exp = (STATE.dailyExpenses || []).find(e => e.id === expId);
+  if (!r || !exp) { toast('Could not find this entry anymore', 'error'); return; }
+  const isStaff = type === 'staffcash' || type === 'staffbank';
+  const isCashSide = type === 'cash' || type === 'staffcash';
+  const doneFlag = type === 'cash' ? 'cashSaveDone' : type === 'bank' ? 'bankSaveDone' : type === 'staffcash' ? 'staffCashDone' : 'staffBankDone';
+  exp.deleted = false;
+  const sh = STATE.shops.find(s => s.id === r.shopId);
+  if (sh) {
+    if (!isCashSide) sh.online = Math.max(0, (sh.online || 0) - (exp.amount || 0));
+    if (isStaff) sh.staffReserveBalance = (sh.staffReserveBalance || 0) + (exp.amount || 0);
+  }
+  r[doneFlag] = true;
+  auditLog('SAVINGS', `${shopName(r.shopId)} ${fmtDate(r.date)} — restored a confirmation wiped by the old edit bug (${fmt(exp.amount)})`);
+  saveStateLocal();
+  renderAffectedSavingsReport();
+  renderSavingsPendingBanner();
+  renderMonthlySummary();
+  renderDashboard();
+  updateBadges();
+  toast(`Restored — ${fmt(exp.amount)} confirmation brought back`, 'success');
+}
+
 function renderSettings() {
   const inp=$('sheet-url-inp'); if(inp) inp.value=STATE.sheetUrl||'';
   const managed = $('settings-managed');
