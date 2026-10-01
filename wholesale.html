@@ -2699,7 +2699,7 @@ const LS_KEY = 'jmd_wholesale_state_v1';
    Everyone who opens this same HTML file will then read/write the
    SAME Google Sheet — no per-person setup, no separate URL entry.
    (Leave DEFAULT_SYNC_URL blank to disable auto-connect.) */
-const DEFAULT_SYNC_URL = 'https://script.google.com/macros/s/AKfycbxtVgWQpMpuSu8OVaN5MksY8X6PeLjmiTvLTNWwiUTjf4EcevQWw9d2514_3qwz-MQWdA/exec';
+const DEFAULT_SYNC_URL = 'https://script.google.com/macros/s/AKfycbyELkYHP87ZFmIM1Gvsqw3WX1QNsuFxC4ljbxDNCiH3D5yOu9cMcdJkcJOwwAm4Q0OgjQ/exec';
 const DEFAULT_SYNC_KEY = '1707';
 
 function defaultState(){
@@ -4090,7 +4090,7 @@ function renderDashboard(){
 
           <div style="font-size:9.5px;font-weight:700;color:var(--muted);letter-spacing:0.08em;margin:10px 0 6px;">MONEY OUT</div>
           <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;cursor:pointer;" onclick="switchTab('purchases')"><span style="color:var(--muted);">Paid to suppliers</span><span class="mono" style="color:var(--bad);">-${fmt(supplierOut)}</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;cursor:pointer;" onclick="setPurchaseSubView('expenses');switchTab('purchases')"><span style="color:var(--muted);">Expenses</span><span class="mono" style="color:var(--bad);">-${fmt(expenseOut)}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;cursor:pointer;" onclick="purchaseSubView='expenses';switchTab('purchases')"><span style="color:var(--muted);">Expenses</span><span class="mono" style="color:var(--bad);">-${fmt(expenseOut)}</span></div>
           <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;cursor:pointer;" onclick="switchTab('loans')"><span style="color:var(--muted);">Loan repayments</span><span class="mono" style="color:var(--bad);">-${fmt(loanOut)}</span></div>
           ${refundOut > 0.004 ? `<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;"><span style="color:var(--muted);">Return refunds</span><span class="mono" style="color:var(--bad);">-${fmt(round2(refundOut))}</span></div>` : ''}
 
